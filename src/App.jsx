@@ -28,6 +28,8 @@ import {
   YoutubeLogo,
 } from "@phosphor-icons/react";
 
+const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
+
 const featureCards = [
   {
     icon: Buildings,
@@ -182,7 +184,7 @@ export function App() {
 
       <section className="feature-grid shell" id="projects">
         {featureCards.map(({ icon: Icon, title, copy, image, position }) => (
-          <article className="feature-card" key={title} style={{ backgroundImage: `url(${image})`, backgroundPosition: position }}>
+          <article className="feature-card" key={title} style={{ backgroundImage: `url(${asset(image)})`, backgroundPosition: position }}>
             <div className="card-shade" />
             <Icon className="feature-icon" size={34} weight="thin" />
             <div className="feature-content">
@@ -222,7 +224,7 @@ export function App() {
         </div>
         <div className="estate-grid">
           {estates.map((estate) => (
-            <article className="estate-card" key={estate.title} style={{ backgroundImage: `url(${estate.image})`, backgroundPosition: estate.position }}>
+            <article className="estate-card" key={estate.title} style={{ backgroundImage: `url(${asset(estate.image)})`, backgroundPosition: estate.position }}>
               <div className="estate-shade" />
               <span className="estate-tag">{estate.tag}</span>
               <button className={`heart-button ${liked.has(estate.title) ? "liked" : ""}`} onClick={() => toggleLike(estate.title)} aria-label={`Save ${estate.title}`}>
