@@ -27,6 +27,7 @@ export function publicUser(authUser, profile) {
     username: profile?.username || fallbackName,
     display_name: profile?.display_name || fallbackName,
     avatar_color: profile?.avatar_color || "#525252",
+    role: profile?.role === "admin" ? "admin" : "user",
   };
 }
 
@@ -38,7 +39,7 @@ export async function loadCurrentUser() {
 
   const { data: profile, error: profileError } = await client
     .from("profiles")
-    .select("id, username, display_name, avatar_color")
+    .select("id, username, display_name, avatar_color, role")
     .eq("id", session.user.id)
     .single();
 

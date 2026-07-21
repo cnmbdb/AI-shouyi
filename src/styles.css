@@ -1153,6 +1153,30 @@ p, h1, h2, h3 { margin-top: 0; }
 .preview-heading { height: 34px; color: var(--muted-foreground); font-size: 10px; }
 .preview-heading [data-slot="badge"] { color: var(--foreground); }
 .preview-canvas { border-color: var(--border); box-shadow: none; }
+.admin-users-page { display: grid; gap: 14px; }
+.admin-user-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.admin-user-metrics [data-slot="card"] { min-height: 86px; }
+.admin-user-metrics [data-slot="card-header"] { align-content: center; }
+.admin-user-metrics [data-slot="card-title"] { font-size: 22px; font-variant-numeric: tabular-nums; }
+.admin-user-metrics [data-slot="card-action"] { color: var(--muted-foreground); }
+.admin-user-metrics [data-slot="card-action"] svg { width: 18px; height: 18px; }
+.admin-users-card { min-height: 520px; }
+.admin-users-card > [data-slot="card-header"] { grid-template-columns: minmax(0, 1fr) 280px; }
+.admin-users-card > [data-slot="card-header"] [data-slot="card-title"] { font-size: 13px; }
+.admin-users-card > [data-slot="card-header"] [data-slot="card-description"] { font-size: 10px; }
+.admin-user-search { width: 280px; }
+.admin-users-table-wrap { padding: 0; overflow-x: auto; }
+.admin-users-table-wrap table { min-width: 760px; white-space: nowrap; }
+.admin-users-table-wrap th { height: 34px; color: var(--muted-foreground); font-size: 10px; }
+.admin-users-table-wrap td { height: 58px; font-size: 10px; }
+.admin-user-identity { min-width: 250px; display: flex; align-items: center; gap: 9px; }
+.admin-user-identity > div { min-width: 0; display: grid; gap: 2px; }
+.admin-user-identity strong { max-width: 150px; overflow: hidden; color: var(--foreground); font-size: 11px; text-overflow: ellipsis; }
+.admin-user-identity small { max-width: 180px; overflow: hidden; color: var(--muted-foreground); font-size: 9px; text-overflow: ellipsis; }
+.admin-users-table-wrap [data-slot="select-trigger"] { min-width: 104px; }
+.admin-users-message { padding: 36px; color: var(--muted-foreground); text-align: center; }
+.admin-users-message[role="alert"] { color: var(--destructive); }
+.admin-users-card > [data-slot="card-footer"] { justify-content: space-between; color: var(--muted-foreground); font-size: 9px; }
 .console-shell .toast {
   color: var(--primary-foreground);
   background: var(--primary);
@@ -1194,6 +1218,9 @@ p, h1, h2, h3 { margin-top: 0; }
   .console-content { padding: 14px; }
   .activity-list { grid-template-columns: 1fr; }
   .field-row { grid-template-columns: 1fr; gap: 0; }
+  .admin-users-card > [data-slot="card-header"] { grid-template-columns: 1fr; }
+  .admin-users-card > [data-slot="card-header"] [data-slot="card-action"] { grid-column: 1; grid-row: auto; justify-self: stretch; margin-top: 8px; }
+  .admin-user-search { width: 100%; }
 }
 
 @media (max-width: 520px) {
@@ -1213,6 +1240,8 @@ p, h1, h2, h3 { margin-top: 0; }
   .finance-summary article { min-height: 92px; padding: 16px; }
   .transaction-list article { grid-template-columns: 30px 1fr auto; }
   .settings-form-panel { padding: 14px; }
+  .admin-user-metrics { grid-template-columns: 1fr; gap: 10px; }
+  .admin-users-card > [data-slot="card-footer"] { align-items: flex-start; flex-direction: column; gap: 5px; }
 }
 
 @theme inline {

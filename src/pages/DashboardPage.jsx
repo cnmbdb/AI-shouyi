@@ -23,11 +23,13 @@ import {
   SlidersHorizontalIcon as SlidersHorizontal,
   TrendingDownIcon as TrendDown,
   TrendingUpIcon as TrendUp,
+  UsersIcon as Users,
   WalletIcon as Wallet,
   XIcon as X,
 } from "lucide-react";
 import { ThemeToggle } from "../components/ThemeProvider.jsx";
 import { getPlatformOverview, getSiteSettings, saveSiteSetting } from "../lib/platformData.js";
+import { UserManagementPage } from "./UserManagementPage.jsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,18 +41,21 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
-const navGroups = [
-  {
-    label: "资产运营",
-    items: [
-      { path: "/console", label: "总览", icon: CirclesFour },
-      { path: "/console/devices", label: "算力设备", icon: Cpu },
-      { path: "/console/orders", label: "租用订单", icon: Receipt },
-      { path: "/console/earnings", label: "托管收益", icon: ChartLineUp },
-      { path: "/console/transactions", label: "资金明细", icon: Wallet },
-    ],
-  },
+const assetNavGroup = {
+  label: "资产运营",
+  items: [
+    { path: "/console", label: "总览", icon: CirclesFour },
+    { path: "/console/devices", label: "算力设备", icon: Cpu },
+    { path: "/console/orders", label: "租用订单", icon: Receipt },
+    { path: "/console/earnings", label: "托管收益", icon: ChartLineUp },
+    { path: "/console/transactions", label: "资金明细", icon: Wallet },
+  ],
+};
+
+const adminNavGroups = [
+  { label: "平台管理", items: [{ path: "/console/users", label: "用户管理", icon: Users }] },
   {
     label: "站点设置",
     items: [
@@ -69,6 +74,7 @@ const pageMeta = {
   "/console/orders": ["租用订单", "跟踪设备租用订单、交付和到期时间"],
   "/console/earnings": ["托管收益", "分析每台设备的产出与结算趋势"],
   "/console/transactions": ["资金明细", "查看全部入账、结算与提现记录"],
+  "/console/users": ["用户管理", "查看平台账号、验证状态并配置用户角色"],
 };
 
 const settingMeta = {
@@ -319,6 +325,8 @@ function SettingsPage({ section, onNotice }) {
 
 export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, notice }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isAdmin = user.role === "admin";
+  const navGroups = isAdmin ? [assetNavGroup, ...adminNavGroups] : [assetNavGroup];
   const overview = useQuery({ queryKey: ["platform-overview"], queryFn: getPlatformOverview, staleTime: 60_000 });
   const data = overview.data ? {
     ...fallbackOverview,
@@ -328,15 +336,15 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
     devices: overview.data.devices?.length ? overview.data.devices : fallbackOverview.devices,
     activity: overview.data.activity?.length ? overview.data.activity : fallbackOverview.activity,
   } : fallbackOverview;
-  const settingSection = pathname.startsWith("/console/settings/") ? pathname.split("/").pop() : null;
+  const settingSection = isAdmin && pathname.startsWith("/console/settings/") ? pathname.split("/").pop() : null;
   const [title, description] = pageMeta[pathname] ?? (settingSection ? [settingMeta[settingSection]?.title, settingMeta[settingSection]?.description] : ["控制台", ""]);
 
   return (
     <div className="console-shell">
-      <aside className={`console-sidebar ${sidebarOpen ? "open" : ""}`}>
+      <aside className={cn("console-sidebar", sidebarOpen && "open")}>
         <div className="console-brand" onClick={() => onNavigate("/")}><span className="brand-mark"><i /><i /><i /><i /></span><strong>Aether Lane</strong></div>
         <Button className="console-sidebar-close" variant="ghost" size="icon-sm" onClick={() => setSidebarOpen(false)} aria-label="关闭菜单"><X /></Button>
-        <nav>{navGroups.map((group) => <section key={group.label}><h2>{group.label}</h2>{group.items.map(({ path, label, icon: Icon }) => <Button variant="ghost" size="sm" className={pathname === path ? "active" : ""} key={path} onClick={() => { onNavigate(path); setSidebarOpen(false); }}><Icon data-icon="inline-start" /><span>{label}</span></Button>)}</section>)}</nav>
+        <nav>{navGroups.map((group) => <section key={group.label}><h2>{group.label}</h2>{group.items.map(({ path, label, icon: Icon }) => <Button variant="ghost" size="sm" className={cn(pathname === path && "active")} key={path} onClick={() => { onNavigate(path); setSidebarOpen(false); }}><Icon data-icon="inline-start" /><span>{label}</span></Button>)}</section>)}</nav>
         <div className="console-help"><Gear /><div><strong>需要帮助？</strong><span>工单平均 10 分钟响应</span></div><Button variant="outline" size="xs" onClick={() => onNotice("已为你打开在线支持工单")}>联系支持</Button></div>
       </aside>
 
@@ -348,7 +356,7 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
             <ThemeToggle />
             <Button className="notification-button" variant="outline" size="icon-sm" aria-label="通知"><Bell /><i /></Button>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild><Button className="console-profile" variant="ghost"><Avatar size="sm"><AvatarFallback>{user.username.slice(0, 1).toUpperCase()}</AvatarFallback></Avatar><div><strong>{user.username}</strong><small>算力资产用户</small></div><CaretDown data-icon="inline-end" /></Button></DropdownMenuTrigger>
+              <DropdownMenuTrigger asChild><Button className="console-profile" variant="ghost"><Avatar size="sm"><AvatarFallback>{user.username.slice(0, 1).toUpperCase()}</AvatarFallback></Avatar><div><strong>{user.username}</strong><small>{isAdmin ? "管理员" : "普通用户"}</small></div><CaretDown data-icon="inline-end" /></Button></DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44"><DropdownMenuGroup><DropdownMenuItem onSelect={() => onNavigate("/")}><House />返回首页</DropdownMenuItem></DropdownMenuGroup><DropdownMenuSeparator /><DropdownMenuGroup><DropdownMenuItem variant="destructive" onSelect={onLogout}><SignOut />退出登录</DropdownMenuItem></DropdownMenuGroup></DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -360,6 +368,7 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
           {pathname === "/console/orders" ? <ListPage kind="orders" data={data} onNavigate={onNavigate} /> : null}
           {pathname === "/console/earnings" ? <FinancePage kind="earnings" /> : null}
           {pathname === "/console/transactions" ? <FinancePage kind="transactions" /> : null}
+          {pathname === "/console/users" && isAdmin ? <UserManagementPage currentUser={user} onNotice={onNotice} /> : null}
           {settingSection ? <SettingsPage section={settingSection} onNotice={onNotice} /> : null}
         </div>
       </main>

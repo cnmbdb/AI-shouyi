@@ -26,6 +26,7 @@ export function App() {
 
   const isConsole = pathname.startsWith("/console");
   const isAuth = pathname.startsWith("/auth");
+  const isAdminPath = pathname === "/console/users" || pathname.startsWith("/console/settings/");
   const page = pathname === "/estates" ? "estates" : pathname === "/blog" ? "blog" : "home";
 
   useEffect(() => {
@@ -44,10 +45,16 @@ export function App() {
   }, [notice]);
 
   useEffect(() => {
-    if (isConsole && session.isSuccess && !session.data.user) {
+    if (!isConsole || !session.isSuccess) return;
+    if (!session.data.user) {
       router.navigate({ to: "/auth", search: { next: pathname }, replace: true });
+      return;
     }
-  }, [isConsole, pathname, router, session.data, session.isSuccess]);
+    if (isAdminPath && session.data.user.role !== "admin") {
+      setNotice("该页面仅管理员可访问");
+      router.navigate({ to: "/console", replace: true });
+    }
+  }, [isAdminPath, isConsole, pathname, router, session.data, session.isSuccess]);
 
   const navigate = (target) => {
     const to = sitePath[target] ?? target;
