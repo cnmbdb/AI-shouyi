@@ -75,6 +75,8 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate }) {
       if (mode === "register") {
         if (!username.trim() || !email.trim() || !password) throw new Error("请填写用户名、邮箱和密码");
         if (username.trim().length < 2) throw new Error("用户名至少需要 2 个字符");
+        if (username.trim().length > 32) throw new Error("用户名最多 32 个字符");
+        if (/[\s@/]/.test(username.trim())) throw new Error("用户名不能包含空格、@ 或 /");
         if (!/^\S+@\S+\.\S+$/.test(email.trim())) throw new Error("请输入有效的邮箱地址");
         if (password.length < 6) throw new Error("密码至少需要 6 个字符");
         const data = await registerAccount({ username, email, password });
@@ -101,7 +103,9 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate }) {
         changeMode("login");
       }
     } catch (requestError) {
-      setError(requestError.message || "操作失败，请稍后重试");
+      setError(typeof requestError?.message === "string" && requestError.message.trim()
+        ? requestError.message
+        : "操作失败，请稍后重试");
     } finally {
       setSubmitting(false);
     }
@@ -168,7 +172,7 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate }) {
                 {mode === "register" ? (
                   <Field>
                     <FieldLabel htmlFor="auth-username">用户名</FieldLabel>
-                    <InputGroup><InputGroupAddon><UserIcon /></InputGroupAddon><InputGroupInput id="auth-username" autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} placeholder="2–32 个字符，不含空格或 @" /></InputGroup>
+                    <InputGroup><InputGroupAddon><UserIcon /></InputGroupAddon><InputGroupInput id="auth-username" autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} placeholder="例如 txsw，请勿填写邮箱" /></InputGroup>
                   </Field>
                 ) : null}
 
