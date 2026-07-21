@@ -5,11 +5,16 @@ const authErrorMessages = {
   "Invalid login credentials": "用户名、邮箱或密码不正确",
   "User already registered": "该邮箱已经注册",
   "Password should be at least 6 characters": "密码至少需要 6 个字符",
+  "email rate limit exceeded": "验证邮件发送频率已达上限，请稍后再试",
+  "Email address not authorized": "当前测试邮件服务仅允许项目成员邮箱，请配置自定义 SMTP 后再开放注册",
+  "Email address invalid": "请输入可接收邮件的有效邮箱地址",
 };
 
 function readableAuthError(error, fallback = "认证操作失败") {
   if (!error) return fallback;
-  return authErrorMessages[error.message] ?? error.message ?? fallback;
+  const message = error.message ?? "";
+  const translated = Object.entries(authErrorMessages).find(([source]) => message.toLowerCase().includes(source.toLowerCase()))?.[1];
+  return translated ?? message ?? fallback;
 }
 
 export function publicUser(authUser, profile) {
