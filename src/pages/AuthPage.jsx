@@ -44,6 +44,7 @@ export function AuthPage({ user, onSuccess, onNavigate }) {
   if (user) {
     return (
       <main className="auth-page">
+        <div className="auth-backdrop" aria-hidden="true" />
         <section className="auth-return">
           <CheckCircle2Icon />
           <h1>你已登录</h1>
@@ -56,6 +57,7 @@ export function AuthPage({ user, onSuccess, onNavigate }) {
 
   return (
     <main className="auth-page">
+      <div className="auth-backdrop" aria-hidden="true" />
       <header className="auth-header">
         <Logo onNavigate={onNavigate} />
         <div className="auth-header-actions"><ThemeToggle /><Button className="auth-back" variant="ghost" size="sm" onClick={() => onNavigate("home")}><ArrowLeftIcon data-icon="inline-start" />返回首页</Button></div>

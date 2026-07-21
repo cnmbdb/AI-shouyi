@@ -846,6 +846,24 @@ p, h1, h2, h3 { margin-top: 0; }
   overflow: hidden;
   background: var(--background);
 }
+.auth-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, color-mix(in oklab, var(--background) 78%, transparent) 0%, color-mix(in oklab, var(--background) 54%, transparent) 52%, color-mix(in oklab, var(--background) 72%, transparent) 100%),
+    url("/images/hero-galaxy-home.png") center 46% / cover no-repeat;
+  filter: grayscale(1) contrast(.92);
+}
+.auth-backdrop::after {
+  background: linear-gradient(0deg, color-mix(in oklab, var(--background) 88%, transparent), transparent 58%);
+}
+.dark .auth-backdrop {
+  background:
+    linear-gradient(90deg, color-mix(in oklab, var(--background) 82%, transparent) 0%, color-mix(in oklab, var(--background) 64%, transparent) 52%, color-mix(in oklab, var(--background) 78%, transparent) 100%),
+    url("/images/hero-galaxy-home.png") center 46% / cover no-repeat;
+  filter: grayscale(1) contrast(1.08);
+}
 .auth-header {
   top: 24px;
   left: max(7vw, 48px);
@@ -892,7 +910,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .auth-capabilities svg { width: 15px; height: 15px; color: var(--foreground); }
 .auth-panel {
   width: 100%;
-  padding: 0;
+  padding: 12px 0 0;
   color: var(--card-foreground);
   background: var(--card);
   border: 0;
