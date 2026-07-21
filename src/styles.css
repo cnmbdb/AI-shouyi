@@ -928,10 +928,22 @@ p, h1, h2, h3 { margin-top: 0; }
 .auth-footer {
   min-height: 52px;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 2px;
   color: var(--muted-foreground);
   font-size: 12px;
 }
+.auth-email-state {
+  min-height: 116px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+.auth-email-state > svg { width: 24px; height: 24px; color: var(--foreground); }
+.auth-email-state p { max-width: 260px; margin: 0; font-size: 12px; line-height: 1.6; }
 .auth-return { color: var(--foreground); }
 .auth-return > svg { width: 40px; height: 40px; color: var(--foreground); }
 .auth-return h1 { margin: 16px 0 6px; font-size: 24px; }

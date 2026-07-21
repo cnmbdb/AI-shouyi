@@ -12,6 +12,7 @@ import {
   SquaresFour,
 } from "@phosphor-icons/react";
 import { blogFallback } from "../data/blogFallback.js";
+import { getBlogPosts, subscribeNewsletter } from "../lib/platformData.js";
 
 const asset = (path) => path?.startsWith("/")
   ? `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`
@@ -95,18 +96,14 @@ export function BlogPage({ onNotice }) {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    fetch("/api/blog/posts", { signal: controller.signal })
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Posts request failed")))
-      .then((payload) => {
-        if (payload.posts?.length) setPosts(payload.posts);
+    let active = true;
+    getBlogPosts()
+      .then((remotePosts) => {
+        if (active && remotePosts.length) setPosts(remotePosts);
       })
-      .catch((error) => {
-        if (error.name !== "AbortError") console.warn("Using local blog fallback data.");
-      });
+      .catch(() => console.warn("Using local blog fallback data."));
 
-    return () => controller.abort();
+    return () => { active = false; };
   }, []);
 
   const featured = posts.find((post) => post.featured) ?? posts[0];
@@ -128,13 +125,7 @@ export function BlogPage({ onNotice }) {
 
     setSubmitting(true);
     try {
-      const response = await fetch("/api/blog/newsletter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: normalizedEmail }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Subscription failed");
+      const result = await subscribeNewsletter(normalizedEmail);
       setEmail("");
       onNotice(result.alreadySubscribed ? "You're already on the journal list." : "Welcome to the Aether Lane journal.");
     } catch {

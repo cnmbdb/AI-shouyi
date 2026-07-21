@@ -27,6 +27,7 @@ import {
   XIcon as X,
 } from "lucide-react";
 import { ThemeToggle } from "../components/ThemeProvider.jsx";
+import { getPlatformOverview, getSiteSettings, saveSiteSetting } from "../lib/platformData.js";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -106,13 +107,6 @@ const fallbackOverview = {
     { title: "7 月第 3 周收益结算", time: "07-21 18:30", value: "+¥2,036.40" },
   ],
 };
-
-async function requestJson(url, options) {
-  const response = await fetch(url, options);
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.error || "请求失败");
-  return result;
-}
 
 function Status({ value }) {
   const active = value === "运行中" || value === "已完成" || value === "已入账" || value === "已结算";
@@ -201,7 +195,7 @@ const orderRows = [
 
 function ListPage({ kind, data, onNavigate }) {
   const isDevices = kind === "devices";
-  const rows = isDevices ? data.devices : orderRows;
+  const rows = isDevices ? data.devices : data.orders?.length ? data.orders : orderRows;
   return (
     <section className="console-panel list-page-panel">
       <div className="list-toolbar">
@@ -248,7 +242,7 @@ function TextField({ label, value, onChange, placeholder, multiline = false }) {
 
 function SettingsPage({ section, onNotice }) {
   const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: ["site-settings"], queryFn: () => requestJson("/api/site-settings"), staleTime: 30_000 });
+  const query = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings, staleTime: 30_000 });
   const [settings, setSettings] = useState(defaultSettings);
   const meta = settingMeta[section] ?? settingMeta.navigation;
   const Icon = meta.icon;
@@ -258,7 +252,7 @@ function SettingsPage({ section, onNotice }) {
   }, [query.data]);
 
   const mutation = useMutation({
-    mutationFn: (payload) => requestJson("/api/site-settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ section, value: payload }) }),
+    mutationFn: (payload) => saveSiteSetting(section, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["site-settings"] });
       queryClient.invalidateQueries({ queryKey: ["public-settings"] });
@@ -325,11 +319,14 @@ function SettingsPage({ section, onNotice }) {
 
 export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, notice }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const overview = useQuery({ queryKey: ["platform-overview"], queryFn: () => requestJson("/api/platform/overview"), staleTime: 60_000 });
+  const overview = useQuery({ queryKey: ["platform-overview"], queryFn: getPlatformOverview, staleTime: 60_000 });
   const data = overview.data ? {
     ...fallbackOverview,
     ...overview.data,
     metrics: fallbackOverview.metrics.map((metric, index) => ({ ...metric, ...overview.data.metrics?.[index] })),
+    earnings: overview.data.earnings?.length ? overview.data.earnings : fallbackOverview.earnings,
+    devices: overview.data.devices?.length ? overview.data.devices : fallbackOverview.devices,
+    activity: overview.data.activity?.length ? overview.data.activity : fallbackOverview.activity,
   } : fallbackOverview;
   const settingSection = pathname.startsWith("/console/settings/") ? pathname.split("/").pop() : null;
   const [title, description] = pageMeta[pathname] ?? (settingSection ? [settingMeta[settingSection]?.title, settingMeta[settingSection]?.description] : ["控制台", ""]);

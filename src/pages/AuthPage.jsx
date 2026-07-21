@@ -1,59 +1,129 @@
-import { useState } from "react";
-import { ArrowLeftIcon, ArrowRightIcon, CheckCircle2Icon, CpuIcon, EyeIcon, EyeOffIcon, LockKeyholeIcon, ServerIcon, UserIcon, WalletCardsIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  CheckCircle2Icon,
+  CpuIcon,
+  EyeIcon,
+  EyeOffIcon,
+  LockKeyholeIcon,
+  MailIcon,
+  ServerIcon,
+  UserIcon,
+  WalletCardsIcon,
+} from "lucide-react";
 import { Logo } from "../components/SiteChrome.jsx";
 import { ThemeToggle } from "../components/ThemeProvider.jsx";
+import {
+  loadCurrentUser,
+  loginAccount,
+  logoutAccount,
+  registerAccount,
+  sendPasswordReset,
+  updatePassword,
+} from "../lib/auth.js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export function AuthPage({ user, onSuccess, onNavigate }) {
-  const [mode, setMode] = useState("login");
+const modeCopy = {
+  login: ["欢迎回来", "使用用户名或邮箱管理你的算力资产"],
+  register: ["创建账号", "验证邮箱后即可登录并使用控制台"],
+  forgot: ["找回密码", "输入注册邮箱，我们会发送重置链接"],
+  update: ["设置新密码", "请输入新的登录密码"],
+  verify: ["检查你的邮箱", "验证链接已发送，完成验证后即可登录"],
+  resetSent: ["邮件已发送", "请打开邮件中的链接设置新密码"],
+};
+
+export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate }) {
+  const recoveryRoute = pathname === "/auth/update-password";
+  const [mode, setMode] = useState(recoveryRoute ? "update" : "login");
+  const [identifier, setIdentifier] = useState("");
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [visible, setVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (recoveryRoute) setMode("update");
+  }, [recoveryRoute]);
+
+  const changeMode = (value) => {
+    setMode(value);
+    setError("");
+    setPassword("");
+    setConfirmPassword("");
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     setError("");
-    if (!username.trim() || !password) {
-      setError("请输入用户名和密码");
-      return;
-    }
-
     setSubmitting(true);
+
     try {
-      const response = await fetch(`/api/auth/${mode}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim(), password }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "操作失败");
-      onSuccess(result.user);
+      if (mode === "login") {
+        if (!identifier.trim() || !password) throw new Error("请输入用户名或邮箱和密码");
+        const result = await loginAccount({ identifier, password });
+        onSuccess(result.user);
+      }
+
+      if (mode === "register") {
+        if (!username.trim() || !email.trim() || !password) throw new Error("请填写用户名、邮箱和密码");
+        if (username.trim().length < 2) throw new Error("用户名至少需要 2 个字符");
+        if (!/^\S+@\S+\.\S+$/.test(email.trim())) throw new Error("请输入有效的邮箱地址");
+        if (password.length < 6) throw new Error("密码至少需要 6 个字符");
+        const data = await registerAccount({ username, email, password });
+        if (data.session) {
+          const result = await loadCurrentUser();
+          onSuccess(result.user);
+        } else {
+          changeMode("verify");
+        }
+      }
+
+      if (mode === "forgot") {
+        if (!/^\S+@\S+\.\S+$/.test(email.trim())) throw new Error("请输入注册时使用的邮箱");
+        await sendPasswordReset(email);
+        changeMode("resetSent");
+      }
+
+      if (mode === "update") {
+        if (password.length < 6) throw new Error("新密码至少需要 6 个字符");
+        if (password !== confirmPassword) throw new Error("两次输入的密码不一致");
+        await updatePassword(password);
+        await logoutAccount();
+        onNavigate("/auth");
+        changeMode("login");
+      }
     } catch (requestError) {
-      setError(requestError.message);
+      setError(requestError.message || "操作失败，请稍后重试");
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (user) {
+  if (user && mode !== "update") {
     return (
       <main className="auth-page">
         <div className="auth-backdrop" aria-hidden="true" />
         <section className="auth-return">
           <CheckCircle2Icon />
-          <h1>你已登录</h1>
+          <h1>{new URLSearchParams(window.location.search).get("verified") === "1" ? "邮箱验证完成" : "你已登录"}</h1>
           <p>当前账号：{user.username}</p>
           <Button onClick={() => onNavigate("home")}>返回首页 <ArrowRightIcon data-icon="inline-end" /></Button>
         </section>
       </main>
     );
   }
+
+  const [title, description] = modeCopy[mode] ?? modeCopy.login;
+  const showTabs = mode === "login" || mode === "register";
+  const showForm = ["login", "register", "forgot", "update"].includes(mode);
 
   return (
     <main className="auth-page">
@@ -73,31 +143,73 @@ export function AuthPage({ user, onSuccess, onNavigate }) {
         </div>
       </section>
 
-      <Card className="auth-panel" aria-label={mode === "login" ? "登录" : "注册"}>
+      <Card className="auth-panel" aria-label={title}>
         <CardHeader>
-          <Tabs value={mode} onValueChange={(value) => { setMode(value); setError(""); }}>
-            <TabsList className="auth-tabs"><TabsTrigger value="login">登录</TabsTrigger><TabsTrigger value="register">注册</TabsTrigger></TabsList>
-          </Tabs>
-          <CardTitle>{mode === "login" ? "欢迎回来" : "创建账号"}</CardTitle>
-          <CardDescription>{mode === "login" ? "登录后继续管理你的算力资产" : "无需验证，注册后即可登录"}</CardDescription>
+          {showTabs ? (
+            <Tabs value={mode} onValueChange={changeMode}>
+              <TabsList className="auth-tabs"><TabsTrigger value="login">登录</TabsTrigger><TabsTrigger value="register">注册</TabsTrigger></TabsList>
+            </Tabs>
+          ) : null}
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
         </CardHeader>
+
         <CardContent>
-          <form onSubmit={submit}>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="auth-username">用户名</FieldLabel>
-                <InputGroup><InputGroupAddon><UserIcon /></InputGroupAddon><InputGroupInput id="auth-username" autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} placeholder="请输入用户名" /></InputGroup>
-              </Field>
-              <Field data-invalid={Boolean(error)}>
-                <FieldLabel htmlFor="auth-password">密码</FieldLabel>
-                <InputGroup><InputGroupAddon><LockKeyholeIcon /></InputGroupAddon><InputGroupInput id="auth-password" type={visible ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="请输入密码" aria-invalid={Boolean(error)} /><InputGroupAddon align="inline-end"><InputGroupButton size="icon-xs" onClick={() => setVisible((value) => !value)} aria-label={visible ? "隐藏密码" : "显示密码"}>{visible ? <EyeOffIcon /> : <EyeIcon />}</InputGroupButton></InputGroupAddon></InputGroup>
+          {showForm ? (
+            <form onSubmit={submit}>
+              <FieldGroup>
+                {mode === "login" ? (
+                  <Field>
+                    <FieldLabel htmlFor="auth-identifier">用户名或邮箱</FieldLabel>
+                    <InputGroup><InputGroupAddon><UserIcon /></InputGroupAddon><InputGroupInput id="auth-identifier" autoComplete="username" value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="请输入用户名或邮箱" /></InputGroup>
+                  </Field>
+                ) : null}
+
+                {mode === "register" ? (
+                  <Field>
+                    <FieldLabel htmlFor="auth-username">用户名</FieldLabel>
+                    <InputGroup><InputGroupAddon><UserIcon /></InputGroupAddon><InputGroupInput id="auth-username" autoComplete="username" value={username} onChange={(event) => setUsername(event.target.value)} placeholder="2–32 个字符，不含空格或 @" /></InputGroup>
+                  </Field>
+                ) : null}
+
+                {mode === "register" || mode === "forgot" ? (
+                  <Field>
+                    <FieldLabel htmlFor="auth-email">邮箱</FieldLabel>
+                    <InputGroup><InputGroupAddon><MailIcon /></InputGroupAddon><InputGroupInput id="auth-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" /></InputGroup>
+                  </Field>
+                ) : null}
+
+                {mode === "login" || mode === "register" || mode === "update" ? (
+                  <Field data-invalid={Boolean(error)}>
+                    <FieldLabel htmlFor="auth-password">{mode === "update" ? "新密码" : "密码"}</FieldLabel>
+                    <InputGroup><InputGroupAddon><LockKeyholeIcon /></InputGroupAddon><InputGroupInput id="auth-password" type={visible ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="至少 6 个字符" aria-invalid={Boolean(error)} /><InputGroupAddon align="inline-end"><InputGroupButton size="icon-xs" type="button" onClick={() => setVisible((value) => !value)} aria-label={visible ? "隐藏密码" : "显示密码"}>{visible ? <EyeOffIcon /> : <EyeIcon />}</InputGroupButton></InputGroupAddon></InputGroup>
+                  </Field>
+                ) : null}
+
+                {mode === "update" ? (
+                  <Field data-invalid={Boolean(error)}>
+                    <FieldLabel htmlFor="auth-confirm-password">确认新密码</FieldLabel>
+                    <InputGroup><InputGroupAddon><LockKeyholeIcon /></InputGroupAddon><InputGroupInput id="auth-confirm-password" type={visible ? "text" : "password"} autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="再次输入新密码" aria-invalid={Boolean(error)} /></InputGroup>
+                  </Field>
+                ) : null}
+
                 {error ? <FieldError>{error}</FieldError> : null}
-              </Field>
-              <Button className="auth-submit" type="submit" disabled={submitting}>{submitting ? "正在处理..." : mode === "login" ? "登录" : "注册并登录"}<ArrowRightIcon data-icon="inline-end" /></Button>
-            </FieldGroup>
-          </form>
+                <Button className="auth-submit" type="submit" disabled={submitting}>
+                  {submitting ? "正在处理..." : mode === "login" ? "登录" : mode === "register" ? "注册并发送验证邮件" : mode === "forgot" ? "发送重置邮件" : "更新密码"}
+                  <ArrowRightIcon data-icon="inline-end" />
+                </Button>
+              </FieldGroup>
+            </form>
+          ) : (
+            <div className="auth-email-state"><MailIcon /><p>邮件可能需要几分钟送达，请同时检查垃圾邮件文件夹。</p></div>
+          )}
         </CardContent>
-        <CardFooter className="auth-footer"><span>{mode === "login" ? "还没有账号？" : "已有账号？"}</span><Button variant="link" size="xs" type="button" onClick={() => setMode(mode === "login" ? "register" : "login")}>{mode === "login" ? "立即注册" : "直接登录"}</Button></CardFooter>
+
+        <CardFooter className="auth-footer">
+          {mode === "login" ? <><Button variant="link" size="xs" type="button" onClick={() => changeMode("forgot")}>忘记密码？</Button><span>还没有账号？</span><Button variant="link" size="xs" type="button" onClick={() => changeMode("register")}>立即注册</Button></> : null}
+          {mode === "register" ? <><span>已有账号？</span><Button variant="link" size="xs" type="button" onClick={() => changeMode("login")}>直接登录</Button></> : null}
+          {mode === "forgot" || mode === "verify" || mode === "resetSent" ? <Button variant="link" size="xs" type="button" onClick={() => changeMode("login")}>返回登录</Button> : null}
+        </CardFooter>
       </Card>
     </main>
   );
