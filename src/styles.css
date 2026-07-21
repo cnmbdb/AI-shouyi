@@ -248,6 +248,94 @@ p, h1, h2, h3 { margin-top: 0; }
 .consult-button svg { width: 11px; height: 11px; }
 .custom-listings { height: 38px; padding: 0 24px; border-radius: 21px; background: transparent; color: #744cb0; border: 1px solid rgba(111,75,178,.2); font-size: 8px; }
 
+.blog-page { background: #fdfdff; }
+.blog-hero { height: 438px; position: relative; overflow: visible; color: white; background: #5068d6 url("../images/estates-hero.png") center 52% / cover no-repeat; }
+.blog-hero-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(33,49,141,.62) 0%, rgba(44,48,143,.2) 48%, rgba(28,29,96,.05) 74%), linear-gradient(180deg, rgba(45,58,160,.12), rgba(42,34,128,.18)); }
+.blog-hero-content { height: 100%; position: relative; z-index: 2; }
+.blog-intro { position: absolute; top: 91px; left: 0; text-shadow: 0 4px 22px rgba(35,31,114,.2); }
+.blog-intro h1 { margin: 0 0 9px; font-size: 51px; line-height: 1.05; letter-spacing: -2.2px; font-weight: 500; }
+.blog-intro p { margin: 0; font-size: 11px; line-height: 1.55; color: rgba(255,255,255,.93); }
+
+.featured-story { position: absolute; left: 0; top: 263px; width: 444px; height: 187px; display: grid; grid-template-columns: 194px 1fr; grid-template-rows: 1fr 38px; overflow: hidden; border-radius: 15px; background: rgba(71,65,174,.55); border: 1px solid rgba(255,255,255,.58); backdrop-filter: blur(16px); box-shadow: 0 12px 27px rgba(28,27,109,.3); }
+.featured-media { grid-row: 1 / -1; position: relative; min-width: 0; overflow: hidden; }
+.featured-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(59,42,159,.04), rgba(73,59,168,.22)); }
+.featured-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.featured-label, .blog-pill { position: absolute; z-index: 2; top: 12px; left: 13px; padding: 5px 12px; border-radius: 14px; color: white; background: rgba(116,67,207,.74); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(7px); font-size: 9px; }
+.featured-copy { padding: 16px 18px 0; min-width: 0; }
+.featured-category { display: block; font-size: 8px; font-weight: 600; margin-bottom: 10px; }
+.featured-copy h2 { margin: 0 0 8px; max-width: 210px; font-size: 16px; line-height: 1.18; letter-spacing: -.3px; font-weight: 500; }
+.featured-copy p { margin: 0; max-width: 215px; font-size: 8px; line-height: 1.55; color: rgba(255,255,255,.92); }
+.featured-story .blog-meta { grid-column: 1 / -1; padding: 0 154px 0 16px; align-self: center; }
+.featured-button { position: absolute; right: 13px; bottom: 7px; height: 30px; padding: 3px 5px 3px 16px; display: flex; gap: 16px; align-items: center; border-radius: 18px; color: #5744ad; background: white; font-size: 8px; font-weight: 600; box-shadow: 0 5px 14px rgba(27,28,104,.15); }
+.featured-button span { width: 21px; height: 21px; display: grid; place-items: center; border-radius: 50%; color: #6e5acb; background: #f1efff; }
+.featured-button svg { width: 10px; }
+
+.blog-content { padding-top: 30px; }
+.category-tabs { height: 36px; display: grid; grid-template-columns: .75fr .96fr .96fr .96fr 1.18fr .9fr; gap: 14px; }
+.category-tabs button { min-width: 0; display: flex; align-items: center; justify-content: center; gap: 12px; border-radius: 19px; background: white; color: #303a74; border: 1px solid rgba(91,77,183,.18); box-shadow: 0 5px 16px rgba(59,51,142,.035); font-size: 9px; transition: .2s ease; }
+.category-tabs button svg { width: 17px; height: 17px; color: #675cc0; }
+.category-tabs button:hover { transform: translateY(-1px); border-color: rgba(104,69,199,.34); }
+.category-tabs button.active { color: white; border-color: #7947d0; background: linear-gradient(90deg, #6c45d1, #8d47d5); box-shadow: 0 8px 18px rgba(105,66,203,.18); }
+.category-tabs button.active svg { color: white; }
+
+.blog-grid { min-height: 276px; margin-top: 16px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.blog-card { height: 276px; min-width: 0; overflow: hidden; position: relative; border-radius: 11px; background: white; border: 1px solid rgba(77,73,161,.1); box-shadow: 0 8px 24px rgba(52,48,129,.08); }
+.blog-card-media { height: 136px; position: relative; overflow: hidden; background: #505ac3; }
+.blog-card-media img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.blog-card-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(53,39,151,.08), rgba(50,45,142,.12)); }
+.blog-card .blog-pill { top: 9px; left: 9px; padding: 4px 10px; font-size: 7px; }
+.blog-card-body { height: 140px; padding: 10px 14px 10px; position: relative; }
+.blog-card-body h2 { margin: 0 0 6px; min-height: 35px; font-size: 14px; line-height: 1.18; letter-spacing: -.25px; font-weight: 500; }
+.blog-card-body > p { margin: 0; min-height: 42px; max-width: 205px; font-size: 8px; line-height: 1.45; color: #4c577d; }
+.blog-meta { display: flex; align-items: center; gap: 11px; color: #4f587b; font-size: 6.8px; white-space: nowrap; }
+.blog-meta.light { color: rgba(255,255,255,.94); }
+.blog-card .blog-meta { position: absolute; left: 13px; right: 39px; bottom: 12px; gap: 8px; }
+.blog-author { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.blog-author img, .blog-author-mark { width: 19px; height: 19px; flex: 0 0 auto; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,.85); box-shadow: 0 2px 5px rgba(31,31,102,.12); }
+.blog-author-mark { display: grid; place-items: center; color: white; background: #6655c8; }
+.blog-author-mark svg { width: 10px; height: 10px; }
+.blog-meta > span:last-child { display: flex; align-items: center; gap: 3px; }
+.blog-meta svg { width: 8px; height: 8px; }
+.blog-card-arrow { position: absolute; right: 10px; bottom: 9px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: #6c57ca; background: white; border: 1px solid rgba(102,82,199,.22); }
+.blog-card-arrow svg { width: 10px; }
+.blog-empty { grid-column: 1 / -1; height: 276px; display: grid; place-items: center; border: 1px dashed rgba(96,74,187,.24); border-radius: 12px; color: #68628c; background: white; font-size: 11px; }
+
+.editors-section { margin-top: 18px; }
+.editors-heading { height: 44px; display: flex; align-items: flex-start; justify-content: space-between; }
+.editors-heading h2 { margin: 0 0 4px; font-size: 16px; letter-spacing: -.3px; font-weight: 500; }
+.editors-heading p { margin: 0; font-size: 8px; color: #666c8f; }
+.editors-heading button { margin-top: 7px; padding: 0; display: flex; align-items: center; gap: 8px; color: #5e4dbd; background: transparent; font-size: 7px; }
+.editors-heading button svg { width: 11px; height: 11px; border: 1px solid rgba(94,77,189,.22); border-radius: 50%; padding: 2px; box-sizing: content-box; }
+.editors-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.editors-card { height: 132px; position: relative; overflow: hidden; border-radius: 10px; color: white; background: #4e54ae; box-shadow: 0 7px 20px rgba(45,42,121,.09); }
+.editors-card > img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.editors-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(39,34,137,.02) 20%, rgba(28,31,116,.92) 100%); }
+.editors-card .blog-pill { top: 9px; left: 10px; padding: 4px 10px; font-size: 7px; }
+.editors-copy { position: absolute; left: 13px; right: 37px; bottom: 11px; }
+.editors-copy h3 { margin: 0 0 10px; font-size: 13px; line-height: 1.18; letter-spacing: -.2px; font-weight: 500; }
+.editors-copy > div { display: flex; gap: 15px; color: rgba(255,255,255,.9); font-size: 6.5px; }
+.editors-card > button { position: absolute; right: 10px; bottom: 9px; width: 25px; height: 25px; display: grid; place-items: center; border-radius: 50%; color: white; background: rgba(46,53,142,.45); border: 1px solid rgba(255,255,255,.78); }
+.editors-card > button svg { width: 11px; }
+
+.journal-panel { height: 70px; margin-top: 14px; padding: 0 25px; display: grid; grid-template-columns: 50px 1fr 1.85fr; align-items: center; border-radius: 11px; border: 1px solid rgba(104,79,190,.18); background: linear-gradient(90deg, #faf9ff, #f7f5ff); }
+.journal-icon { width: 34px; height: 34px; color: #704fcd; }
+.journal-panel h2 { margin: 0 0 4px; font-size: 17px; letter-spacing: -.4px; font-weight: 500; }
+.journal-panel p { margin: 0; font-size: 8px; color: #596286; }
+.journal-panel form { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 124px; gap: 13px; align-items: center; }
+.journal-panel input { width: 100%; height: 32px; padding: 0 18px; border-radius: 18px; color: #333a68; background: white; border: 1px solid rgba(96,79,181,.18); outline: none; font: inherit; font-size: 8px; }
+.journal-panel input:focus { border-color: #8052cf; box-shadow: 0 0 0 3px rgba(128,82,207,.09); }
+.journal-panel form > button { height: 32px; padding: 3px 5px 3px 20px; display: flex; align-items: center; justify-content: space-between; border-radius: 18px; color: white; background: linear-gradient(90deg, #6d47cc, #9847cf); font-size: 8px; }
+.journal-panel form > button:disabled { opacity: .62; cursor: wait; }
+.journal-panel form > button span { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.28); }
+.journal-panel form > button svg { width: 10px; }
+.journal-panel small { position: absolute; left: 22px; top: 36px; color: #7c7f9a; font-size: 6.5px; }
+
+.app-blog .shell { width: min(76.2%, 956px); }
+.app-blog .footer { height: 168px; min-height: 0; margin-top: 12px; margin-bottom: 0; padding-top: 14px; row-gap: 0; grid-template-rows: 126px 27px; }
+.app-blog .footer-image { height: 116px; }
+.app-blog .footer-brand > p { margin-top: 8px; line-height: 1.6; }
+.app-blog .footer-bottom { min-height: 27px; }
+
 @media (max-width: 900px) {
   .shell { width: min(88%, 760px); }
   .hero { height: 665px; }
@@ -258,6 +346,11 @@ p, h1, h2, h3 { margin-top: 0; }
   .browse-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .catalog-cta { grid-template-columns: 44px 1fr auto; padding: 15px 24px; }
   .catalog-cta .custom-listings { grid-column: 3; }
+  .blog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: 0; }
+  .blog-card { height: 292px; }
+  .blog-card-media { height: 150px; }
+  .category-tabs { gap: 8px; }
+  .category-tabs button { gap: 7px; }
 }
 
 @media (max-width: 720px) {
@@ -306,6 +399,18 @@ p, h1, h2, h3 { margin-top: 0; }
   .catalog-controls > span:first-child { display: none; }
   .catalog-cta { grid-template-columns: 35px 1fr; gap: 12px; }
   .catalog-cta .consult-button, .catalog-cta .custom-listings { grid-column: span 1; }
+  .blog-hero { height: 650px; background-position: 62% center; }
+  .blog-intro { top: 96px; }
+  .blog-intro h1 { font-size: 46px; }
+  .featured-story { top: 320px; width: 100%; height: 245px; grid-template-columns: 44% 1fr; }
+  .featured-story .blog-meta { padding-right: 154px; }
+  .category-tabs { height: auto; grid-template-columns: repeat(2, 1fr); }
+  .category-tabs button { height: 38px; }
+  .editors-grid { grid-template-columns: 1fr; }
+  .editors-card { height: 170px; }
+  .journal-panel { height: auto; min-height: 130px; grid-template-columns: 42px 1fr; padding: 19px; }
+  .journal-panel form { grid-column: 1 / -1; width: 100%; margin-top: 12px; }
+  .app-blog .footer { min-height: 210px; }
 }
 
 @media (max-width: 470px) {
@@ -333,4 +438,18 @@ p, h1, h2, h3 { margin-top: 0; }
   .catalog-cta { grid-template-columns: 1fr; text-align: center; justify-items: center; padding: 22px 18px; }
   .catalog-cta > svg { display: none; }
   .catalog-cta .consult-button, .catalog-cta .custom-listings { grid-column: auto; }
+  .blog-hero { height: 690px; }
+  .blog-intro h1 { font-size: 41px; letter-spacing: -1.8px; }
+  .blog-intro p br { display: none; }
+  .featured-story { top: 335px; height: 285px; grid-template-columns: 1fr; grid-template-rows: 110px 1fr 37px; }
+  .featured-media { grid-row: 1; }
+  .featured-copy { grid-column: 1; padding-top: 13px; }
+  .featured-story .blog-meta { grid-column: 1; padding-right: 145px; }
+  .blog-grid { grid-template-columns: 1fr; }
+  .blog-card { height: 315px; }
+  .blog-card-media { height: 166px; }
+  .editors-heading button { display: none; }
+  .journal-panel form { grid-template-columns: 1fr; }
+  .journal-panel form > button { width: 100%; }
+  .journal-panel small { position: static; text-align: center; }
 }

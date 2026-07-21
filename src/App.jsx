@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome.jsx";
+import { BlogPage } from "./pages/BlogPage.jsx";
 import { EstatesPage } from "./pages/EstatesPage.jsx";
 import { HomePage } from "./pages/HomePage.jsx";
 
 function pageFromLocation() {
-  return new URLSearchParams(window.location.search).get("view") === "estates" ? "estates" : "home";
+  const view = new URLSearchParams(window.location.search).get("view");
+  if (view === "estates" || view === "blog") return view;
+  return "home";
 }
 
 export function App() {
@@ -31,7 +34,7 @@ export function App() {
   const navigate = (nextPage) => {
     const url = new URL(window.location.href);
     url.hash = "";
-    if (nextPage === "estates") url.searchParams.set("view", "estates");
+    if (nextPage === "estates" || nextPage === "blog") url.searchParams.set("view", nextPage);
     else url.searchParams.delete("view");
     window.history.pushState({ page: nextPage }, "", `${url.pathname}${url.search}`);
     setPage(nextPage);
@@ -58,7 +61,9 @@ export function App() {
     <div className={`app-shell app-${page}`}>
       <SiteHeader page={page} menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((value) => !value)} onNavigate={navigate} onSection={goToSection} />
       <main id="home">
-        {page === "home" ? <HomePage onNavigate={navigate} onNotice={setNotice} /> : <EstatesPage onNavigate={navigate} onNotice={setNotice} />}
+        {page === "home" ? <HomePage onNavigate={navigate} onNotice={setNotice} /> : null}
+        {page === "estates" ? <EstatesPage onNavigate={navigate} onNotice={setNotice} /> : null}
+        {page === "blog" ? <BlogPage onNotice={setNotice} /> : null}
       </main>
       <SiteFooter onNavigate={navigate} onSection={goToSection} />
       {notice ? <div className="toast" role="status">{notice}</div> : null}

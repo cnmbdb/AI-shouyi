@@ -28,6 +28,7 @@ export function SiteHeader({ page, menuOpen, onMenuToggle, onNavigate, onSection
         <button onClick={() => onSection("#about")}>About</button>
         <button className={page === "estates" ? "active" : ""} onClick={() => onNavigate("estates")}>Estates</button>
         <button onClick={() => onSection("#projects")}>Projects</button>
+        <button className={page === "blog" ? "active" : ""} onClick={() => onNavigate("blog")}>Blog</button>
         <button onClick={() => onSection("#contact")}>Inquire</button>
       </nav>
       <button className="header-cta" onClick={() => onSection("#contact")}>Get in touch</button>
@@ -57,6 +58,7 @@ export function SiteFooter({ onNavigate, onSection }) {
         <button onClick={() => onSection("#about")}>About</button>
         <button onClick={() => onNavigate("estates")}>Estates</button>
         <button onClick={() => onSection("#projects")}>Projects</button>
+        <button onClick={() => onNavigate("blog")}>Blog</button>
         <button onClick={() => onSection("#contact")}>Inquire</button>
       </div>
       <div className="footer-column">
@@ -64,7 +66,7 @@ export function SiteFooter({ onNavigate, onSection }) {
         <button onClick={() => onSection("#about")}>Our Story</button>
         <button onClick={() => onSection("#contact")}>Careers</button>
         <button onClick={() => onSection("#projects")}>Media</button>
-        <button onClick={() => onSection("#about")}>Blog</button>
+        <button onClick={() => onNavigate("blog")}>Blog</button>
         <button onClick={() => onSection("#contact")}>Contact</button>
       </div>
       <div className="footer-column contact">
