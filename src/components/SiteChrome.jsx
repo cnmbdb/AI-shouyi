@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   EnvelopeSimple,
   FacebookLogo,
@@ -6,6 +7,8 @@ import {
   List,
   MapPin,
   Phone,
+  SignOut,
+  SquaresFour,
   X,
   YoutubeLogo,
 } from "@phosphor-icons/react";
@@ -19,7 +22,30 @@ export function Logo({ onNavigate }) {
   );
 }
 
-export function SiteHeader({ page, menuOpen, onMenuToggle, onNavigate, onSection }) {
+export function UserMenu({ user, onNavigate, onLogout, compact = false }) {
+  const [open, setOpen] = useState(false);
+
+  if (!user) {
+    return <button className="header-cta" onClick={() => onNavigate("/auth")}>登录 / 注册</button>;
+  }
+
+  return (
+    <div className={`user-menu ${compact ? "compact" : ""}`}>
+      <button className="user-trigger" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
+        <span className="user-avatar" style={{ background: user.avatar_color }}>{user.username.slice(0, 1).toUpperCase()}</span>
+        {compact ? null : <span className="user-name">{user.username}</span>}
+      </button>
+      {open ? (
+        <div className="user-dropdown">
+          <button type="button" onClick={() => { setOpen(false); onNavigate("/console"); }}><SquaresFour />控制台</button>
+          <button type="button" onClick={() => { setOpen(false); onLogout(); }}><SignOut />退出登录</button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function SiteHeader({ page, menuOpen, onMenuToggle, onNavigate, onSection, user, onLogout }) {
   return (
     <header className="topbar shell">
       <Logo onNavigate={onNavigate} />
@@ -31,7 +57,7 @@ export function SiteHeader({ page, menuOpen, onMenuToggle, onNavigate, onSection
         <button className={page === "blog" ? "active" : ""} onClick={() => onNavigate("blog")}>Blog</button>
         <button onClick={() => onSection("#contact")}>Inquire</button>
       </nav>
-      <button className="header-cta" onClick={() => onSection("#contact")}>Get in touch</button>
+      <UserMenu user={user} onNavigate={onNavigate} onLogout={onLogout} compact />
       <button className="menu-toggle" onClick={onMenuToggle} aria-label="Toggle menu">
         {menuOpen ? <X /> : <List />}
       </button>
