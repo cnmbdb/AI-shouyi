@@ -21,6 +21,7 @@ export const defaultNavigationSettings = {
 export const defaultFooterSettings = {
   enabled: true,
   siteName: "Aether Lane",
+  logo: "/images/gpu-logo.svg",
   description: "Elegance above the skyline.\nExtraordinary homes for\nextraordinary lives.",
   socials: [
     { id: "social-instagram", icon: "Instagram", label: "Instagram", link: "https://instagram.com" },

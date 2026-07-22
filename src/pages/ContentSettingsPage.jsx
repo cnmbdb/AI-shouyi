@@ -1,12 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
-  ChevronRight,
-  Newspaper,
-  PanelTop,
-  PanelsTopLeft,
-  Package,
   Plus,
   RotateCcw,
   Trash2,
@@ -46,10 +41,10 @@ const clone = (value) => structuredClone(value);
 const uid = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 const sectionMeta = {
-  navigation: { title: "顶部导航内容管理", description: "品牌名称、导航项目、显示状态与跳转链接会同步到全部公开页面。", icon: PanelTop },
-  footer: { title: "页脚内容管理", description: "品牌、社交链接、栏目、联系方式、图片与版权信息会同步到全部公开页面。", icon: PanelsTopLeft },
-  products: { title: "产品浏览页内容管理", description: "首屏、筛选区、产品卡片和底部行动区与公开产品浏览页一一对应。", icon: Package },
-  blog: { title: "博客首页内容管理", description: "首屏、精选文章、分类、编辑推荐和订阅区与公开博客首页一一对应。", icon: Newspaper },
+  navigation: { title: "顶部导航内容管理" },
+  footer: { title: "页脚内容管理" },
+  products: { title: "产品浏览页内容管理" },
+  blog: { title: "博客首页内容管理" },
 };
 
 const defaults = {
@@ -143,7 +138,6 @@ export function ContentSettingsPage({ section, onNotice }) {
   const [settings, setSettings] = useState(() => clone(defaults[section]));
   const [dirty, setDirty] = useState(false);
   const meta = sectionMeta[section];
-  const Icon = meta.icon;
 
   useEffect(() => {
     if (!query.data?.settings || !normalize) return;
@@ -173,23 +167,11 @@ export function ContentSettingsPage({ section, onNotice }) {
     onError: (error) => onNotice(error.message),
   });
 
-  const visibleCount = useMemo(() => {
-    if (section === "navigation") return settings.items.filter((item) => item.enabled).length;
-    if (section === "products") return [settings.hero, settings.browser, settings.cta].filter((item) => item.enabled).length;
-    if (section === "blog") return [settings.hero, settings.featured, settings.categories, settings.articles, settings.editors, settings.newsletter].filter((item) => item.enabled).length;
-    return settings.enabled ? 4 : 0;
-  }, [section, settings]);
-
   if (query.isLoading) return <Card className="home-settings-loading"><CardContent>正在读取页面配置...</CardContent></Card>;
   if (query.isError) return <Card className="home-settings-loading"><CardContent>读取失败：{query.error.message}</CardContent></Card>;
 
   return (
     <div className="home-settings-page content-settings-page">
-      <Card className="home-settings-summary">
-        <CardHeader><div><CardTitle><Icon /> {meta.title}</CardTitle><CardDescription>{meta.description}</CardDescription></div><Badge variant="secondary">{visibleCount} 个内容单元显示</Badge></CardHeader>
-        <CardContent><div className="home-settings-flow"><span>编辑对应区块</span><ChevronRight /><span>保存发布</span><ChevronRight /><span>公开页面读取</span></div></CardContent>
-      </Card>
-
       {section === "navigation" ? <NavigationEditor settings={settings} edit={edit} /> : null}
       {section === "footer" ? <FooterEditor settings={settings} edit={edit} /> : null}
       {section === "products" ? <ProductEditor settings={settings} edit={edit} /> : null}
@@ -219,7 +201,7 @@ function FooterEditor({ settings, edit }) {
   const socialIcons = [["Instagram", "Instagram"], ["Facebook", "Facebook"], ["Youtube", "YouTube"], ["Linkedin", "LinkedIn"]];
   return (
     <Accordion className="home-settings-accordion" type="multiple" defaultValue={["brand"]}>
-      <AccordionItem value="brand"><SectionHeader title="品牌与社交" description="品牌名称、简介和社交平台链接" enabled={settings.enabled} onEnabled={(value) => edit((next) => { next.enabled = value; })} /><AccordionContent><Card size="sm"><CardContent className="home-section-content"><div className="home-fields-grid"><TextControl id="footer-site-name" label="站点名称" value={settings.siteName} onChange={(value) => edit((next) => { next.siteName = value; })} /><TextControl id="footer-description" label="品牌简介" textarea value={settings.description} onChange={(value) => edit((next) => { next.description = value; })} /></div></CardContent></Card><div className="home-item-list compact">{settings.socials.map((item, index) => <ItemCard key={item.id} title={item.label} subtitle={`社交链接 ${index + 1}`} onDelete={() => edit((next) => { next.socials.splice(index, 1); })}><div className="home-fields-grid"><TextControl id={`social-label-${item.id}`} label="名称" value={item.label} onChange={(value) => edit((next) => { next.socials[index].label = value; })} /><SelectControl id={`social-icon-${item.id}`} label="图标" value={item.icon} options={socialIcons} onChange={(value) => edit((next) => { next.socials[index].icon = value; })} /></div><TextControl id={`social-link-${item.id}`} label="链接" value={item.link} onChange={(value) => edit((next) => { next.socials[index].link = value; })} /></ItemCard>)}</div><Button variant="outline" size="sm" onClick={() => edit((next) => { next.socials.push({ id: uid("social"), icon: "Instagram", label: "新社交平台", link: "https://" }); })}><Plus />添加社交链接</Button></AccordionContent></AccordionItem>
+      <AccordionItem value="brand"><SectionHeader title="品牌与社交" description="Logo、品牌名称、简介和社交平台链接" enabled={settings.enabled} onEnabled={(value) => edit((next) => { next.enabled = value; })} /><AccordionContent><Card size="sm"><CardContent className="home-section-content"><ImageControls prefix="footer-logo" image={settings.logo} onImage={(value) => edit((next) => { next.logo = value; })} variant="logo" placeholder={<BrandLogoMark fallbackClassName="navigation-logo-fallback-preview" />} /><div className="home-fields-grid"><TextControl id="footer-site-name" label="站点名称" value={settings.siteName} onChange={(value) => edit((next) => { next.siteName = value; })} /><TextControl id="footer-description" label="品牌简介" textarea value={settings.description} onChange={(value) => edit((next) => { next.description = value; })} /></div></CardContent></Card><div className="home-item-list compact">{settings.socials.map((item, index) => <ItemCard key={item.id} title={item.label} subtitle={`社交链接 ${index + 1}`} onDelete={() => edit((next) => { next.socials.splice(index, 1); })}><div className="home-fields-grid"><TextControl id={`social-label-${item.id}`} label="名称" value={item.label} onChange={(value) => edit((next) => { next.socials[index].label = value; })} /><SelectControl id={`social-icon-${item.id}`} label="图标" value={item.icon} options={socialIcons} onChange={(value) => edit((next) => { next.socials[index].icon = value; })} /></div><TextControl id={`social-link-${item.id}`} label="链接" value={item.link} onChange={(value) => edit((next) => { next.socials[index].link = value; })} /></ItemCard>)}</div><Button variant="outline" size="sm" onClick={() => edit((next) => { next.socials.push({ id: uid("social"), icon: "Instagram", label: "新社交平台", link: "https://" }); })}><Plus />添加社交链接</Button></AccordionContent></AccordionItem>
       <AccordionItem value="columns"><SectionHeader title="链接栏目" description="栏目标题及内部链接，可添加或删除" count={settings.columns.length} /><AccordionContent><div className="home-item-list">{settings.columns.map((column, columnIndex) => <ItemCard key={column.id} title={column.title} subtitle={`栏目 ${columnIndex + 1}`} onDelete={() => edit((next) => { next.columns.splice(columnIndex, 1); })}><TextControl id={`column-title-${column.id}`} label="栏目标题" value={column.title} onChange={(value) => edit((next) => { next.columns[columnIndex].title = value; })} />{column.items.map((item, itemIndex) => <div className="content-inline-item" key={item.id}><div className="home-fields-grid"><TextControl id={`column-label-${item.id}`} label="链接名称" value={item.label} onChange={(value) => edit((next) => { next.columns[columnIndex].items[itemIndex].label = value; })} /><TextControl id={`column-link-${item.id}`} label="跳转链接" value={item.link} onChange={(value) => edit((next) => { next.columns[columnIndex].items[itemIndex].link = value; })} /></div><div className="content-inline-actions"><ToggleControl id={`column-enabled-${item.id}`} label="显示" checked={item.enabled} onChange={(value) => edit((next) => { next.columns[columnIndex].items[itemIndex].enabled = value; })} /><DeleteItem label={item.label} onConfirm={() => edit((next) => { next.columns[columnIndex].items.splice(itemIndex, 1); })} /></div></div>)}<Button variant="outline" size="xs" onClick={() => edit((next) => { next.columns[columnIndex].items.push({ id: uid("footer-link"), label: "新链接", link: "/", enabled: true }); })}><Plus />添加链接</Button></ItemCard>)}</div><Button variant="outline" size="sm" onClick={() => edit((next) => { next.columns.push({ id: uid("footer-column"), title: "新栏目", items: [] }); })}><Plus />添加栏目</Button></AccordionContent></AccordionItem>
       <AccordionItem value="contact"><SectionHeader title="联系信息与配图" description="电话、邮箱、地址和页脚图片" /><AccordionContent><Card size="sm"><CardContent className="home-section-content"><div className="home-fields-grid"><TextControl id="footer-contact-title" label="栏目标题" value={settings.contact.title} onChange={(value) => edit((next) => { next.contact.title = value; })} /><TextControl id="footer-phone" label="联系电话" value={settings.contact.phone} onChange={(value) => edit((next) => { next.contact.phone = value; })} /><TextControl id="footer-email" label="联系邮箱" value={settings.contact.email} onChange={(value) => edit((next) => { next.contact.email = value; })} /><TextControl id="footer-address" label="联系地址" textarea value={settings.contact.address} onChange={(value) => edit((next) => { next.contact.address = value; })} /></div><ImageControls prefix="footer" image={settings.image} position={settings.imagePosition} onImage={(value) => edit((next) => { next.image = value; })} onPosition={(value) => edit((next) => { next.imagePosition = value; })} /></CardContent></Card></AccordionContent></AccordionItem>
       <AccordionItem value="bottom"><SectionHeader title="底部版权" description="版权文案与政策链接" count={settings.legalLinks.length} /><AccordionContent><Card size="sm"><CardContent className="home-section-content"><TextControl id="footer-copyright" label="版权文案" value={settings.copyright} onChange={(value) => edit((next) => { next.copyright = value; })} /><div className="home-item-list compact">{settings.legalLinks.map((item, index) => <ItemCard key={item.id} title={item.label} subtitle={`政策链接 ${index + 1}`} onDelete={() => edit((next) => { next.legalLinks.splice(index, 1); })}><div className="home-fields-grid"><TextControl id={`legal-label-${item.id}`} label="名称" value={item.label} onChange={(value) => edit((next) => { next.legalLinks[index].label = value; })} /><TextControl id={`legal-link-${item.id}`} label="链接" value={item.link} onChange={(value) => edit((next) => { next.legalLinks[index].link = value; })} /></div></ItemCard>)}</div><Button variant="outline" size="sm" onClick={() => edit((next) => { next.legalLinks.push({ id: uid("legal"), label: "新政策", link: "#" }); })}><Plus />添加政策链接</Button></CardContent></Card></AccordionContent></AccordionItem>

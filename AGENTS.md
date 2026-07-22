@@ -46,4 +46,8 @@ Prototype console-brand rule: the console sidebar brand uses a dual-fan desktop 
 
 Prototype shared-logo CMS rule: top-navigation settings include a logo image URL and upload control. The default value is `/images/gpu-logo.svg`, an NVIDIA Green dual-fan GPU mark, so the field is never blank in the default configuration. After publishing, the same logo and site name drive the settings preview, public shared header, and authenticated console sidebar; clearing a saved custom logo falls back to the same GPU mark.
 
+Prototype footer-logo CMS rule: footer settings expose their own Logo image URL and upload control in the brand-and-social section. The default `/images/gpu-logo.svg` value drives the public footer brand independently from the top-navigation Logo, and an empty saved value falls back to the same GPU mark.
+
 Prototype console-loading rule: refreshing or entering an authenticated console route uses the compact animated GPU loading widget rather than a plain loading sentence. It shows account, asset, and console preparation stages, uses NVIDIA Green status motion, and respects `prefers-reduced-motion`.
+
+Prototype settings-density rule: site-setting pages open directly on their editable accordion sections and sticky publish bar. Do not render a separate top content-management summary or workflow introduction card.

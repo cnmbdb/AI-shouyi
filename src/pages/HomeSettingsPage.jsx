@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
-  ChevronRight,
-  House,
   Plus,
   RotateCcw,
   Trash2,
@@ -134,18 +132,11 @@ export function HomeSettingsPage({ onNotice }) {
   const removeItem = (section, collection, index) => setSection(section, (current) => ({ ...current, [collection]: current[collection].filter((_, itemIndex) => itemIndex !== index) }));
   const addItem = (section, collection, template) => setSection(section, (current) => ({ ...current, [collection]: [...current[collection], createHomeItem(collection, template)] }));
 
-  const visibleCount = useMemo(() => ["hero", "features", "about", "featured", "stats", "testimonials", "cta"].filter((key) => settings[key].enabled).length, [settings]);
-
   if (query.isLoading) return <Card className="home-settings-loading"><CardContent>正在读取首页配置...</CardContent></Card>;
   if (query.isError) return <Card className="home-settings-loading"><CardContent>读取失败：{query.error.message}</CardContent></Card>;
 
   return (
     <div className="home-settings-page">
-      <Card className="home-settings-summary">
-        <CardHeader><div><CardTitle><House /> 首页内容管理</CardTitle><CardDescription>这里的每个区块都与公开首页一一对应；图片、文案、图标与链接保存后立即发布。</CardDescription></div><Badge variant="secondary">{visibleCount}/7 区块显示</Badge></CardHeader>
-        <CardContent><div className="home-settings-flow"><span>编辑区块</span><ChevronRight /><span>保存发布</span><ChevronRight /><span>公开首页读取</span></div></CardContent>
-      </Card>
-
       <Accordion className="home-settings-accordion" type="multiple" defaultValue={["hero"]}>
         <AccordionItem value="hero">
           <SectionHeaderRow title="首屏 Hero" description="背景图、主标题、左右文案与两个按钮" enabled={settings.hero.enabled} onEnabled={(value) => setField("hero", "enabled", value)} />

@@ -1407,13 +1407,6 @@ p, h1, h2, h3 { margin-top: 0; }
 .home-clickable { cursor: pointer; }
 .person-fallback { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; color: #252b58; background: #dce5ff; font-weight: 700; }
 .home-settings-page { display: grid; gap: 12px; padding-bottom: 76px; }
-.home-settings-summary [data-slot="card-header"] { display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.home-settings-summary [data-slot="card-title"] { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-.home-settings-summary [data-slot="card-title"] svg { width: 16px; height: 16px; }
-.home-settings-summary [data-slot="card-description"] { max-width: 720px; margin-top: 4px; }
-.home-settings-flow { display: flex; align-items: center; gap: 8px; color: var(--muted-foreground); font-size: 11px; }
-.home-settings-flow svg { width: 13px; height: 13px; }
-.home-settings-flow span { padding: 4px 8px; border: 1px solid var(--border); border-radius: 5px; background: var(--muted); }
 .home-settings-accordion { overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
 .home-settings-accordion [data-slot="accordion-item"] { padding: 0 14px; }
 .home-settings-accordion [data-slot="accordion-trigger"] { min-height: 58px; padding: 9px 2px; text-decoration: none; }
@@ -1471,8 +1464,7 @@ p, h1, h2, h3 { margin-top: 0; }
 }
 
 @media (max-width: 640px) {
-  .home-settings-summary [data-slot="card-header"], .home-settings-publish [data-slot="card-footer"] { align-items: stretch; flex-direction: column; }
-  .home-settings-flow { flex-wrap: wrap; }
+  .home-settings-publish [data-slot="card-footer"] { align-items: stretch; flex-direction: column; }
   .home-section-heading { align-items: flex-start; gap: 6px; }
   .home-fields-grid, .home-button-grid { grid-template-columns: 1fr; }
   .home-image-fields, .home-item-card .home-image-fields { grid-template-columns: 1fr; }

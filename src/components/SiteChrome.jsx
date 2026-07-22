@@ -105,7 +105,7 @@ export function SiteFooter({ onNavigate, onSection, settings = defaultFooterSett
   return (
     <footer className="footer shell">
       <div className="footer-brand">
-        <Logo onNavigate={onNavigate} siteName={settings.siteName} />
+        <Logo onNavigate={onNavigate} siteName={settings.siteName} logo={settings.logo} fallback="gpu" />
         <p style={{ whiteSpace: "pre-line" }}>{settings.description}</p>
         <div className="socials">
           {settings.socials.map((item) => {
