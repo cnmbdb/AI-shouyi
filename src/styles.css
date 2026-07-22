@@ -1506,9 +1506,14 @@ p, h1, h2, h3 { margin-top: 0; }
 .commerce-product-identity small, .commerce-product-summary small, .commerce-product-billing small { color: var(--muted-foreground); font-size: 9px; }
 .commerce-product-billing [data-slot="badge"] { width: max-content; font-size: 8px; }
 .commerce-row-actions { display: flex; justify-content: flex-end; gap: 2px; }
-.commerce-editor-card { margin-top: 10px; border-color: color-mix(in oklab, var(--foreground) 20%, var(--border)); }
-.commerce-editor-card > [data-slot="card-header"] { border-bottom: 1px solid var(--border); }
 .commerce-editor-content { display: grid; gap: 14px; padding-top: 12px; }
+.commerce-product-dialog { width: min(900px, calc(100vw - 24px)); max-width: 900px; max-height: calc(100vh - 24px); padding-bottom: 0; }
+.commerce-product-dialog > [data-slot="dialog-header"] { min-width: 0; padding-right: 28px; }
+.commerce-product-dialog-description { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.commerce-product-dialog-scroll { height: min(72vh, 760px); margin-inline: -4px; padding-right: 10px; }
+.commerce-product-dialog-scroll .commerce-editor-content { padding: 2px 2px 14px; }
+.commerce-product-dialog-footer { align-items: center; }
+.commerce-product-dialog-footer .toggle-field { min-height: 36px; margin-right: auto; border: 0; background: transparent; }
 .commerce-billing-card, .payment-config-card { background: color-mix(in oklab, var(--muted) 30%, transparent); }
 .commerce-billing-card [data-slot="card-header"], .payment-config-card [data-slot="card-header"] { border-bottom: 1px solid var(--border); }
 .commerce-billing-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
@@ -1650,8 +1655,10 @@ p, h1, h2, h3 { margin-top: 0; }
   .commerce-category-row { grid-template-columns: 1fr; }
   .commerce-category-fields, .commerce-billing-grid, .payment-filter-row, .payment-scope-grid { grid-template-columns: 1fr; }
   .commerce-category-actions { justify-content: flex-end; }
-  .commerce-editor-actions { align-items: stretch; flex-direction: column; }
-  .commerce-editor-actions .toggle-field { width: 100%; }
+  .commerce-product-dialog { width: calc(100vw - 12px); max-height: calc(100vh - 12px); }
+  .commerce-product-dialog-scroll { height: min(70vh, 720px); }
+  .commerce-product-dialog-footer { align-items: stretch; }
+  .commerce-product-dialog-footer .toggle-field { width: 100%; margin-right: 0; }
   .payment-filter-content { align-items: stretch; flex-direction: column; }
   .payment-filter-controls, .payment-dialog-grid, .payment-dialog-grid-four, .payment-scope-sections, .payment-advanced-grid { grid-template-columns: 1fr; }
   .payment-filter-actions { justify-content: flex-end; }

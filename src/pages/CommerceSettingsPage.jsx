@@ -9,7 +9,6 @@ import {
   Plus,
   RotateCcw,
   Trash2,
-  X,
 } from "lucide-react";
 import { ImageControls } from "@/components/ImageControls.jsx";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -27,8 +26,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -250,22 +251,27 @@ function ProductCatalogEditor({ settings, edit, onNotice }) {
               {settings.items.length === 0 ? <TableRow><TableCell colSpan={6} className="commerce-empty-row">暂无商品，点击“添加商品”开始配置。</TableCell></TableRow> : null}
             </TableBody></Table></div></CardContent>
           </Card>
-          {editingProduct ? <ProductEditor product={editingProduct} index={editingIndex} categories={settings.categories} edit={edit} onClose={() => setEditingId(null)} onShare={() => copyProductLink(editingProduct)} /> : null}
         </AccordionContent>
       </AccordionItem>
+      {editingProduct ? <ProductEditorDialog product={editingProduct} index={editingIndex} categories={settings.categories} edit={edit} onClose={() => setEditingId(null)} onShare={() => copyProductLink(editingProduct)} /> : null}
     </Accordion>
   );
 }
 
-function ProductEditor({ product, index, categories, edit, onClose, onShare }) {
+function ProductEditorDialog({ product, index, categories, edit, onClose, onShare }) {
   const set = (field, value) => edit((next) => { next.items[index][field] = value; });
   const supportsRental = product.billingType !== "buyout";
   const supportsBuyout = product.billingType !== "rental";
   const shareUrl = typeof window === "undefined" ? productPath(product) : new URL(productPath(product), window.location.origin).toString();
   return (
-    <Card size="sm" className="commerce-editor-card">
-      <CardHeader><CardTitle>编辑商品 · {product.name}</CardTitle><CardDescription>详情页地址：{shareUrl}</CardDescription><CardAction><Button variant="ghost" size="icon-xs" onClick={onClose} aria-label="关闭商品编辑"><X /></Button></CardAction></CardHeader>
-      <CardContent className="commerce-editor-content">
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="commerce-product-dialog" onInteractOutside={(event) => event.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle>编辑商品 · {product.name}</DialogTitle>
+          <DialogDescription className="commerce-product-dialog-description">详情页地址：{shareUrl}</DialogDescription>
+        </DialogHeader>
+        <ScrollArea className="commerce-product-dialog-scroll">
+          <div className="commerce-editor-content">
         <ImageControls prefix={`store-product-${product.id}`} image={product.image} position={product.imagePosition} onImage={(value) => set("image", value)} onPosition={(value) => set("imagePosition", value)} />
         <FieldGroup className="home-fields-grid"><TextControl id={`product-name-${product.id}`} label="商品名称" value={product.name} onChange={(value) => set("name", value)} /><TextControl id={`product-sku-${product.id}`} label="SKU" value={product.sku} onChange={(value) => set("sku", value)} /><SelectControl id={`product-category-${product.id}`} label="商品分类" value={product.categoryId || "__none__"} options={[["__none__", "未分类"], ...categories.map((item) => [item.id, item.name])]} onChange={(value) => set("categoryId", value === "__none__" ? "" : value)} /><TextControl id={`product-slug-${product.id}`} label="SEO 标识" value={product.slug} onChange={(value) => set("slug", slugify(value, `product-${index + 1}`))} description="分享路径固定为 /estates/商品分类ID/商品ID" /><TextControl id={`product-share-${product.id}`} label="分享标识（兼容）" value={product.shareToken} onChange={(value) => set("shareToken", value.replace(/[^a-zA-Z0-9_-]/g, ""))} /><TextControl id={`product-order-${product.id}`} label="显示顺序" type="number" value={product.sortOrder} onChange={(value) => set("sortOrder", value)} /></FieldGroup>
         <TextControl id={`product-summary-${product.id}`} label="商品摘要" textarea value={product.summary} onChange={(value) => set("summary", value)} />
@@ -273,8 +279,15 @@ function ProductEditor({ product, index, categories, edit, onClose, onShare }) {
         <Card size="sm" className="commerce-billing-card"><CardHeader><CardTitle>计费与续费</CardTitle><CardDescription>订单创建时会保存价格快照；续费订单关联原租用订单并延长到期时间。</CardDescription></CardHeader><CardContent className="commerce-editor-content"><SelectControl id={`product-billing-${product.id}`} label="计费方式" value={product.billingType} options={[["rental", "仅租用"], ["buyout", "仅买断"], ["both", "租用与买断"]]} onChange={(value) => set("billingType", value)} />{supportsRental ? <><FieldGroup className="commerce-billing-grid"><TextControl id={`product-rental-${product.id}`} label="租用价格" type="number" min="0" value={product.rentalPrice} onChange={(value) => set("rentalPrice", value)} /><TextControl id={`product-period-count-${product.id}`} label="每期数量" type="number" min="1" value={product.rentalPeriodCount} onChange={(value) => set("rentalPeriodCount", value)} /><SelectControl id={`product-period-unit-${product.id}`} label="租期单位" value={product.rentalPeriodUnit} options={periodOptions} onChange={(value) => set("rentalPeriodUnit", value)} /><TextControl id={`product-renewal-${product.id}`} label="每期续费价格" type="number" min="0" value={product.renewalPrice} onChange={(value) => set("renewalPrice", value)} /></FieldGroup><ToggleControl id={`product-renewable-${product.id}`} label="允许到期续费" description="关闭后支付 API 会拒绝为该商品创建续费订单" checked={product.renewable} onChange={(value) => set("renewable", value)} /></> : null}{supportsBuyout ? <TextControl id={`product-buyout-${product.id}`} label="买断价格" type="number" min="0" value={product.buyoutPrice} onChange={(value) => set("buyoutPrice", value)} /> : null}</CardContent></Card>
         <div><div className="commerce-subheading"><div><strong>商品规格</strong><span>详情页以参数表展示</span></div><Button variant="outline" size="xs" onClick={() => edit((next) => next.items[index].specs.push({ id: uid("spec"), name: "新规格", value: "" }))}><Plus />添加规格</Button></div><div className="commerce-spec-list">{product.specs.map((spec, specIndex) => <div key={spec.id}><Input aria-label="规格名称" value={spec.name} onChange={(event) => edit((next) => { next.items[index].specs[specIndex].name = event.target.value; })} /><Input aria-label="规格值" value={spec.value} onChange={(event) => edit((next) => { next.items[index].specs[specIndex].value = event.target.value; })} /><Button variant="ghost" size="icon-xs" onClick={() => edit((next) => { next.items[index].specs.splice(specIndex, 1); })} aria-label="删除规格"><Trash2 /></Button></div>)}</div></div>
         <TextControl id={`product-details-${product.id}`} label="商品详情" textarea value={product.details} onChange={(value) => set("details", value)} description="支持纯文本换行，详情页会保留段落结构。" />
-        <div className="commerce-editor-actions"><ToggleControl id={`product-enabled-${product.id}`} label="上架该商品" checked={product.enabled} onChange={(value) => set("enabled", value)} /><Button variant="outline" size="sm" onClick={onShare}><Copy />复制链接</Button><Button variant="outline" size="sm" onClick={() => window.open(shareUrl, "_blank", "noopener,noreferrer")}><ExternalLink />预览详情</Button></div>
-      </CardContent>
-    </Card>
+          </div>
+        </ScrollArea>
+        <DialogFooter className="commerce-product-dialog-footer">
+          <ToggleControl id={`product-enabled-${product.id}`} label="上架该商品" checked={product.enabled} onChange={(value) => set("enabled", value)} />
+          <Button variant="outline" size="sm" onClick={onShare}><Copy />复制链接</Button>
+          <Button variant="outline" size="sm" onClick={() => window.open(shareUrl, "_blank", "noopener,noreferrer")}><ExternalLink />预览详情</Button>
+          <Button size="sm" onClick={onClose}>完成编辑</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
