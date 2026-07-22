@@ -12,20 +12,14 @@ import {
   SquaresFour,
 } from "@phosphor-icons/react";
 import { blogFallback } from "../data/blogFallback.js";
+import { defaultBlogSettings } from "../data/siteSettings.js";
 import { getBlogPosts, subscribeNewsletter } from "../lib/platformData.js";
 
 const asset = (path) => path?.startsWith("/")
   ? `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`
   : path;
 
-const categoryOptions = [
-  { label: "All", icon: SquaresFour },
-  { label: "Architecture", icon: Buildings },
-  { label: "Interiors", icon: Armchair },
-  { label: "Lifestyle", icon: FlowerLotus },
-  { label: "Market Insights", icon: ChartLineUp },
-  { label: "Travel", icon: AirplaneTilt },
-];
+const categoryIcons = { SquaresFour, Buildings, Armchair, FlowerLotus, ChartLineUp, AirplaneTilt };
 
 const formatDate = (value) => new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -89,7 +83,7 @@ function EditorsCard({ post, onOpen }) {
   );
 }
 
-export function BlogPage({ onNotice }) {
+export function BlogPage({ onNotice, settings = defaultBlogSettings }) {
   const [posts, setPosts] = useState(blogFallback);
   const [category, setCategory] = useState("All");
   const [email, setEmail] = useState("");
@@ -105,6 +99,12 @@ export function BlogPage({ onNotice }) {
 
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    if (!settings.categories.items.some((item) => item.enabled !== false && item.value === category)) {
+      setCategory(settings.categories.items.find((item) => item.enabled !== false)?.value ?? "All");
+    }
+  }, [category, settings.categories.items]);
 
   const featured = posts.find((post) => post.featured) ?? posts[0];
   const editorsPicks = posts.filter((post) => post.editors_pick);
@@ -137,19 +137,19 @@ export function BlogPage({ onNotice }) {
 
   return (
     <div className="blog-page">
-      <section className="blog-hero">
+      {settings.hero.enabled || settings.featured.enabled ? <section className="blog-hero" style={settings.hero.backgroundImage ? { backgroundImage: `url(${asset(settings.hero.backgroundImage)})`, backgroundPosition: settings.hero.backgroundPosition } : undefined}>
         <div className="blog-hero-overlay" />
         <div className="shell blog-hero-content">
-          <div className="blog-intro">
-            <h1>Stories Above<br />the Skyline</h1>
-            <p>Curated perspectives on design, architecture,<br />luxury living, travel, and the art of extraordinary spaces.</p>
-          </div>
+          {settings.hero.enabled ? <div className="blog-intro">
+            <h1 style={{ whiteSpace: "pre-line" }}>{settings.hero.title}</h1>
+            <p>{settings.hero.description}</p>
+          </div> : <div />}
 
-          {featured ? (
+          {settings.featured.enabled && featured ? (
             <article className="featured-story">
               <div className="featured-media">
                 <img src={asset(featured.image_url)} alt="" style={{ objectPosition: featured.image_position }} />
-                <span className="featured-label">Featured</span>
+                <span className="featured-label">{settings.featured.label}</span>
               </div>
               <div className="featured-copy">
                 <span className="featured-category">{featured.category}</span>
@@ -158,54 +158,56 @@ export function BlogPage({ onNotice }) {
               </div>
               <ArticleMeta post={featured} light />
               <button className="featured-button" type="button" onClick={() => openArticle(featured)}>
-                Read Article <span><ArrowRight weight="bold" /></span>
+                {settings.featured.buttonLabel} <span><ArrowRight weight="bold" /></span>
               </button>
             </article>
           ) : null}
         </div>
-      </section>
+      </section> : null}
 
       <section className="shell blog-content">
-        <div className="category-tabs" role="tablist" aria-label="Article categories">
-          {categoryOptions.map(({ label, icon: Icon }) => (
+        {settings.categories.enabled ? <div className="category-tabs" role="tablist" aria-label="Article categories">
+          {settings.categories.items.filter((item) => item.enabled !== false).map(({ id, label, value, icon }) => {
+            const Icon = categoryIcons[icon] ?? SquaresFour;
+            return (
             <button
-              key={label}
-              className={category === label ? "active" : ""}
+              key={id}
+              className={category === value ? "active" : ""}
               type="button"
               role="tab"
-              aria-selected={category === label}
-              onClick={() => setCategory(label)}
+              aria-selected={category === value}
+              onClick={() => setCategory(value)}
             >
               <Icon />{label}
             </button>
-          ))}
-        </div>
+          ); })}
+        </div> : null}
 
-        <div className="blog-grid">
+        {settings.articles.enabled ? <div className="blog-grid">
           {articles.length ? articles.map((post) => <ArticleCard key={post.slug} post={post} onOpen={openArticle} />) : (
-            <div className="blog-empty">More {category} stories are being curated.</div>
+            <div className="blog-empty">{settings.articles.emptyText.replace("{category}", category)}</div>
           )}
-        </div>
+        </div> : null}
 
-        <section className="editors-section">
+        {settings.editors.enabled ? <section className="editors-section">
           <div className="editors-heading">
-            <div><h2>Editor's Picks</h2><p>Essential reads handpicked by our editorial team.</p></div>
-            <button type="button" onClick={() => setCategory("All")}>View All Articles <ArrowRight weight="bold" /></button>
+            <div><h2>{settings.editors.title}</h2><p>{settings.editors.description}</p></div>
+            <button type="button" onClick={() => setCategory("All")}>{settings.editors.buttonLabel} <ArrowRight weight="bold" /></button>
           </div>
           <div className="editors-grid">
             {editorsPicks.map((post) => <EditorsCard key={post.slug} post={post} onOpen={openArticle} />)}
           </div>
-        </section>
+        </section> : null}
 
-        <section className="journal-panel" id="journal">
+        {settings.newsletter.enabled ? <section className="journal-panel" id="journal">
           <EnvelopeSimple className="journal-icon" />
-          <div><h2>Join Our Journal</h2><p>Stay inspired with curated stories, insights, and exclusive updates.</p></div>
+          <div><h2>{settings.newsletter.title}</h2><p>{settings.newsletter.description}</p></div>
           <form onSubmit={subscribe}>
-            <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Enter your email" aria-label="Email address" />
-            <button type="submit" disabled={submitting}>Subscribe <span><ArrowRight weight="bold" /></span></button>
-            <small>No spam. Unsubscribe anytime.</small>
+            <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder={settings.newsletter.placeholder} aria-label="Email address" />
+            <button type="submit" disabled={submitting}>{settings.newsletter.buttonLabel} <span><ArrowRight weight="bold" /></span></button>
+            <small>{settings.newsletter.privacyText}</small>
           </form>
-        </section>
+        </section> : null}
       </section>
     </div>
   );

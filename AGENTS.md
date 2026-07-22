@@ -18,6 +18,8 @@ Prototype authentication rule: Supabase Auth powers registration, verified email
 
 Prototype console rule: the authenticated console uses TanStack Router, Query, and Table. It includes asset overview, compute devices, rental orders, hosting earnings, transactions, and persisted settings for top navigation, footer, Home, product browsing, and Blog Home.
 
+Prototype site-settings rule: top navigation, footer, Home, product browsing, and Blog Home settings use the same compact section-based CMS pattern. Every visible public-page section must have corresponding admin controls for display state and its relevant copy, images, icons, links, and repeatable items; saving publishes the configuration to the matching public page.
+
 Prototype console visual rule: authentication and console UI use official shadcn/ui neutral tokens and compact controls inspired by the Dujiao-Next admin container. Support only a rational black/white light and dark theme with an explicit theme toggle; avoid branded purple or decorative dashboard color. Local development exposes TanStack Router and Query Devtools, while production builds exclude them.
 
 Prototype authentication visual rule: the authentication page uses the existing Galaxy Home hero artwork as a full-page background under a monochrome neutral overlay. Keep the intro and shadcn card legible in both light and dark themes.

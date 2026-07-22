@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
   ArrowRightIcon as ArrowRight,
@@ -17,7 +17,6 @@ import {
   MenuIcon as List,
   NewspaperIcon as Newspaper,
   PackageIcon as Package,
-  PencilIcon as PencilSimple,
   ReceiptTextIcon as Receipt,
   LogOutIcon as SignOut,
   SlidersHorizontalIcon as SlidersHorizontal,
@@ -28,20 +27,16 @@ import {
   XIcon as X,
 } from "lucide-react";
 import { ThemeToggle } from "../components/ThemeProvider.jsx";
-import { getPlatformOverview, getSiteSettings, saveSiteSetting } from "../lib/platformData.js";
+import { getPlatformOverview } from "../lib/platformData.js";
 import { UserManagementPage } from "./UserManagementPage.jsx";
 import { HomeSettingsPage } from "./HomeSettingsPage.jsx";
+import { ContentSettingsPage } from "./ContentSettingsPage.jsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const assetNavGroup = {
@@ -84,13 +79,6 @@ const settingMeta = {
   home: { title: "首页设置", description: "管理首页全部区块、图片、文案、图标与跳转链接", icon: House },
   products: { title: "产品浏览页", description: "设置算力产品列表的文案、筛选与默认排序", icon: Package },
   blog: { title: "博客首页", description: "管理博客首屏、精选文章与订阅模块", icon: Newspaper },
-};
-
-const defaultSettings = {
-  navigation: { siteName: "Aether Lane", ctaText: "租用算力", ctaLink: "/estates", sticky: true, showBlog: true },
-  footer: { description: "稳定的算力托管，透明的收益管理。", email: "hello@aetherlane.com", phone: "+86 400 800 2026", copyright: "© 2026 Aether Lane" },
-  products: { title: "选择适合你的算力", subtitle: "按算力、周期和预期产出进行对比", defaultSort: "recommended", showAvailability: true, showEstimatedYield: true },
-  blog: { title: "算力与收益洞察", subtitle: "了解设备、能效、托管和行业趋势", featuredLabel: "精选", newsletterTitle: "订阅算力周报", showNewsletter: true },
 };
 
 const fallbackOverview = {
@@ -236,91 +224,12 @@ function FinancePage({ kind }) {
   );
 }
 
-function ToggleField({ label, hint, checked, onChange }) {
-  const id = `setting-${label}`;
-  return <Field className="toggle-field" orientation="horizontal"><div><FieldLabel htmlFor={id}>{label}</FieldLabel><FieldDescription>{hint}</FieldDescription></div><Switch id={id} size="sm" checked={checked} onCheckedChange={onChange} /></Field>;
-}
-
-function TextField({ label, value, onChange, placeholder, multiline = false }) {
-  const id = `setting-${label}`;
-  return <Field className="setting-field"><FieldLabel htmlFor={id}>{label}</FieldLabel>{multiline ? <Textarea id={id} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} /> : <Input id={id} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />}</Field>;
-}
-
-function SettingsPage({ section, onNotice }) {
-  const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings, staleTime: 30_000 });
-  const [settings, setSettings] = useState(defaultSettings);
-  const meta = settingMeta[section] ?? settingMeta.navigation;
-  const Icon = meta.icon;
-
-  useEffect(() => {
-    if (query.data?.settings) setSettings({ ...defaultSettings, ...query.data.settings });
-  }, [query.data]);
-
-  const mutation = useMutation({
-    mutationFn: (payload) => saveSiteSetting(section, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["site-settings"] });
-      queryClient.invalidateQueries({ queryKey: ["public-settings"] });
-      onNotice("设置已保存并发布");
-    },
-    onError: (error) => onNotice(error.message),
-  });
-
-  const values = settings[section] ?? defaultSettings[section];
-  const setValue = (key, value) => setSettings((current) => ({ ...current, [section]: { ...current[section], [key]: value } }));
-
-  return (
-    <div className="settings-layout">
-      <section className="console-panel settings-form-panel">
-        <div className="settings-title"><span><Icon /></span><div><h2>{meta.title}</h2><p>{meta.description}</p></div></div>
-        <div className="settings-form">
-          {section === "navigation" ? <>
-            <div className="field-row"><TextField label="站点名称" value={values.siteName} onChange={(value) => setValue("siteName", value)} /><TextField label="主按钮文案" value={values.ctaText} onChange={(value) => setValue("ctaText", value)} /></div>
-            <TextField label="主按钮链接" value={values.ctaLink} onChange={(value) => setValue("ctaLink", value)} />
-            <div className="toggle-group"><ToggleField label="吸顶导航" hint="页面滚动时始终保持导航可见" checked={values.sticky} onChange={(value) => setValue("sticky", value)} /><ToggleField label="显示博客入口" hint="在顶部导航和移动菜单中显示" checked={values.showBlog} onChange={(value) => setValue("showBlog", value)} /></div>
-          </> : null}
-          {section === "footer" ? <>
-            <TextField label="品牌简介" value={values.description} onChange={(value) => setValue("description", value)} multiline />
-            <div className="field-row"><TextField label="联系邮箱" value={values.email} onChange={(value) => setValue("email", value)} /><TextField label="联系电话" value={values.phone} onChange={(value) => setValue("phone", value)} /></div>
-            <TextField label="版权文案" value={values.copyright} onChange={(value) => setValue("copyright", value)} />
-          </> : null}
-          {section === "products" ? <>
-            <TextField label="页面标题" value={values.title} onChange={(value) => setValue("title", value)} />
-            <TextField label="页面介绍" value={values.subtitle} onChange={(value) => setValue("subtitle", value)} multiline />
-            <Field className="setting-field"><FieldLabel>默认排序</FieldLabel><Select value={values.defaultSort} onValueChange={(value) => setValue("defaultSort", value)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectGroup><SelectItem value="recommended">综合推荐</SelectItem><SelectItem value="yield">预期收益率</SelectItem><SelectItem value="price">租用价格</SelectItem><SelectItem value="compute">算力性能</SelectItem></SelectGroup></SelectContent></Select></Field>
-            <div className="toggle-group"><ToggleField label="显示库存状态" hint="产品列表显示可租数量" checked={values.showAvailability} onChange={(value) => setValue("showAvailability", value)} /><ToggleField label="显示预估收益" hint="根据历史产出展示参考范围" checked={values.showEstimatedYield} onChange={(value) => setValue("showEstimatedYield", value)} /></div>
-          </> : null}
-          {section === "blog" ? <>
-            <TextField label="首屏标题" value={values.title} onChange={(value) => setValue("title", value)} />
-            <TextField label="首屏介绍" value={values.subtitle} onChange={(value) => setValue("subtitle", value)} multiline />
-            <div className="field-row"><TextField label="精选标签" value={values.featuredLabel} onChange={(value) => setValue("featuredLabel", value)} /><TextField label="订阅标题" value={values.newsletterTitle} onChange={(value) => setValue("newsletterTitle", value)} /></div>
-            <ToggleField label="显示邮件订阅" hint="在博客首页底部展示订阅表单" checked={values.showNewsletter} onChange={(value) => setValue("showNewsletter", value)} />
-          </> : null}
-        </div>
-        <div className="settings-actions"><span>修改将保存到全站页面配置</span><Button size="sm" onClick={() => mutation.mutate(values)} disabled={mutation.isPending}><CheckCircle data-icon="inline-start" />{mutation.isPending ? "保存中..." : "保存并发布"}</Button></div>
-      </section>
-      <aside className="settings-preview">
-        <div className="preview-heading"><span>桌面端预览</span><Badge variant="outline"><PencilSimple />实时</Badge></div>
-        <div className={`preview-canvas preview-${section}`}>
-          <div className="preview-browser"><i /><i /><i /><span>aetherlane.com</span></div>
-          <div className="preview-content">
-            {section === "navigation" ? <><div className="mini-nav"><b>◆ {values.siteName}</b><span>Home &nbsp; Products &nbsp; {values.showBlog ? "Blog" : ""}</span><button>{values.ctaText}</button></div><div className="mini-hero"><strong>Galaxy Compute</strong><small>Infrastructure that keeps earning.</small></div></> : null}
-            {section === "footer" ? <><div className="mini-space" /><div className="mini-footer"><b>◆ Aether Lane</b><p>{values.description}</p><span>{values.email}</span><small>{values.copyright}</small></div></> : null}
-            {section === "products" ? <div className="mini-products"><strong>{values.title}</strong><p>{values.subtitle}</p><div>{["H800 80G", "A100 80G", "L40S 48G"].map((item) => <span key={item}><Cpu /><b>{item}</b><small>Available now</small></span>)}</div></div> : null}
-            {section === "blog" ? <div className="mini-blog"><strong>{values.title}</strong><p>{values.subtitle}</p><div><span>{values.featuredLabel}</span><b>如何选择适合长期托管的 GPU？</b></div>{values.showNewsletter ? <button>{values.newsletterTitle}</button> : null}</div> : null}
-          </div>
-        </div>
-      </aside>
-    </div>
-  );
-}
-
 export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, notice }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isAdmin = user.role === "admin";
   const navGroups = isAdmin ? [assetNavGroup, ...adminNavGroups] : [assetNavGroup];
-  const overview = useQuery({ queryKey: ["platform-overview"], queryFn: getPlatformOverview, staleTime: 60_000 });
+  const needsOverview = ["/console", "/console/devices", "/console/orders"].includes(pathname);
+  const overview = useQuery({ queryKey: ["platform-overview"], queryFn: getPlatformOverview, staleTime: 60_000, enabled: needsOverview });
   const data = overview.data ? {
     ...fallbackOverview,
     ...overview.data,
@@ -363,7 +272,7 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
           {pathname === "/console/transactions" ? <FinancePage kind="transactions" /> : null}
           {pathname === "/console/users" && isAdmin ? <UserManagementPage currentUser={user} onNotice={onNotice} /> : null}
           {settingSection === "home" ? <HomeSettingsPage onNotice={onNotice} /> : null}
-          {settingSection && settingSection !== "home" ? <SettingsPage section={settingSection} onNotice={onNotice} /> : null}
+          {settingSection && settingSection !== "home" ? <ContentSettingsPage section={settingSection} onNotice={onNotice} /> : null}
         </div>
       </main>
       {sidebarOpen ? <button className="console-overlay" onClick={() => setSidebarOpen(false)} aria-label="关闭菜单" /> : null}

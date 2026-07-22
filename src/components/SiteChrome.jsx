@@ -12,21 +12,46 @@ import {
   X,
   YoutubeLogo,
 } from "@phosphor-icons/react";
+import { defaultFooterSettings, defaultNavigationSettings } from "../data/siteSettings.js";
 
-export function Logo({ onNavigate }) {
+const socialIcons = {
+  Instagram: InstagramLogo,
+  Facebook: FacebookLogo,
+  Youtube: YoutubeLogo,
+  Linkedin: LinkedinLogo,
+};
+
+const activePageForLink = (link) => link === "/estates" ? "estates" : link === "/blog" ? "blog" : link === "/" ? "home" : "";
+
+function createSiteLinkHandler(onNavigate, onSection) {
+  return (link) => {
+    const target = String(link || "/").trim();
+    if (target.startsWith("#")) {
+      onSection(target);
+      return;
+    }
+    if (/^https?:\/\//i.test(target) || target.startsWith("mailto:") || target.startsWith("tel:")) {
+      window.location.assign(target);
+      return;
+    }
+    onNavigate(target);
+  };
+}
+
+export function Logo({ onNavigate, siteName = "Aether Lane" }) {
   return (
-    <button className="brand" type="button" onClick={() => onNavigate("home")} aria-label="Aether Lane home">
+    <button className="brand" type="button" onClick={() => onNavigate("home")} aria-label={`${siteName} home`}>
       <span className="brand-mark"><span /><span /><span /><span /></span>
-      <strong>Aether Lane</strong>
+      <strong>{siteName}</strong>
     </button>
   );
 }
 
-export function UserMenu({ user, onNavigate, onLogout, compact = false }) {
+export function UserMenu({ user, onNavigate, onLogout, compact = false, loginLabel = "登录 / 注册" }) {
   const [open, setOpen] = useState(false);
 
   if (!user) {
-    return <button className="header-cta" onClick={() => onNavigate("/auth")}>登录 / 注册</button>;
+    return <button className="header-cta" onClick={() => onNavigate("/auth")}>{loginLabel}</button>;
   }
 
   return (
@@ -45,19 +70,20 @@ export function UserMenu({ user, onNavigate, onLogout, compact = false }) {
   );
 }
 
-export function SiteHeader({ page, menuOpen, onMenuToggle, onNavigate, onSection, user, onLogout }) {
+export function SiteHeader({ page, menuOpen, onMenuToggle, onNavigate, onSection, user, onLogout, settings = defaultNavigationSettings }) {
+  const openLink = createSiteLinkHandler(onNavigate, onSection);
+  const items = settings.items.filter((item) => item.enabled !== false);
+
   return (
-    <header className="topbar shell">
-      <Logo onNavigate={onNavigate} />
+    <header className={`topbar shell ${settings.sticky ? "topbar-sticky" : ""}`}>
+      <Logo onNavigate={onNavigate} siteName={settings.siteName} />
       <nav className={menuOpen ? "open" : ""} aria-label="Primary navigation">
-        <button className={page === "home" ? "active" : ""} onClick={() => onNavigate("home")}>Home</button>
-        <button onClick={() => onSection("#about")}>About</button>
-        <button className={page === "estates" ? "active" : ""} onClick={() => onNavigate("estates")}>Estates</button>
-        <button onClick={() => onSection("#projects")}>Projects</button>
-        <button className={page === "blog" ? "active" : ""} onClick={() => onNavigate("blog")}>Blog</button>
-        <button onClick={() => onSection("#contact")}>Inquire</button>
+        {items.map((item) => {
+          const itemPage = activePageForLink(item.link);
+          return <button className={itemPage && page === itemPage ? "active" : ""} key={item.id} onClick={() => openLink(item.link)}>{item.label}</button>;
+        })}
       </nav>
-      <UserMenu user={user} onNavigate={onNavigate} onLogout={onLogout} compact />
+      <UserMenu user={user} onNavigate={onNavigate} onLogout={onLogout} compact loginLabel={settings.loginLabel} />
       <button className="menu-toggle" onClick={onMenuToggle} aria-label="Toggle menu">
         {menuOpen ? <X /> : <List />}
       </button>
@@ -65,46 +91,38 @@ export function SiteHeader({ page, menuOpen, onMenuToggle, onNavigate, onSection
   );
 }
 
-export function SiteFooter({ onNavigate, onSection }) {
+export function SiteFooter({ onNavigate, onSection, settings = defaultFooterSettings }) {
+  const openLink = createSiteLinkHandler(onNavigate, onSection);
+  if (!settings.enabled) return null;
+
   return (
     <footer className="footer shell">
       <div className="footer-brand">
-        <Logo onNavigate={onNavigate} />
-        <p>Elegance above the skyline.<br />Extraordinary homes for<br />extraordinary lives.</p>
+        <Logo onNavigate={onNavigate} siteName={settings.siteName} />
+        <p style={{ whiteSpace: "pre-line" }}>{settings.description}</p>
         <div className="socials">
-          <a href="https://instagram.com" aria-label="Instagram"><InstagramLogo /></a>
-          <a href="https://facebook.com" aria-label="Facebook"><FacebookLogo /></a>
-          <a href="https://youtube.com" aria-label="YouTube"><YoutubeLogo /></a>
-          <a href="https://linkedin.com" aria-label="LinkedIn"><LinkedinLogo /></a>
+          {settings.socials.map((item) => {
+            const Icon = socialIcons[item.icon] ?? InstagramLogo;
+            return <a href={item.link} key={item.id} aria-label={item.label}><Icon /></a>;
+          })}
         </div>
       </div>
-      <div className="footer-column">
-        <h3>Navigation</h3>
-        <button onClick={() => onNavigate("home")}>Home</button>
-        <button onClick={() => onSection("#about")}>About</button>
-        <button onClick={() => onNavigate("estates")}>Estates</button>
-        <button onClick={() => onSection("#projects")}>Projects</button>
-        <button onClick={() => onNavigate("blog")}>Blog</button>
-        <button onClick={() => onSection("#contact")}>Inquire</button>
-      </div>
-      <div className="footer-column">
-        <h3>Company</h3>
-        <button onClick={() => onSection("#about")}>Our Story</button>
-        <button onClick={() => onSection("#contact")}>Careers</button>
-        <button onClick={() => onSection("#projects")}>Media</button>
-        <button onClick={() => onNavigate("blog")}>Blog</button>
-        <button onClick={() => onSection("#contact")}>Contact</button>
-      </div>
+      {settings.columns.map((column) => (
+        <div className="footer-column" key={column.id}>
+          <h3>{column.title}</h3>
+          {column.items.filter((item) => item.enabled !== false).map((item) => <button key={item.id} onClick={() => openLink(item.link)}>{item.label}</button>)}
+        </div>
+      ))}
       <div className="footer-column contact">
-        <h3>Contact</h3>
-        <a href="tel:+15551234567"><Phone weight="fill" /> +1 (555) 123-4567</a>
-        <a href="mailto:hello@aetherlane.com"><EnvelopeSimple weight="fill" /> hello@aetherlane.com</a>
-        <p><MapPin weight="fill" /> 123 Celestial Way,<br />San Francisco, CA 94107</p>
+        <h3>{settings.contact.title}</h3>
+        <a href={`tel:${settings.contact.phone.replace(/[^+\d]/g, "")}`}><Phone weight="fill" /> {settings.contact.phone}</a>
+        <a href={`mailto:${settings.contact.email}`}><EnvelopeSimple weight="fill" /> {settings.contact.email}</a>
+        <p><MapPin weight="fill" /> <span style={{ whiteSpace: "pre-line" }}>{settings.contact.address}</span></p>
       </div>
-      <div className="footer-image" />
+      <div className="footer-image" style={{ backgroundImage: `url(${settings.image})`, backgroundPosition: settings.imagePosition }} />
       <div className="footer-bottom">
-        <span>© 2024 Aether Lane. All rights reserved.</span>
-        <div><a href="#privacy">Privacy Policy</a><a href="#terms">Terms of Service</a></div>
+        <span>{settings.copyright}</span>
+        <div>{settings.legalLinks.map((item) => <button key={item.id} onClick={() => openLink(item.link)}>{item.label}</button>)}</div>
       </div>
     </footer>
   );

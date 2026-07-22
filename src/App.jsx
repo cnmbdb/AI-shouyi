@@ -1,16 +1,17 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useRouterState } from "@tanstack/react-router";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome.jsx";
-import { BlogPage } from "./pages/BlogPage.jsx";
-import { EstatesPage } from "./pages/EstatesPage.jsx";
-import { HomePage } from "./pages/HomePage.jsx";
 import { loadCurrentUser, logoutAccount, subscribeToAuthChanges } from "./lib/auth.js";
 import { getSiteSettings } from "./lib/platformData.js";
 import { normalizeHomeSettings } from "./data/homeSettings.js";
+import { normalizeBlogSettings, normalizeFooterSettings, normalizeNavigationSettings, normalizeProductSettings } from "./data/siteSettings.js";
 
 const AuthPage = lazy(() => import("./pages/AuthPage.jsx").then((module) => ({ default: module.AuthPage })));
 const DashboardPage = lazy(() => import("./pages/DashboardPage.jsx").then((module) => ({ default: module.DashboardPage })));
+const HomePage = lazy(() => import("./pages/HomePage.jsx").then((module) => ({ default: module.HomePage })));
+const EstatesPage = lazy(() => import("./pages/EstatesPage.jsx").then((module) => ({ default: module.EstatesPage })));
+const BlogPage = lazy(() => import("./pages/BlogPage.jsx").then((module) => ({ default: module.BlogPage })));
 
 const sitePath = {
   home: "/",
@@ -31,6 +32,12 @@ export function App() {
   const isAdminPath = pathname === "/console/users" || pathname.startsWith("/console/settings/");
   const page = pathname === "/estates" ? "estates" : pathname === "/blog" ? "blog" : "home";
   const publicSettings = useQuery({ queryKey: ["public-settings"], queryFn: getSiteSettings, retry: false, staleTime: 30_000, enabled: !isConsole && !isAuth });
+  const publishedSettings = publicSettings.data?.settings;
+  const navigationSettings = useMemo(() => normalizeNavigationSettings(publishedSettings?.navigation), [publishedSettings?.navigation]);
+  const footerSettings = useMemo(() => normalizeFooterSettings(publishedSettings?.footer), [publishedSettings?.footer]);
+  const homeSettings = useMemo(() => normalizeHomeSettings(publishedSettings?.home), [publishedSettings?.home]);
+  const productSettings = useMemo(() => normalizeProductSettings(publishedSettings?.products), [publishedSettings?.products]);
+  const blogSettings = useMemo(() => normalizeBlogSettings(publishedSettings?.blog), [publishedSettings?.blog]);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -104,13 +111,16 @@ export function App() {
         onSection={goToSection}
         user={session.data?.user}
         onLogout={logout}
+        settings={navigationSettings}
       />
       <main id="home">
-        {page === "home" ? <HomePage settings={normalizeHomeSettings(publicSettings.data?.settings?.home)} onNavigate={navigate} onNotice={setNotice} /> : null}
-        {page === "estates" ? <EstatesPage onNavigate={navigate} onNotice={setNotice} /> : null}
-        {page === "blog" ? <BlogPage onNotice={setNotice} /> : null}
+        <Suspense fallback={<div className="route-loader">正在加载页面...</div>}>
+          {page === "home" ? <HomePage settings={homeSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
+          {page === "estates" ? <EstatesPage settings={productSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
+          {page === "blog" ? <BlogPage settings={blogSettings} onNotice={setNotice} /> : null}
+        </Suspense>
       </main>
-      <SiteFooter onNavigate={navigate} onSection={goToSection} />
+      <SiteFooter onNavigate={navigate} onSection={goToSection} settings={footerSettings} />
       {notice ? <div className="toast" role="status">{notice}</div> : null}
     </div>
   );
