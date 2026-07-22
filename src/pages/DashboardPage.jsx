@@ -11,12 +11,14 @@ import {
   LayoutDashboardIcon as CirclesFour,
   CoinsIcon as Coins,
   CpuIcon as Cpu,
+  CreditCardIcon as CreditCard,
   CircleDollarSignIcon as CurrencyCircleDollar,
   LifeBuoyIcon as Gear,
   HouseIcon as House,
   MenuIcon as List,
   NewspaperIcon as Newspaper,
   PackageIcon as Package,
+  PackageSearchIcon as PackageSearch,
   ReceiptTextIcon as Receipt,
   LogOutIcon as SignOut,
   SlidersHorizontalIcon as SlidersHorizontal,
@@ -35,6 +37,7 @@ import { UserManagementPage } from "./UserManagementPage.jsx";
 import { HomeSettingsPage } from "./HomeSettingsPage.jsx";
 import { ContentSettingsPage } from "./ContentSettingsPage.jsx";
 import { AccountSettingsPage } from "./AccountSettingsPage.jsx";
+import { CommerceSettingsPage } from "./CommerceSettingsPage.jsx";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,6 +61,13 @@ const assetNavGroup = {
 const adminNavGroups = [
   { label: "平台管理", items: [{ path: "/console/users", label: "用户管理", icon: Users }] },
   {
+    label: "商城",
+    items: [
+      { path: "/console/store/products", label: "商品列表", icon: PackageSearch },
+      { path: "/console/store/payment", label: "支付设置", icon: CreditCard },
+    ],
+  },
+  {
     label: "站点设置",
     items: [
       { path: "/console/settings/navigation", label: "顶部导航", icon: Browser },
@@ -77,6 +87,8 @@ const pageMeta = {
   "/console/transactions": ["资金明细", "查看全部入账、结算与提现记录"],
   "/console/account": ["账户设置", "修改个人资料、头像和登录密码"],
   "/console/users": ["用户管理", "查看平台账号、验证状态并配置用户角色"],
+  "/console/store/products": ["商品列表", "管理商品分类、规格、详情、租用买断价格与续费规则"],
+  "/console/store/payment": ["支付设置", "管理支付提供方、渠道、费率、金额限制、密钥与回调"],
 };
 
 const settingMeta = {
@@ -280,6 +292,8 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
           {pathname === "/console/transactions" ? <FinancePage kind="transactions" /> : null}
           {pathname === "/console/account" ? <AccountSettingsPage user={user} onUserUpdated={onUserUpdated} onNotice={onNotice} /> : null}
           {pathname === "/console/users" && isAdmin ? <UserManagementPage currentUser={user} onNotice={onNotice} /> : null}
+          {pathname === "/console/store/products" && isAdmin ? <CommerceSettingsPage section="products" onNotice={onNotice} /> : null}
+          {pathname === "/console/store/payment" && isAdmin ? <CommerceSettingsPage section="payment" onNotice={onNotice} /> : null}
           {settingSection === "home" ? <HomeSettingsPage onNotice={onNotice} /> : null}
           {settingSection && settingSection !== "home" ? <ContentSettingsPage section={settingSection} onNotice={onNotice} /> : null}
         </div>

@@ -38,6 +38,8 @@ Prototype compute-spec rule: public product cards must use GPU-compute specifica
 
 Prototype product-results copy rule: the public product results heading must have a prominent dedicated input in product browsing settings. The input supports a `{count}` token that renders the current visible product count after filtering.
 
+Prototype product-card click-link rule: every product browsing card exposes a clearly labeled “点击跳转链接” input in product browsing settings. The saved value controls clicking the entire public product card, supports internal client-side paths and full HTTPS URLs, and remains backward-compatible with the existing `link` field.
+
 Prototype account-settings rule: every authenticated user has an account settings entry in the asset-operation navigation. Users can update their display name, avatar, avatar fallback color, and password; login username and verified email remain read-only, and avatar storage is restricted to the authenticated user's own folder.
 
 Prototype run-compute terminology rule: the console section previously called "托管收益" is labeled "跑算". Device-generated income is called "跑算收益" in summaries, activity, and transaction rows, while generic financial concepts such as monthly earnings and pending settlement remain "收益".
@@ -51,3 +53,13 @@ Prototype footer-logo CMS rule: footer settings expose their own Logo image URL 
 Prototype console-loading rule: refreshing or entering an authenticated console route uses a compact neutral loading widget rather than a plain loading sentence. Its primary visual is a gray progress rail with an NVIDIA Green progress layer and a pixel-art RTX 5090 mini GPU riding at the progress head. It retains account, asset, and console preparation stages and respects `prefers-reduced-motion`.
 
 Prototype settings-density rule: site-setting pages open directly on their editable accordion sections and sticky publish bar. Do not render a separate top content-management summary or workflow introduction card.
+
+Prototype commerce-console rule: administrators have a top-level “商城” group in the console sidebar with “商品列表” and “支付设置” child entries. Both pages use the compact section-based settings pattern, persist private administrator-only commerce configuration, and never store payment secrets in browser-readable settings.
+
+Prototype commerce-catalog rule: the store catalog is organized into administrator-managed product categories and products. Products expose image upload, category, name, SKU, public slug/share link, GPU specifications, inventory, detail copy, and rental, buyout, or combined billing. Rental products persist period units, renewal eligibility, and current renewal price; renewal orders reference the original rental order and extend its service expiry only after verified payment.
+
+Prototype commerce-detail rule: every enabled store product has a public `/estates/:categoryId/:productId` detail page under the persistent shared header and footer. The page shows product imagery, category, GPU specifications, inventory, rental/buyout choices, renewal terms, and a Web Share/clipboard-compatible share link; legacy `/products/...` and single-segment slug links remain read-compatible but are never generated for new shares.
+
+Prototype payment-runtime rule: payment channels follow the Dujiao-Next provider/channel/interaction/fee/amount/scope model. Public configuration and secret credentials are stored separately; channel administration, server-side order repricing, provider payment creation, callback signature verification, idempotent payment completion, and rental-expiry updates run only in trusted Supabase Edge Functions and service-role database code. Manual transfer and EPay are the first active adapters; unsupported providers must return an explicit adapter-not-enabled error rather than simulate success.
+
+Prototype payment-settings UI rule: the administrator payment settings page must retain the full Dujiao-Next channel-management structure rather than a simplified settings card. It includes provider and channel filters, ID/name/provider/type/interaction/fee/status/sort/action columns, page-size pagination, and a scrollable add/edit dialog with amount limits, payment scopes, member-level restrictions, active state, advanced JSON, and provider-specific fields for EPay v1/v2, PayPal, Stripe, Alipay, WeChat Pay, BEPUSDT, EPUSDT, TokenPay, OKPay, and manual transfer.

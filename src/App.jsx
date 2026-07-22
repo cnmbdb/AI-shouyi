@@ -13,6 +13,7 @@ const DashboardPage = lazy(() => import("./pages/DashboardPage.jsx").then((modul
 const HomePage = lazy(() => import("./pages/HomePage.jsx").then((module) => ({ default: module.HomePage })));
 const EstatesPage = lazy(() => import("./pages/EstatesPage.jsx").then((module) => ({ default: module.EstatesPage })));
 const BlogPage = lazy(() => import("./pages/BlogPage.jsx").then((module) => ({ default: module.BlogPage })));
+const StoreProductPage = lazy(() => import("./pages/StoreProductPage.jsx").then((module) => ({ default: module.StoreProductPage })));
 
 const sitePath = {
   home: "/",
@@ -30,8 +31,14 @@ export function App() {
 
   const isConsole = pathname.startsWith("/console");
   const isAuth = pathname.startsWith("/auth");
-  const isAdminPath = pathname === "/console/users" || pathname.startsWith("/console/settings/");
-  const page = pathname === "/estates" ? "estates" : pathname === "/blog" ? "blog" : "home";
+  const isAdminPath = pathname === "/console/users" || pathname.startsWith("/console/settings/") || pathname.startsWith("/console/store/");
+  const isStoreProduct = pathname.startsWith("/estates/") || pathname.startsWith("/products/");
+  const productRoutePrefix = pathname.startsWith("/estates/") ? "/estates/" : "/products/";
+  const productSegments = isStoreProduct ? pathname.slice(productRoutePrefix.length).split("/").filter(Boolean).map(decodeURIComponent) : [];
+  const productCategoryId = productSegments.length >= 2 ? productSegments[0] : "";
+  const productId = productSegments.length >= 2 ? productSegments[1] : "";
+  const legacyProductSlug = productSegments.length === 1 ? productSegments[0] : "";
+  const page = pathname === "/estates" ? "estates" : pathname === "/blog" ? "blog" : isStoreProduct ? "product" : "home";
   const publicSettings = useQuery({
     queryKey: ["public-settings"],
     queryFn: getSiteSettings,
@@ -126,6 +133,7 @@ export function App() {
           {page === "home" ? <HomePage settings={homeSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
           {page === "estates" ? <EstatesPage settings={productSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
           {page === "blog" ? <BlogPage settings={blogSettings} onNotice={setNotice} /> : null}
+          {page === "product" ? <StoreProductPage categoryId={productCategoryId} productId={productId} legacySlug={legacyProductSlug} user={session.data?.user} onNavigate={navigate} onNotice={setNotice} /> : null}
         </Suspense>
       </main>
       <SiteFooter onNavigate={navigate} onSection={goToSection} settings={footerSettings} />

@@ -1,0 +1,10 @@
+[functions.payment-channels-admin]
+verify_jwt = true
+
+[functions.payment-order]
+verify_jwt = true
+
+# Payment providers cannot attach a Supabase user JWT. The function performs
+# provider signature verification itself before it updates any payment state.
+[functions.payment-webhook]
+verify_jwt = false
