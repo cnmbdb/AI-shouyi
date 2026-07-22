@@ -70,3 +70,49 @@ No actionable P0, P1 or P2 differences remain in the desktop comparison. The mai
 - Mobile breakpoint CSS is implemented; the available in-app viewport override did not produce a reliable fixed-width capture for a second visual comparison.
 
 final result: passed
+
+---
+
+# Design QA — Console dual-fan GPU brand icon
+
+- Source visual truth: `/var/folders/_d/n7glc63n3zd218wc78wjmj880000gn/T/codex-clipboard-adefce78-f8fd-46f8-a0a5-147a3fbe12f6.png`
+- Implementation screenshots: `/Users/a2333/.codex/visualizations/2026/07/22/019f89c1-75b1-7162-acc9-4a062907e954/console-dual-fan-gpu-logo-light.png` and `/Users/a2333/.codex/visualizations/2026/07/22/019f89c1-75b1-7162-acc9-4a062907e954/console-dual-fan-gpu-logo-dark.png`
+- Focused comparison: `/Users/a2333/.codex/visualizations/2026/07/22/019f89c1-75b1-7162-acc9-4a062907e954/console-gpu-logo-reference-comparison.png`
+- Viewport: 1280 × 720 CSS pixels at device pixel ratio 2.
+- Source pixels: 192 × 160. Implementation pixels: 2560 × 1440, corresponding to the 1280 × 720 CSS viewport. The focused comparison scales both crops into a 720 × 240 review board without changing their aspect ratios.
+- State: authenticated `/console/devices`, desktop sidebar, verified in both light and dark themes.
+
+## Full-view comparison evidence
+
+The full console captures confirm that the 27 × 27 CSS-pixel mark stays aligned with the Aether Lane wordmark, preserves the compact sidebar rhythm, and does not disturb navigation spacing in either theme.
+
+## Focused region comparison evidence
+
+The focused comparison places the supplied desktop-GPU reference beside the rendered sidebar brand. Both show an outlined desktop graphics card with two visible cooling fans. The implementation intentionally uses the existing NVIDIA Green brand token rather than the grayscale reference.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the existing Aether Lane wordmark remains unchanged in family, weight, size, and alignment.
+- Spacing and layout rhythm: the icon occupies 27 × 27 CSS pixels inside the existing 32-pixel brand row with no clipping or overlap.
+- Colors and visual tokens: the mark renders as `rgb(118, 185, 0)` (`#76B900`) in both light and dark themes.
+- Image quality and asset fidelity: the mark uses Lucide's vector GPU icon from the project's existing icon library, preserving a crisp two-fan outline at browser density 2 without a handcrafted SVG or raster background.
+- Copy and content: the Aether Lane wordmark and accessible name remain unchanged.
+
+## Findings
+
+No actionable P0, P1, or P2 differences remain. The requested dual-fan desktop-GPU concept, outline treatment, and brand-green color are present and readable.
+
+## Comparison history
+
+### Pass 1 — passed
+
+No visual fixes were required after the browser comparison. The simplified fan details are an acceptable P3 difference inherent to the chosen production icon library and remain clearer than the supplied raster when rendered at sidebar size.
+
+## Interaction and runtime checks
+
+- The console route and device table render normally.
+- Light/dark theme switching keeps the GPU icon at the same brand-green color.
+- Browser console errors checked: none.
+- Production build: `npm run build` passes.
+
+final result: passed

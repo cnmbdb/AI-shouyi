@@ -1,6 +1,7 @@
 import { requireSupabase } from "./supabase.js";
 
 const currency = (value) => `¥${Number(value || 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const transactionLabel = (value) => value === "托管收益" ? "跑算收益" : value;
 
 const throwIfError = (error) => {
   if (error) throw new Error(error.message || "数据请求失败");
@@ -59,13 +60,13 @@ export async function getPlatformOverview() {
       created: new Date(row.created_at).toLocaleString("zh-CN", { hour12: false }),
     })),
     activity: transactions.slice(0, 4).map((row) => ({
-      title: `${row.reference} ${row.transaction_type}`,
+      title: `${row.reference} ${transactionLabel(row.transaction_type)}`,
       time: new Date(row.occurred_at).toLocaleString("zh-CN", { hour12: false }),
       value: `${Number(row.amount) >= 0 ? "+" : "-"}${currency(Math.abs(Number(row.amount)))}`,
     })),
     transactions: transactions.map((row) => ({
       time: new Date(row.occurred_at).toLocaleString("zh-CN", { hour12: false }),
-      type: row.transaction_type,
+      type: transactionLabel(row.transaction_type),
       reference: row.reference,
       amount: `${Number(row.amount) >= 0 ? "+" : "-"}${currency(Math.abs(Number(row.amount)))}`,
       status: row.status,

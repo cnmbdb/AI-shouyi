@@ -17,6 +17,11 @@ function readableAuthError(error, fallback = "认证操作失败") {
   return translated ?? message ?? fallback;
 }
 
+function avatarColumnUnavailable(error) {
+  const message = error?.message?.toLowerCase() ?? "";
+  return error?.code === "42703" || error?.code === "PGRST204" || message.includes("avatar_url");
+}
+
 export function publicUser(authUser, profile) {
   if (!authUser) return null;
   const fallbackName = authUser.user_metadata?.username || authUser.email?.split("@")[0] || "user";
@@ -26,6 +31,7 @@ export function publicUser(authUser, profile) {
     email_confirmed_at: authUser.email_confirmed_at,
     username: profile?.username || fallbackName,
     display_name: profile?.display_name || fallbackName,
+    avatar_url: profile?.avatar_url || authUser.user_metadata?.avatar_url || "",
     avatar_color: profile?.avatar_color || "#525252",
     role: profile?.role === "admin" ? "admin" : "user",
   };
@@ -37,11 +43,21 @@ export async function loadCurrentUser() {
   if (error) throw new Error(readableAuthError(error, "无法读取登录状态"));
   if (!session?.user) return { user: null };
 
-  const { data: profile, error: profileError } = await client
+  let { data: profile, error: profileError } = await client
     .from("profiles")
-    .select("id, username, display_name, avatar_color, role")
+    .select("id, username, display_name, avatar_url, avatar_color, role")
     .eq("id", session.user.id)
     .single();
+
+  if (avatarColumnUnavailable(profileError)) {
+    const legacyProfile = await client
+      .from("profiles")
+      .select("id, username, display_name, avatar_color, role")
+      .eq("id", session.user.id)
+      .single();
+    profile = legacyProfile.data;
+    profileError = legacyProfile.error;
+  }
 
   if (profileError) throw new Error(profileError.message);
   return { user: publicUser(session.user, profile) };
@@ -108,5 +124,79 @@ export async function sendPasswordReset(email) {
 
 export async function updatePassword(password) {
   const { error } = await requireSupabase().auth.updateUser({ password });
+  if (error) throw new Error(readableAuthError(error, "密码更新失败"));
+}
+
+const accountAvatarTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
+const accountAvatarPath = (userId) => `${userId}/avatar`;
+
+export async function uploadAccountAvatar(file) {
+  if (!file || !accountAvatarTypes.has(file.type)) throw new Error("请选择 JPG、PNG、WebP、GIF 或 AVIF 图片");
+  if (file.size > 3 * 1024 * 1024) throw new Error("头像图片不能超过 3 MB");
+
+  const client = requireSupabase();
+  const { data: { user }, error: userError } = await client.auth.getUser();
+  if (userError) throw new Error(readableAuthError(userError, "无法读取当前账号"));
+  if (!user) throw new Error("请先登录");
+
+  const path = accountAvatarPath(user.id);
+  const { error } = await client.storage.from("user-avatars").upload(path, file, {
+    cacheControl: "3600",
+    contentType: file.type,
+    upsert: true,
+  });
+  if (error) throw new Error(error.message || "头像上传失败");
+
+  const { data } = client.storage.from("user-avatars").getPublicUrl(path);
+  if (!data.publicUrl) throw new Error("头像公开地址生成失败");
+  return `${data.publicUrl}?v=${Date.now()}`;
+}
+
+export async function deleteAccountAvatar() {
+  const client = requireSupabase();
+  const { data: { user }, error: userError } = await client.auth.getUser();
+  if (userError) throw new Error(readableAuthError(userError, "无法读取当前账号"));
+  if (!user) throw new Error("请先登录");
+  const { error } = await client.storage.from("user-avatars").remove([accountAvatarPath(user.id)]);
+  if (error) throw new Error(error.message || "头像删除失败");
+}
+
+export async function updateAccountProfile({ displayName, avatarUrl, avatarColor }) {
+  const client = requireSupabase();
+  const { data: { user }, error: userError } = await client.auth.getUser();
+  if (userError) throw new Error(readableAuthError(userError, "无法读取当前账号"));
+  if (!user) throw new Error("请先登录");
+
+  const normalizedName = displayName.trim();
+  if (!normalizedName || normalizedName.length > 80) throw new Error("显示名称需要 1 至 80 个字符");
+
+  const normalizedAvatar = avatarUrl?.trim() || null;
+  const { error: metadataError } = await client.auth.updateUser({
+    data: { display_name: normalizedName, avatar_url: normalizedAvatar },
+  });
+  if (metadataError) throw new Error(readableAuthError(metadataError, "账户资料更新失败"));
+
+  let { error: profileError } = await client
+    .from("profiles")
+    .update({ display_name: normalizedName, avatar_url: normalizedAvatar, avatar_color: avatarColor })
+    .eq("id", user.id);
+
+  if (avatarColumnUnavailable(profileError)) {
+    const legacyUpdate = await client
+      .from("profiles")
+      .update({ display_name: normalizedName, avatar_color: avatarColor })
+      .eq("id", user.id);
+    profileError = legacyUpdate.error;
+  }
+  if (profileError) throw new Error(profileError.message || "账户资料更新失败");
+  return loadCurrentUser();
+}
+
+export async function changeAccountPassword({ email, currentPassword, newPassword }) {
+  const { error } = await requireSupabase().auth.updateUser({
+    email,
+    current_password: currentPassword,
+    password: newPassword,
+  });
   if (error) throw new Error(readableAuthError(error, "密码更新失败"));
 }

@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useRouterState } from "@tanstack/react-router";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome.jsx";
+import { ConsoleLoader } from "./components/ConsoleLoader.jsx";
 import { loadCurrentUser, logoutAccount, subscribeToAuthChanges } from "./lib/auth.js";
 import { getSiteSettings } from "./lib/platformData.js";
 import { normalizeHomeSettings } from "./data/homeSettings.js";
@@ -104,8 +105,8 @@ export function App() {
   }
 
   if (isConsole) {
-    if (session.isLoading || !session.data?.user) return <div className="route-loader">正在进入控制台...</div>;
-    return <Suspense fallback={<div className="route-loader">正在加载控制台...</div>}><DashboardPage pathname={pathname} user={session.data.user} onNavigate={navigate} onLogout={logout} onNotice={setNotice} notice={notice} /></Suspense>;
+    if (session.isLoading || !session.data?.user) return <ConsoleLoader message="正在验证账户并读取算力资产" />;
+    return <Suspense fallback={<ConsoleLoader message="正在准备控制台组件" />}><DashboardPage pathname={pathname} user={session.data.user} onNavigate={navigate} onLogout={logout} onNotice={setNotice} onUserUpdated={(user) => queryClient.setQueryData(["session"], { user })} notice={notice} /></Suspense>;
   }
 
   return (

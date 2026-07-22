@@ -14,6 +14,7 @@ import {
 } from "@phosphor-icons/react";
 import { defaultFooterSettings, defaultNavigationSettings } from "../data/siteSettings.js";
 import { assetUrl } from "../lib/assets.js";
+import { BrandLogoMark } from "./BrandLogo.jsx";
 
 const socialIcons = {
   Instagram: InstagramLogo,
@@ -39,10 +40,10 @@ function createSiteLinkHandler(onNavigate, onSection) {
   };
 }
 
-export function Logo({ onNavigate, siteName = "Aether Lane" }) {
+export function Logo({ onNavigate, siteName = "Aether Lane", logo = "", fallback = "tiles" }) {
   return (
     <button className="brand" type="button" onClick={() => onNavigate("home")} aria-label={`${siteName} home`}>
-      <span className="brand-mark"><span /><span /><span /><span /></span>
+      {logo || fallback === "gpu" ? <BrandLogoMark logo={logo} imageClassName="brand-logo-image" fallbackClassName="brand-gpu-logo" /> : <span className="brand-mark"><span /><span /><span /><span /></span>}
       <strong>{siteName}</strong>
     </button>
   );
@@ -63,8 +64,8 @@ export function UserMenu({ user, onNavigate, onLogout, compact = false, loginLab
   return (
     <div className={`user-menu ${compact ? "compact" : ""}`}>
       <button className="user-trigger" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
-        <span className="user-avatar" style={{ background: user.avatar_color }}>{user.username.slice(0, 1).toUpperCase()}</span>
-        {compact ? null : <span className="user-name">{user.username}</span>}
+        <span className="user-avatar" style={{ background: user.avatar_color }}>{user.avatar_url ? <img src={user.avatar_url} alt="" /> : user.username.slice(0, 1).toUpperCase()}</span>
+        {compact ? null : <span className="user-name">{user.display_name || user.username}</span>}
       </button>
       {open ? (
         <div className="user-dropdown">
@@ -82,7 +83,7 @@ export function SiteHeader({ page, menuOpen, onMenuToggle, onNavigate, onSection
 
   return (
     <header className={`topbar shell ${settings.sticky ? "topbar-sticky" : ""}`}>
-      <Logo onNavigate={onNavigate} siteName={settings.siteName} />
+      <Logo onNavigate={onNavigate} siteName={settings.siteName} logo={settings.logo} fallback="gpu" />
       <nav className={menuOpen ? "open" : ""} aria-label="Primary navigation">
         {items.map((item) => {
           const itemPage = activePageForLink(item.link);

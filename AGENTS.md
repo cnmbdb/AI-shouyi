@@ -37,3 +37,13 @@ Prototype CMS media rule: image controls in site settings, including every produ
 Prototype compute-spec rule: public product cards must use GPU-compute specifications and matching hardware icons. Show GPU model, VRAM, and hosting term rather than bedroom, bathroom, or floor-area semantics; expose the same three fields in product settings.
 
 Prototype product-results copy rule: the public product results heading must have a prominent dedicated input in product browsing settings. The input supports a `{count}` token that renders the current visible product count after filtering.
+
+Prototype account-settings rule: every authenticated user has an account settings entry in the asset-operation navigation. Users can update their display name, avatar, avatar fallback color, and password; login username and verified email remain read-only, and avatar storage is restricted to the authenticated user's own folder.
+
+Prototype run-compute terminology rule: the console section previously called "托管收益" is labeled "跑算". Device-generated income is called "跑算收益" in summaries, activity, and transaction rows, while generic financial concepts such as monthly earnings and pending settlement remain "收益".
+
+Prototype console-brand rule: the console sidebar brand uses a dual-fan desktop GPU outline icon in NVIDIA Green `#76B900` beside the Aether Lane wordmark, matching the supplied desktop-graphics-card reference. This console-only mark does not replace the public site's four-tile brand symbol.
+
+Prototype shared-logo CMS rule: top-navigation settings include a logo image URL and upload control. The default value is `/images/gpu-logo.svg`, an NVIDIA Green dual-fan GPU mark, so the field is never blank in the default configuration. After publishing, the same logo and site name drive the settings preview, public shared header, and authenticated console sidebar; clearing a saved custom logo falls back to the same GPU mark.
+
+Prototype console-loading rule: refreshing or entering an authenticated console route uses the compact animated GPU loading widget rather than a plain loading sentence. It shows account, asset, and console preparation stages, uses NVIDIA Green status motion, and respects `prefers-reduced-motion`.

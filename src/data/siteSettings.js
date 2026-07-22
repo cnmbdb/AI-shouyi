@@ -5,6 +5,7 @@ const clone = (value) => structuredClone(value);
 
 export const defaultNavigationSettings = {
   siteName: "Aether Lane",
+  logo: "/images/gpu-logo.svg",
   sticky: true,
   loginLabel: "登录 / 注册",
   items: [

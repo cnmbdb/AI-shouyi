@@ -32,6 +32,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageControls } from "@/components/ImageControls.jsx";
+import { BrandLogoMark } from "@/components/BrandLogo.jsx";
 import {
   defaultBlogSettings,
   defaultFooterSettings,
@@ -162,6 +163,7 @@ export function ContentSettingsPage({ section, onNotice }) {
   const mutation = useMutation({
     mutationFn: (value) => saveSiteSetting(section, value),
     onSuccess: (_, value) => {
+      queryClient.setQueryData(["site-settings"], (current) => ({ settings: { ...(current?.settings ?? {}), [section]: value } }));
       queryClient.setQueryData(["public-settings"], (current) => ({ settings: { ...(current?.settings ?? {}), [section]: value } }));
       queryClient.invalidateQueries({ queryKey: ["site-settings"] });
       queryClient.invalidateQueries({ queryKey: ["public-settings"] });
@@ -203,7 +205,7 @@ function NavigationEditor({ settings, edit }) {
     <Accordion className="home-settings-accordion" type="multiple" defaultValue={["brand", "items"]}>
       <AccordionItem value="brand">
         <SectionHeader title="品牌与行为" description="站点名称、登录入口与导航吸顶方式" />
-        <AccordionContent><Card size="sm"><CardContent className="home-section-content"><div className="home-fields-grid"><TextControl id="nav-site-name" label="站点名称" value={settings.siteName} onChange={(value) => edit((next) => { next.siteName = value; })} /><TextControl id="nav-login-label" label="未登录入口文案" value={settings.loginLabel} onChange={(value) => edit((next) => { next.loginLabel = value; })} /></div><ToggleControl id="nav-sticky" label="吸顶导航" description="页面滚动时保持顶部导航可见" checked={settings.sticky} onChange={(value) => edit((next) => { next.sticky = value; })} /></CardContent></Card></AccordionContent>
+        <AccordionContent><Card size="sm"><CardContent className="home-section-content"><ImageControls prefix="navigation-logo" image={settings.logo} onImage={(value) => edit((next) => { next.logo = value; })} variant="logo" placeholder={<BrandLogoMark fallbackClassName="navigation-logo-fallback-preview" />} /><div className="home-fields-grid"><TextControl id="nav-site-name" label="站点名称" value={settings.siteName} onChange={(value) => edit((next) => { next.siteName = value; })} /><TextControl id="nav-login-label" label="未登录入口文案" value={settings.loginLabel} onChange={(value) => edit((next) => { next.loginLabel = value; })} /></div><ToggleControl id="nav-sticky" label="吸顶导航" description="页面滚动时保持顶部导航可见" checked={settings.sticky} onChange={(value) => edit((next) => { next.sticky = value; })} /></CardContent></Card></AccordionContent>
       </AccordionItem>
       <AccordionItem value="items">
         <SectionHeader title="导航项目" description="名称、跳转链接和显示状态；顺序与这里一致" count={settings.items.length} />

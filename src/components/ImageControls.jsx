@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { assetUrl } from "@/lib/assets.js";
 import { uploadSiteImage } from "@/lib/platformData.js";
 
-export function ImageControls({ prefix, image, position, onImage, onPosition }) {
+export function ImageControls({ prefix, image, position, onImage, onPosition, variant = "content", placeholder = null }) {
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
@@ -34,18 +34,18 @@ export function ImageControls({ prefix, image, position, onImage, onPosition }) 
   };
 
   return (
-    <div className="home-image-fields">
-      <div className="home-image-preview">{image ? <img src={assetUrl(image, 768)} loading="lazy" decoding="async" alt="图片预览" /> : <ImageIcon />}</div>
+    <div className={`home-image-fields${variant === "logo" ? " home-logo-image-fields" : ""}`}>
+      <div className="home-image-preview">{image ? <img src={assetUrl(image, 768)} loading="lazy" decoding="async" alt="图片预览" /> : placeholder ?? <ImageIcon />}</div>
       <FieldGroup>
         <Field className="home-control">
           <FieldLabel htmlFor={`${prefix}-image`}>图片地址</FieldLabel>
           <Input id={`${prefix}-image`} value={image ?? ""} onChange={(event) => onImage(event.target.value)} />
           <FieldDescription>支持 /images/... 或完整 https:// 地址</FieldDescription>
         </Field>
-        <Field className="home-control">
+        {onPosition ? <Field className="home-control">
           <FieldLabel htmlFor={`${prefix}-position`}>图片焦点</FieldLabel>
           <Input id={`${prefix}-position`} value={position ?? ""} placeholder="center center" onChange={(event) => onPosition(event.target.value)} />
-        </Field>
+        </Field> : null}
         <Field className="home-control home-image-upload-control">
           <input ref={inputRef} id={`${prefix}-upload`} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" hidden onChange={handleUpload} />
           <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => inputRef.current?.click()}>
