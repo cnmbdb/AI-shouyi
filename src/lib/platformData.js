@@ -16,6 +16,25 @@ const siteImageExtensions = {
   "image/avif": "avif",
 };
 const siteImageLimit = 6 * 1024 * 1024;
+const commerceFallbackKey = "aether-commerce-settings:v1";
+
+const isMissingCommerceTable = (error) => error?.code === "42P01" || error?.code === "PGRST205";
+
+const readCommerceFallback = () => {
+  if (typeof window === "undefined") return {};
+  try {
+    const value = JSON.parse(window.localStorage.getItem(commerceFallbackKey) || "{}");
+    return value && typeof value === "object" ? value : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeCommerceFallback = (section, value) => {
+  if (typeof window === "undefined") return;
+  const current = readCommerceFallback();
+  window.localStorage.setItem(commerceFallbackKey, JSON.stringify({ ...current, [section]: value }));
+};
 
 export async function getPlatformOverview() {
   const client = requireSupabase();
@@ -88,6 +107,27 @@ export async function saveSiteSetting(section, value) {
   const { error } = await client.from("site_settings").upsert({ user_id: user.id, section_key: section, value }, { onConflict: "section_key" });
   throwIfError(error);
   return { ok: true, section, value };
+}
+
+export async function getCommerceSettings() {
+  const { data, error } = await requireSupabase().from("commerce_settings").select("section_key, value");
+  if (isMissingCommerceTable(error)) return { settings: readCommerceFallback(), storage: "browser" };
+  throwIfError(error);
+  return { settings: Object.fromEntries((data ?? []).map((row) => [row.section_key, row.value])), storage: "database" };
+}
+
+export async function saveCommerceSetting(section, value) {
+  const client = requireSupabase();
+  const { data: { user }, error: userError } = await client.auth.getUser();
+  throwIfError(userError);
+  if (!user) throw new Error("请先登录");
+  const { error } = await client.from("commerce_settings").upsert({ user_id: user.id, section_key: section, value }, { onConflict: "section_key" });
+  if (isMissingCommerceTable(error)) {
+    writeCommerceFallback(section, value);
+    return { ok: true, section, value, storage: "browser" };
+  }
+  throwIfError(error);
+  return { ok: true, section, value, storage: "database" };
 }
 
 export async function uploadSiteImage(file, scope = "content") {

@@ -505,37 +505,35 @@ p, h1, h2, h3 { margin-top: 0; }
 /* Authentication and account menu */
 .route-loader { min-height: 100vh; display: grid; place-items: center; color: #5f62a7; background: #f7f8fc; font-size: 14px; }
 .console-loader-screen { min-height: 100dvh; display: grid; place-items: center; padding: 24px; color: var(--foreground); background: color-mix(in oklab, var(--muted) 38%, var(--background)); }
-.console-loader-card { width: min(100%, 390px); padding: 22px; display: grid; gap: 18px; overflow: hidden; border: 1px solid var(--border); border-radius: calc(var(--radius) + 4px); background: var(--card); box-shadow: 0 20px 60px color-mix(in oklab, var(--foreground) 10%, transparent); }
-.console-loader-visual { min-height: 78px; display: grid; grid-template-columns: 66px minmax(0, 1fr); align-items: center; gap: 18px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: color-mix(in oklab, var(--muted) 45%, transparent); }
-.console-loader-gpu { position: relative; width: 54px; height: 54px; display: grid; place-items: center; color: #76b900; border: 1px solid color-mix(in oklab, #76b900 48%, var(--border)); border-radius: var(--radius); background: color-mix(in oklab, #76b900 8%, var(--background)); transition: transform .2s ease; }
-.console-loader-card:hover .console-loader-gpu { transform: translateY(-2px); }
-.console-loader-gpu svg { width: 29px; height: 29px; }
-.console-loader-gpu i { position: absolute; top: 7px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: #76b900; box-shadow: 0 0 0 4px color-mix(in oklab, #76b900 14%, transparent); animation: console-loader-led 1.2s ease-in-out infinite; }
-.console-loader-workload { height: 38px; display: flex; align-items: end; gap: 5px; }
-.console-loader-workload span { width: 100%; min-height: 8px; border-radius: 3px 3px 1px 1px; background: color-mix(in oklab, #76b900 74%, var(--foreground)); transform-origin: bottom; animation: console-loader-workload 1.05s ease-in-out infinite alternate; }
-.console-loader-workload span:nth-child(1) { height: 32%; animation-delay: -.2s; }
-.console-loader-workload span:nth-child(2) { height: 74%; animation-delay: -.65s; }
-.console-loader-workload span:nth-child(3) { height: 48%; animation-delay: -.4s; }
-.console-loader-workload span:nth-child(4) { height: 92%; animation-delay: -.8s; }
-.console-loader-workload span:nth-child(5) { height: 58%; animation-delay: -.55s; }
+.console-loader-card { width: min(100%, 410px); padding: 24px; display: grid; gap: 20px; overflow: hidden; border: 1px solid var(--border); border-radius: calc(var(--radius) + 2px); background: var(--card); box-shadow: 0 20px 60px color-mix(in oklab, var(--foreground) 10%, transparent); }
 .console-loader-copy { display: grid; gap: 5px; }
 .console-loader-copy strong { font-size: 15px; font-weight: 650; letter-spacing: -.2px; }
 .console-loader-copy span { color: var(--muted-foreground); font-size: 11px; }
+.console-loader-progress { padding-top: 31px; }
+.console-loader-rail { position: relative; height: 9px; margin-inline: 31px; border: 1px solid color-mix(in oklab, var(--foreground) 14%, var(--border)); border-radius: 2px; background: color-mix(in oklab, var(--muted-foreground) 42%, var(--muted)); box-shadow: inset 0 1px 2px color-mix(in oklab, var(--foreground) 14%, transparent); }
+.console-loader-fill { position: absolute; inset: -1px auto -1px -1px; width: 5%; border: 1px solid color-mix(in oklab, #76b900 72%, #3f6500); border-radius: 2px; background: #76b900; animation: console-loader-fill 2.35s cubic-bezier(.55, .02, .22, 1) infinite; }
+.console-loader-head { position: absolute; z-index: 2; top: 50%; left: 5%; width: 62px; height: 29px; transform: translate(-50%, -56%); filter: drop-shadow(0 5px 5px color-mix(in oklab, var(--foreground) 24%, transparent)); animation: console-loader-head 2.35s cubic-bezier(.55, .02, .22, 1) infinite; }
+.console-loader-pixel-gpu { position: relative; width: 62px; height: 29px; display: block; }
+.console-loader-pixel-gpu svg { width: 100%; height: 100%; display: block; }
+.pixel-gpu-body { fill: #171717; }
+.pixel-gpu-edge,
+.pixel-gpu-contact { fill: #76b900; }
+.pixel-gpu-fan { fill: #525252; }
+.pixel-gpu-hub { fill: #a3a3a3; }
+.pixel-gpu-port { fill: #737373; }
+.console-loader-pixel-gpu b { position: absolute; top: 8px; right: 7px; color: #f5f5f5; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 6px; font-weight: 900; line-height: 1; letter-spacing: -.5px; }
 .console-loader-stages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .console-loader-stages > span { display: flex; align-items: center; gap: 6px; color: var(--muted-foreground); font-size: 9px; animation: console-loader-stage 1.7s ease-in-out var(--loader-delay) infinite; }
-.console-loader-stages > span > i { width: 6px; height: 6px; flex: 0 0 auto; border: 1px solid #76b900; border-radius: 50%; background: transparent; }
-.console-loader-track { height: 3px; overflow: hidden; border-radius: 999px; background: var(--muted); }
-.console-loader-track i { display: block; width: 44%; height: 100%; border-radius: inherit; background: #76b900; animation: console-loader-track 1.45s cubic-bezier(.65, 0, .35, 1) infinite; }
-@keyframes console-loader-led { 50% { opacity: .35; transform: scale(.76); } }
-@keyframes console-loader-workload { to { transform: scaleY(.38); opacity: .5; } }
+.console-loader-stages > span > i { width: 6px; height: 6px; flex: 0 0 auto; border: 1px solid #76b900; border-radius: 1px; background: transparent; }
 @keyframes console-loader-stage { 36% { color: var(--foreground); } 36%, 58% { transform: translateY(-1px); } 47% { opacity: 1; } }
-@keyframes console-loader-track { from { transform: translateX(-110%); } to { transform: translateX(250%); } }
+@keyframes console-loader-fill { 0%, 8% { width: 5%; } 76%, 92% { width: 95%; } 100% { width: 5%; } }
+@keyframes console-loader-head { 0%, 8% { left: 5%; } 76%, 92% { left: 95%; } 100% { left: 5%; } }
 @media (prefers-reduced-motion: reduce) {
-  .console-loader-gpu i,
-  .console-loader-workload span,
   .console-loader-stages > span,
-  .console-loader-track i { animation: none; }
-  .console-loader-track i { width: 72%; }
+  .console-loader-fill,
+  .console-loader-head { animation: none; }
+  .console-loader-fill { width: 72%; }
+  .console-loader-head { left: 72%; }
 }
 .user-menu { position: relative; }
 .user-trigger { min-width: 96px; height: 36px; padding: 3px 7px 3px 4px; display: flex; align-items: center; gap: 8px; border-radius: 19px; color: white; background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.22); }

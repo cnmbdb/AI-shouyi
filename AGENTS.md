@@ -48,6 +48,6 @@ Prototype shared-logo CMS rule: top-navigation settings include a logo image URL
 
 Prototype footer-logo CMS rule: footer settings expose their own Logo image URL and upload control in the brand-and-social section. The default `/images/gpu-logo.svg` value drives the public footer brand independently from the top-navigation Logo, and an empty saved value falls back to the same GPU mark.
 
-Prototype console-loading rule: refreshing or entering an authenticated console route uses the compact animated GPU loading widget rather than a plain loading sentence. It shows account, asset, and console preparation stages, uses NVIDIA Green status motion, and respects `prefers-reduced-motion`.
+Prototype console-loading rule: refreshing or entering an authenticated console route uses a compact neutral loading widget rather than a plain loading sentence. Its primary visual is a gray progress rail with an NVIDIA Green progress layer and a pixel-art RTX 5090 mini GPU riding at the progress head. It retains account, asset, and console preparation stages and respects `prefers-reduced-motion`.
 
 Prototype settings-density rule: site-setting pages open directly on their editable accordion sections and sticky publish bar. Do not render a separate top content-management summary or workflow introduction card.
