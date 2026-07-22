@@ -4,8 +4,10 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
 
 export default defineConfig({
-  // Relative asset URLs work for both the project Pages URL and the custom domain.
-  base: "./",
+  // The production site is hosted at the root of the custom domain. Root-relative
+  // URLs keep scripts and public images stable when a nested SPA route is opened
+  // directly (for example /console/settings/home).
+  base: "/",
   optimizeDeps: {
     include: ["react", "react-dom/client"],
   },
