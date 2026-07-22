@@ -30,6 +30,7 @@ import {
 import { ThemeToggle } from "../components/ThemeProvider.jsx";
 import { getPlatformOverview, getSiteSettings, saveSiteSetting } from "../lib/platformData.js";
 import { UserManagementPage } from "./UserManagementPage.jsx";
+import { HomeSettingsPage } from "./HomeSettingsPage.jsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,7 +81,7 @@ const pageMeta = {
 const settingMeta = {
   navigation: { title: "顶部导航", description: "管理全站导航名称、主按钮与展示方式", icon: Browser },
   footer: { title: "页脚设置", description: "配置品牌信息、联系方式和版权文案", icon: List },
-  home: { title: "首页设置", description: "调整首屏标题、介绍和主行动按钮", icon: House },
+  home: { title: "首页设置", description: "管理首页全部区块、图片、文案、图标与跳转链接", icon: House },
   products: { title: "产品浏览页", description: "设置算力产品列表的文案、筛选与默认排序", icon: Package },
   blog: { title: "博客首页", description: "管理博客首屏、精选文章与订阅模块", icon: Newspaper },
 };
@@ -88,7 +89,6 @@ const settingMeta = {
 const defaultSettings = {
   navigation: { siteName: "Aether Lane", ctaText: "租用算力", ctaLink: "/estates", sticky: true, showBlog: true },
   footer: { description: "稳定的算力托管，透明的收益管理。", email: "hello@aetherlane.com", phone: "+86 400 800 2026", copyright: "© 2026 Aether Lane" },
-  home: { title: "Galaxy Compute", subtitle: "让算力成为持续运行的数字资产", primaryAction: "浏览算力设备", secondaryAction: "了解托管收益", showStats: true },
   products: { title: "选择适合你的算力", subtitle: "按算力、周期和预期产出进行对比", defaultSort: "recommended", showAvailability: true, showEstimatedYield: true },
   blog: { title: "算力与收益洞察", subtitle: "了解设备、能效、托管和行业趋势", featuredLabel: "精选", newsletterTitle: "订阅算力周报", showNewsletter: true },
 };
@@ -285,12 +285,6 @@ function SettingsPage({ section, onNotice }) {
             <div className="field-row"><TextField label="联系邮箱" value={values.email} onChange={(value) => setValue("email", value)} /><TextField label="联系电话" value={values.phone} onChange={(value) => setValue("phone", value)} /></div>
             <TextField label="版权文案" value={values.copyright} onChange={(value) => setValue("copyright", value)} />
           </> : null}
-          {section === "home" ? <>
-            <TextField label="首屏标题" value={values.title} onChange={(value) => setValue("title", value)} />
-            <TextField label="首屏介绍" value={values.subtitle} onChange={(value) => setValue("subtitle", value)} multiline />
-            <div className="field-row"><TextField label="主行动按钮" value={values.primaryAction} onChange={(value) => setValue("primaryAction", value)} /><TextField label="次行动按钮" value={values.secondaryAction} onChange={(value) => setValue("secondaryAction", value)} /></div>
-            <ToggleField label="显示运营数据" hint="在首页展示设备、客户与平台在线率" checked={values.showStats} onChange={(value) => setValue("showStats", value)} />
-          </> : null}
           {section === "products" ? <>
             <TextField label="页面标题" value={values.title} onChange={(value) => setValue("title", value)} />
             <TextField label="页面介绍" value={values.subtitle} onChange={(value) => setValue("subtitle", value)} multiline />
@@ -313,7 +307,6 @@ function SettingsPage({ section, onNotice }) {
           <div className="preview-content">
             {section === "navigation" ? <><div className="mini-nav"><b>◆ {values.siteName}</b><span>Home &nbsp; Products &nbsp; {values.showBlog ? "Blog" : ""}</span><button>{values.ctaText}</button></div><div className="mini-hero"><strong>Galaxy Compute</strong><small>Infrastructure that keeps earning.</small></div></> : null}
             {section === "footer" ? <><div className="mini-space" /><div className="mini-footer"><b>◆ Aether Lane</b><p>{values.description}</p><span>{values.email}</span><small>{values.copyright}</small></div></> : null}
-            {section === "home" ? <div className="mini-home"><span>AETHER COMPUTE</span><strong>{values.title}</strong><p>{values.subtitle}</p><button>{values.primaryAction}</button></div> : null}
             {section === "products" ? <div className="mini-products"><strong>{values.title}</strong><p>{values.subtitle}</p><div>{["H800 80G", "A100 80G", "L40S 48G"].map((item) => <span key={item}><Cpu /><b>{item}</b><small>Available now</small></span>)}</div></div> : null}
             {section === "blog" ? <div className="mini-blog"><strong>{values.title}</strong><p>{values.subtitle}</p><div><span>{values.featuredLabel}</span><b>如何选择适合长期托管的 GPU？</b></div>{values.showNewsletter ? <button>{values.newsletterTitle}</button> : null}</div> : null}
           </div>
@@ -369,7 +362,8 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
           {pathname === "/console/earnings" ? <FinancePage kind="earnings" /> : null}
           {pathname === "/console/transactions" ? <FinancePage kind="transactions" /> : null}
           {pathname === "/console/users" && isAdmin ? <UserManagementPage currentUser={user} onNotice={onNotice} /> : null}
-          {settingSection ? <SettingsPage section={settingSection} onNotice={onNotice} /> : null}
+          {settingSection === "home" ? <HomeSettingsPage onNotice={onNotice} /> : null}
+          {settingSection && settingSection !== "home" ? <SettingsPage section={settingSection} onNotice={onNotice} /> : null}
         </div>
       </main>
       {sidebarOpen ? <button className="console-overlay" onClick={() => setSidebarOpen(false)} aria-label="关闭菜单" /> : null}

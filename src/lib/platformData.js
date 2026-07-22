@@ -74,7 +74,7 @@ export async function saveSiteSetting(section, value) {
   const { data: { user }, error: userError } = await client.auth.getUser();
   throwIfError(userError);
   if (!user) throw new Error("请先登录");
-  const { error } = await client.from("site_settings").upsert({ user_id: user.id, section_key: section, value }, { onConflict: "user_id,section_key" });
+  const { error } = await client.from("site_settings").upsert({ user_id: user.id, section_key: section, value }, { onConflict: "section_key" });
   throwIfError(error);
   return { ok: true, section, value };
 }

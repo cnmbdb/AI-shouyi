@@ -6,6 +6,8 @@ import { BlogPage } from "./pages/BlogPage.jsx";
 import { EstatesPage } from "./pages/EstatesPage.jsx";
 import { HomePage } from "./pages/HomePage.jsx";
 import { loadCurrentUser, logoutAccount, subscribeToAuthChanges } from "./lib/auth.js";
+import { getSiteSettings } from "./lib/platformData.js";
+import { normalizeHomeSettings } from "./data/homeSettings.js";
 
 const AuthPage = lazy(() => import("./pages/AuthPage.jsx").then((module) => ({ default: module.AuthPage })));
 const DashboardPage = lazy(() => import("./pages/DashboardPage.jsx").then((module) => ({ default: module.DashboardPage })));
@@ -28,6 +30,7 @@ export function App() {
   const isAuth = pathname.startsWith("/auth");
   const isAdminPath = pathname === "/console/users" || pathname.startsWith("/console/settings/");
   const page = pathname === "/estates" ? "estates" : pathname === "/blog" ? "blog" : "home";
+  const publicSettings = useQuery({ queryKey: ["public-settings"], queryFn: getSiteSettings, retry: false, staleTime: 30_000, enabled: !isConsole && !isAuth });
 
   useEffect(() => {
     setMenuOpen(false);
@@ -79,6 +82,7 @@ export function App() {
   };
 
   if (isAuth) {
+    if (session.isLoading) return <div className="route-loader">正在确认登录状态...</div>;
     return <Suspense fallback={<div className="route-loader">正在加载账户入口...</div>}><AuthPage pathname={pathname} user={session.data?.user} onSuccess={(user) => {
         queryClient.setQueryData(["session"], { user });
         router.navigate({ to: "/" });
@@ -102,7 +106,7 @@ export function App() {
         onLogout={logout}
       />
       <main id="home">
-        {page === "home" ? <HomePage onNavigate={navigate} onNotice={setNotice} /> : null}
+        {page === "home" ? <HomePage settings={normalizeHomeSettings(publicSettings.data?.settings?.home)} onNavigate={navigate} onNotice={setNotice} /> : null}
         {page === "estates" ? <EstatesPage onNavigate={navigate} onNotice={setNotice} /> : null}
         {page === "blog" ? <BlogPage onNotice={setNotice} /> : null}
       </main>
