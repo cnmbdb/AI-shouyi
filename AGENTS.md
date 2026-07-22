@@ -10,6 +10,8 @@ Prototype-specific visual rule: in the hero, the "Galaxy Home" title must render
 
 Prototype navigation rule: Home and Estates use one persistent shared header and footer. Switching between them must happen client-side by replacing only the middle page content, with no full-page reload or flash.
 
+Prototype mobile navigation rule: on small screens, the persistent header must always show a compact login entry when signed out and the user avatar when signed in, immediately beside the menu toggle without overlapping the brand.
+
 Prototype blog rule: Blog joins Home and Estates under the same persistent shared header and footer, switching client-side with no reload. Its desktop layout should faithfully match the supplied Aether Lane “Stories Above the Skyline” reference, and article/newsletter content is backed by Supabase with public-read and insert-only RLS policies; only the publishable key may enter the browser bundle.
 
 Prototype product rule: this product serves users who rent compute devices, host them on the platform, and earn ongoing revenue. Account, dashboard, device, order, earnings, transaction, and site-configuration work should use this compute-asset model rather than a real-estate administration model.

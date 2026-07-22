@@ -52,7 +52,12 @@ export function UserMenu({ user, onNavigate, onLogout, compact = false, loginLab
   const [open, setOpen] = useState(false);
 
   if (!user) {
-    return <button className="header-cta" onClick={() => onNavigate("/auth")}>{loginLabel}</button>;
+    return (
+      <button className="header-cta" type="button" onClick={() => onNavigate("/auth")}>
+        <span className="header-cta-full">{loginLabel}</span>
+        <span className="header-cta-mobile">登录</span>
+      </button>
+    );
   }
 
   return (

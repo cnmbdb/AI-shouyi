@@ -81,6 +81,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .topbar nav button:hover { color: white; }
 .topbar nav button.active { color: white; font-weight: 700; }
 .header-cta { background: #f8f7ff; color: var(--navy); border-radius: 22px; padding: 9px 22px; font-weight: 600; font-size: 10px; }
+.header-cta-mobile { display: none; }
 .menu-toggle { display: none; color: white; background: transparent; font-size: 25px; }
 .hero-inner { position: relative; height: 100%; }
 .hero h1 { position: absolute; z-index: 1; top: 64px; left: 50%; width: max-content; transform: translateX(-50%); text-align: center; font-size: clamp(76px, 11vw, 150px); line-height: .92; letter-spacing: -9px; font-weight: 500; white-space: nowrap; color: rgba(249,249,255,.86); text-shadow: 0 8px 40px rgba(54,32,136,.12); }
@@ -400,8 +401,12 @@ p, h1, h2, h3 { margin-top: 0; }
   .topbar nav { position: absolute; top: 52px; left: 0; right: 0; padding: 12px; border-radius: 16px; flex-direction: column; gap: 4px; background: rgba(20,36,105,.95); opacity: 0; transform: translateY(-8px); pointer-events: none; transition: .2s ease; }
   .topbar nav.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
   .topbar nav button { width: 100%; padding: 10px; }
-  .header-cta { display: none; }
-  .menu-toggle { display: grid; }
+  .topbar > .header-cta,
+  .topbar > .user-menu { margin-left: auto; margin-right: 6px; }
+  .header-cta { height: 34px; padding: 0 14px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; font-size: 11px; }
+  .header-cta-full { display: none; }
+  .header-cta-mobile { display: inline; }
+  .menu-toggle { width: 36px; height: 36px; padding: 0; display: grid; place-items: center; flex: 0 0 auto; }
   .hero { height: 720px; background-position: 55% center; }
   .hero h1 { left: 0; width: 100%; transform: none; text-align: left; white-space: normal; font-size: clamp(66px, 21vw, 95px); line-height: .88; letter-spacing: -6px; top: 90px; }
   .hero-foreground { display: none; }
@@ -789,7 +794,7 @@ p, h1, h2, h3 { margin-top: 0; }
 }
 
 @media (max-width: 520px) {
-  .topbar .user-menu { margin-left: auto; margin-right: 8px; }
+  .topbar .user-menu { margin-left: auto; margin-right: 6px; }
   .auth-back { font-size: 0; }
   .auth-back svg { width: 20px; }
   .auth-intro h1 { font-size: 38px; }
