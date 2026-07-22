@@ -24,6 +24,8 @@ Prototype console visual rule: authentication and console UI use official shadcn
 
 Prototype authentication visual rule: the authentication page uses the existing Galaxy Home hero artwork as a full-page background under a monochrome neutral overlay. Keep the intro and shadcn card legible in both light and dark themes.
 
+Prototype media performance rule: keep persisted admin image URLs backward-compatible, but serve bundled artwork through WebP 768px/1280px variants. Preload only the visible route hero/LCP image, use responsive `srcset` for content images, and lazy-load images below the first viewport.
+
 Prototype authorization rule: accounts have exactly two application roles, `admin` and `user`. New signups default to `user`; only admins see or access user management and site-setting navigation, and role changes must be enforced by trusted Supabase server code rather than browser state.
 
 Prototype homepage CMS rule: the admin Home settings page must map one-to-one to every visible Home section. Administrators can publish section visibility, images and focal positions, icons, copy, user/testimonial data, button labels, and destination links; repeatable cards/items support explicit add and delete controls. The public Home renders the same global Supabase configuration, which is publicly readable while writes remain admin-only through RLS.

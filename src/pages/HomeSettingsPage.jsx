@@ -31,9 +31,9 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { createHomeItem, defaultHomeSettings, homeIconOptions, normalizeHomeSettings } from "../data/homeSettings.js";
 import { getSiteSettings, saveSiteSetting } from "../lib/platformData.js";
+import { assetUrl } from "../lib/assets.js";
 
 const clone = (value) => structuredClone(value);
-const assetUrl = (path = "") => path.startsWith("http") || path.startsWith("data:") ? path : `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
 
 function TextControl({ id, label, value, onChange, description, textarea = false, placeholder = "" }) {
   const Control = textarea ? Textarea : Input;
@@ -61,7 +61,7 @@ function IconControl({ id, value, onChange }) {
 function ImageControls({ prefix, image, position, onImage, onPosition }) {
   return (
     <div className="home-image-fields">
-      <div className="home-image-preview">{image ? <img src={assetUrl(image)} alt="图片预览" /> : <ImageIcon />}</div>
+      <div className="home-image-preview">{image ? <img src={assetUrl(image, 768)} loading="lazy" decoding="async" alt="图片预览" /> : <ImageIcon />}</div>
       <FieldGroup>
         <TextControl id={`${prefix}-image`} label="图片地址" value={image} onChange={onImage} description="支持 /images/... 或完整 https:// 地址" />
         <TextControl id={`${prefix}-position`} label="图片焦点" value={position} onChange={onPosition} placeholder="center center" />

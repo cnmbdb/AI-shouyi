@@ -66,7 +66,7 @@ p, h1, h2, h3 { margin-top: 0; }
   height: 690px;
   overflow: hidden;
   color: white;
-  background: #536ee9 url("../images/hero-galaxy-home.png") center 46% / cover no-repeat;
+  background: #536ee9 url("/images/hero-galaxy-home-1280.webp") center 46% / cover no-repeat;
 }
 .hero::before { content: ""; position: absolute; z-index: 0; inset: 0; background: linear-gradient(180deg, rgba(25, 48, 144, .28) 0%, rgba(83, 57, 173, .04) 58%, rgba(30, 37, 107, .25) 100%); }
 .topbar { position: absolute; z-index: 50; top: 17px; left: 50%; transform: translateX(-50%); margin-inline: 0; height: 51px; padding: 0 13px 0 18px; border-radius: 26px; background: rgba(36, 46, 133, .6); border: 1px solid rgba(255,255,255,.13); backdrop-filter: blur(13px); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 10px 35px rgba(28, 22, 112, .12); }
@@ -84,7 +84,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .menu-toggle { display: none; color: white; background: transparent; font-size: 25px; }
 .hero-inner { position: relative; height: 100%; }
 .hero h1 { position: absolute; z-index: 1; top: 64px; left: 50%; width: max-content; transform: translateX(-50%); text-align: center; font-size: clamp(76px, 11vw, 150px); line-height: .92; letter-spacing: -9px; font-weight: 500; white-space: nowrap; color: rgba(249,249,255,.86); text-shadow: 0 8px 40px rgba(54,32,136,.12); }
-.hero-foreground { position: absolute; z-index: 2; inset: 0; pointer-events: none; background: url("../images/hero-foreground.png") center 46% / cover no-repeat; }
+.hero-foreground { position: absolute; z-index: 2; inset: 0; pointer-events: none; background: url("/images/hero-foreground-1280.webp") center 46% / cover no-repeat; }
 .hero-copy { position: absolute; z-index: 3; left: 0; top: 230px; width: 265px; }
 .hero-copy h2, .hero-tagline { font-size: 18px; line-height: 1.3; font-weight: 500; text-shadow: 0 2px 15px rgba(25,24,111,.3); }
 .hero-copy p { font-size: 12px; line-height: 1.65; width: 225px; color: rgba(255,255,255,.95); }
@@ -116,7 +116,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .about-story p { max-width: 290px; color: #516086; font-size: 10px; line-height: 1.65; margin-bottom: 16px; }
 .soft-button { background: white; color: #27336e; padding: 9px 12px 9px 15px; border-radius: 20px; font-size: 9px; box-shadow: 0 6px 18px rgba(50,48,134,.1); border: 1px solid rgba(79,73,178,.08); }
 .soft-button svg { width: 12px; height: 12px; color: #715edf; }
-.about-image { background: url("../images/estate-coast.png") 57% center / cover; }
+.about-image { background: url("/images/estate-coast-768.webp") 57% center / cover; }
 .benefit-grid { padding: 32px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px 18px; }
 .benefit-grid article { display: grid; grid-template-columns: 39px 1fr; gap: 10px; }
 .benefit-icon { width: 39px; height: 39px; border-radius: 50%; display: grid; place-items: center; background: #f7f5ff; color: #6757dc; }
@@ -150,7 +150,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .stats strong { color: #6754d3; font-size: 23px; font-weight: 500; }
 .stats p { font-size: 9px; margin: 1px 0 0; color: #596084; }
 
-.testimonials { position: relative; margin-top: 17px; min-height: 228px; border: 1px solid var(--line); border-radius: 10px; overflow: visible; padding: 20px 28px 26px; background: linear-gradient(90deg, white 0%, white 83%, rgba(113,100,214,.08) 100%), url("../images/estate-coast.png") right center / 20% 100% no-repeat; }
+.testimonials { position: relative; margin-top: 17px; min-height: 228px; border: 1px solid var(--line); border-radius: 10px; overflow: visible; padding: 20px 28px 26px; background: linear-gradient(90deg, white 0%, white 83%, rgba(113,100,214,.08) 100%), url("/images/estate-coast-768.webp") right center / 20% 100% no-repeat; }
 .centered { text-align: center; margin-bottom: 12px; }
 .testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); transition: transform .35s ease; }
 .testimonial-grid article { padding: 0 23px; border-right: 1px solid rgba(82,84,176,.1); }
@@ -188,14 +188,14 @@ p, h1, h2, h3 { margin-top: 0; }
 .footer-column a, .footer-column button, .footer-column p { display: block; background: transparent; padding: 0; color: #354273; font-size: 9px; line-height: 1.85; text-align: left; }
 .footer-column.contact a, .footer-column.contact p { display: flex; align-items: flex-start; gap: 6px; }
 .footer-column.contact svg { width: 10px; flex: 0 0 auto; margin-top: 2px; }
-.footer-image { border-radius: 9px; background: url("../images/hero-galaxy-home.png") 52% 53% / cover; height: 140px; }
+.footer-image { border-radius: 9px; background: url("/images/hero-galaxy-home-768.webp") 52% 53% / cover; height: 140px; }
 .footer-bottom { grid-column: 1 / -1; border-top: 1px solid rgba(60,65,158,.1); display: flex; justify-content: center; align-items: center; font-size: 8px; color: #737a96; min-height: 29px; position: relative; }
 .footer-bottom > div { position: absolute; right: 0; display: flex; gap: 30px; }
 .footer-bottom button { padding: 0; color: inherit; background: transparent; font: inherit; }
 
 .modal-backdrop { position: fixed; z-index: 20; inset: 0; background: rgba(10,17,61,.65); backdrop-filter: blur(8px); display: grid; place-items: center; padding: 20px; }
 .video-modal { position: relative; width: min(680px, 92vw); padding: 14px 14px 25px; border-radius: 20px; background: white; text-align: center; color: var(--navy); box-shadow: 0 40px 100px rgba(5,9,54,.4); }
-.video-still { height: 340px; border-radius: 12px; background: linear-gradient(180deg, transparent, rgba(18,26,91,.32)), url("../images/hero-galaxy-home.png") center / cover; display: grid; place-items: center; }
+.video-still { height: 340px; border-radius: 12px; background: linear-gradient(180deg, transparent, rgba(18,26,91,.32)), url("/images/hero-galaxy-home-768.webp") center / cover; display: grid; place-items: center; }
 .video-still span { width: 65px; height: 65px; border-radius: 50%; background: rgba(255,255,255,.86); color: #6859d4; display: grid; place-items: center; box-shadow: 0 10px 30px rgba(26,27,105,.2); }
 .video-modal h2 { margin: 20px 0 7px; }
 .video-modal p { margin: 0; color: #69708e; }
@@ -290,7 +290,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .custom-listings { height: 38px; padding: 0 24px; border-radius: 21px; background: transparent; color: #744cb0; border: 1px solid rgba(111,75,178,.2); font-size: 8px; }
 
 .blog-page { background: #fdfdff; }
-.blog-hero { height: 438px; position: relative; overflow: visible; color: white; background: #5068d6 url("../images/estates-hero.png") center 52% / cover no-repeat; }
+.blog-hero { height: 438px; position: relative; overflow: visible; color: white; background: #5068d6 url("/images/estates-hero-1280.webp") center 52% / cover no-repeat; }
 .blog-hero-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(33,49,141,.62) 0%, rgba(44,48,143,.2) 48%, rgba(28,29,96,.05) 74%), linear-gradient(180deg, rgba(45,58,160,.12), rgba(42,34,128,.18)); }
 .blog-hero-content { height: 100%; position: relative; z-index: 2; }
 .blog-intro { position: absolute; top: 91px; left: 0; text-shadow: 0 4px 22px rgba(35,31,114,.2); }
@@ -508,7 +508,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .user-dropdown svg { width: 16px; height: 16px; color: #6757da; }
 
 .auth-page { min-height: 100vh; position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) 440px; align-items: center; gap: 7vw; padding: 120px max(7vw, 56px) 64px; color: white; background: #171d67; }
-.auth-backdrop { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(19,27,95,.42) 0%, rgba(24,27,103,.08) 46%, rgba(22,24,85,.38) 100%), url("../images/hero-galaxy-home.png") center / cover no-repeat; }
+.auth-backdrop { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(19,27,95,.42) 0%, rgba(24,27,103,.08) 46%, rgba(22,24,85,.38) 100%), url("/images/hero-galaxy-home-1280.webp") center / cover no-repeat; }
 .auth-backdrop::after { content: ""; position: absolute; inset: auto 0 0; height: 42%; background: linear-gradient(0deg, rgba(16,20,76,.66), transparent); }
 .auth-header { position: absolute; z-index: 3; top: 30px; left: max(7vw, 56px); right: max(7vw, 56px); display: flex; justify-content: space-between; align-items: center; }
 .auth-header .brand strong { font-size: 17px; }
@@ -715,7 +715,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .preview-browser { height: 29px; padding: 0 9px; display: flex; align-items: center; gap: 4px; color: #9b9eac; background: #f0f1f5; font-size: 6px; }
 .preview-browser i { width: 5px; height: 5px; border-radius: 50%; background: #c5c7d1; }
 .preview-browser span { width: 55%; margin: auto; padding: 3px; text-align: center; border-radius: 3px; background: white; }
-.preview-content { min-height: 431px; color: white; background: #34389b url("../images/hero-galaxy-home.png") center / cover; }
+.preview-content { min-height: 431px; color: white; background: #34389b url("/images/hero-galaxy-home-768.webp") center / cover; }
 .mini-nav { height: 44px; padding: 0 17px; display: grid; grid-template-columns: 1fr auto auto; gap: 18px; align-items: center; background: rgba(29,35,112,.72); font-size: 6px; }
 .mini-nav b { font-size: 8px; }
 .mini-nav button { padding: 6px 10px; color: #303668; background: white; border-radius: 10px; font-size: 6px; }
@@ -741,7 +741,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .mini-products svg { width: 21px; margin: auto; color: #6457cc; }
 .mini-products b { font-size: 7px; }
 .mini-products small { color: #8c90a0; font-size: 5px; }
-.mini-blog > div { height: 165px; padding: 25px; display: grid; align-content: end; justify-items: start; gap: 9px; color: white; text-align: left; background: url("../images/hero-galaxy-home.png") center / cover; border-radius: 5px; }
+.mini-blog > div { height: 165px; padding: 25px; display: grid; align-content: end; justify-items: start; gap: 9px; color: white; text-align: left; background: url("/images/hero-galaxy-home-768.webp") center / cover; border-radius: 5px; }
 .mini-blog > div span { padding: 3px 7px; border: 1px solid rgba(255,255,255,.5); border-radius: 8px; font-size: 5px; }
 .mini-blog > div b { max-width: 250px; font-size: 11px; line-height: 1.35; }
 .mini-blog > button { margin-top: 16px; padding: 8px 13px; color: #5d50c1; background: #f1effb; border-radius: 4px; font-size: 6px; }
@@ -855,7 +855,7 @@ p, h1, h2, h3 { margin-top: 0; }
   pointer-events: none;
   background:
     linear-gradient(90deg, color-mix(in oklab, var(--background) 78%, transparent) 0%, color-mix(in oklab, var(--background) 54%, transparent) 52%, color-mix(in oklab, var(--background) 72%, transparent) 100%),
-    url("/images/hero-galaxy-home.png") center 46% / cover no-repeat;
+    url("/images/hero-galaxy-home-1280.webp") center 46% / cover no-repeat;
   filter: grayscale(1) contrast(.92);
 }
 .auth-backdrop::after {
@@ -864,7 +864,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .dark .auth-backdrop {
   background:
     linear-gradient(90deg, color-mix(in oklab, var(--background) 82%, transparent) 0%, color-mix(in oklab, var(--background) 64%, transparent) 52%, color-mix(in oklab, var(--background) 78%, transparent) 100%),
-    url("/images/hero-galaxy-home.png") center 46% / cover no-repeat;
+    url("/images/hero-galaxy-home-1280.webp") center 46% / cover no-repeat;
   filter: grayscale(1) contrast(1.08);
 }
 .auth-header {

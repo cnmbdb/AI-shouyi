@@ -13,6 +13,7 @@ import {
   YoutubeLogo,
 } from "@phosphor-icons/react";
 import { defaultFooterSettings, defaultNavigationSettings } from "../data/siteSettings.js";
+import { assetUrl } from "../lib/assets.js";
 
 const socialIcons = {
   Instagram: InstagramLogo,
@@ -119,7 +120,7 @@ export function SiteFooter({ onNavigate, onSection, settings = defaultFooterSett
         <a href={`mailto:${settings.contact.email}`}><EnvelopeSimple weight="fill" /> {settings.contact.email}</a>
         <p><MapPin weight="fill" /> <span style={{ whiteSpace: "pre-line" }}>{settings.contact.address}</span></p>
       </div>
-      <div className="footer-image" style={{ backgroundImage: `url(${settings.image})`, backgroundPosition: settings.imagePosition }} />
+      <div className="footer-image" style={{ backgroundImage: `url(${assetUrl(settings.image, 768)})`, backgroundPosition: settings.imagePosition }} />
       <div className="footer-bottom">
         <span>{settings.copyright}</span>
         <div>{settings.legalLinks.map((item) => <button key={item.id} onClick={() => openLink(item.link)}>{item.label}</button>)}</div>

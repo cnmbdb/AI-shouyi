@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { preload } from "react-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   AirplaneTilt,
   Armchair,
@@ -14,10 +16,7 @@ import {
 import { blogFallback } from "../data/blogFallback.js";
 import { defaultBlogSettings } from "../data/siteSettings.js";
 import { getBlogPosts, subscribeNewsletter } from "../lib/platformData.js";
-
-const asset = (path) => path?.startsWith("/")
-  ? `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`
-  : path;
+import { assetUrl, preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
 
 const categoryIcons = { SquaresFour, Buildings, Armchair, FlowerLotus, ChartLineUp, AirplaneTilt };
 
@@ -49,7 +48,7 @@ function ArticleCard({ post, onOpen }) {
   return (
     <article className="blog-card">
       <div className="blog-card-media">
-        <img src={asset(post.image_url)} alt="" style={{ objectPosition: post.image_position }} />
+        <img {...responsiveImageProps(post.image_url, "(max-width: 760px) 100vw, 34vw")} loading="lazy" decoding="async" alt="" style={{ objectPosition: post.image_position }} />
         <span className="blog-pill">{post.category}</span>
       </div>
       <div className="blog-card-body">
@@ -67,7 +66,7 @@ function ArticleCard({ post, onOpen }) {
 function EditorsCard({ post, onOpen }) {
   return (
     <article className="editors-card">
-      <img src={asset(post.image_url)} alt="" style={{ objectPosition: post.image_position }} />
+      <img {...responsiveImageProps(post.image_url, "(max-width: 760px) 100vw, 34vw")} loading="lazy" decoding="async" alt="" style={{ objectPosition: post.image_position }} />
       <div className="editors-shade" />
       <span className="blog-pill">{post.category}</span>
       <div className="editors-copy">
@@ -84,21 +83,22 @@ function EditorsCard({ post, onOpen }) {
 }
 
 export function BlogPage({ onNotice, settings = defaultBlogSettings }) {
-  const [posts, setPosts] = useState(blogFallback);
   const [category, setCategory] = useState("All");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const postsQuery = useQuery({
+    queryKey: ["blog-posts"],
+    queryFn: getBlogPosts,
+    retry: false,
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    placeholderData: blogFallback,
+  });
+  const posts = postsQuery.data?.length ? postsQuery.data : blogFallback;
 
-  useEffect(() => {
-    let active = true;
-    getBlogPosts()
-      .then((remotePosts) => {
-        if (active && remotePosts.length) setPosts(remotePosts);
-      })
-      .catch(() => console.warn("Using local blog fallback data."));
-
-    return () => { active = false; };
-  }, []);
+  if (settings.hero.enabled && settings.hero.backgroundImage) {
+    preload(preloadImageUrl(settings.hero.backgroundImage), { as: "image", fetchPriority: "high" });
+  }
 
   useEffect(() => {
     if (!settings.categories.items.some((item) => item.enabled !== false && item.value === category)) {
@@ -137,7 +137,7 @@ export function BlogPage({ onNotice, settings = defaultBlogSettings }) {
 
   return (
     <div className="blog-page">
-      {settings.hero.enabled || settings.featured.enabled ? <section className="blog-hero" style={settings.hero.backgroundImage ? { backgroundImage: `url(${asset(settings.hero.backgroundImage)})`, backgroundPosition: settings.hero.backgroundPosition } : undefined}>
+      {settings.hero.enabled || settings.featured.enabled ? <section className="blog-hero" style={settings.hero.backgroundImage ? { backgroundImage: `url(${assetUrl(settings.hero.backgroundImage, 1280)})`, backgroundPosition: settings.hero.backgroundPosition } : undefined}>
         <div className="blog-hero-overlay" />
         <div className="shell blog-hero-content">
           {settings.hero.enabled ? <div className="blog-intro">
@@ -148,7 +148,7 @@ export function BlogPage({ onNotice, settings = defaultBlogSettings }) {
           {settings.featured.enabled && featured ? (
             <article className="featured-story">
               <div className="featured-media">
-                <img src={asset(featured.image_url)} alt="" style={{ objectPosition: featured.image_position }} />
+                <img {...responsiveImageProps(featured.image_url, "(max-width: 760px) 100vw, 42vw")} loading="eager" decoding="async" fetchPriority="high" alt="" style={{ objectPosition: featured.image_position }} />
                 <span className="featured-label">{settings.featured.label}</span>
               </div>
               <div className="featured-copy">

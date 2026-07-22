@@ -31,7 +31,14 @@ export function App() {
   const isAuth = pathname.startsWith("/auth");
   const isAdminPath = pathname === "/console/users" || pathname.startsWith("/console/settings/");
   const page = pathname === "/estates" ? "estates" : pathname === "/blog" ? "blog" : "home";
-  const publicSettings = useQuery({ queryKey: ["public-settings"], queryFn: getSiteSettings, retry: false, staleTime: 30_000, enabled: !isConsole && !isAuth });
+  const publicSettings = useQuery({
+    queryKey: ["public-settings"],
+    queryFn: getSiteSettings,
+    retry: false,
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    enabled: !isConsole && !isAuth,
+  });
   const publishedSettings = publicSettings.data?.settings;
   const navigationSettings = useMemo(() => normalizeNavigationSettings(publishedSettings?.navigation), [publishedSettings?.navigation]);
   const footerSettings = useMemo(() => normalizeFooterSettings(publishedSettings?.footer), [publishedSettings?.footer]);

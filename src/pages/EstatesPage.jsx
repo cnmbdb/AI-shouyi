@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { preload } from "react-dom";
 import {
   ArrowRight,
   Bathtub,
@@ -13,8 +14,7 @@ import {
   SquaresFour,
 } from "@phosphor-icons/react";
 import { defaultProductSettings } from "../data/siteSettings.js";
-
-const asset = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
+import { assetUrl, preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
 
 function SelectField({ label, value, onChange, children }) {
   return (
@@ -36,7 +36,7 @@ function PropertyCard({ estate, liked, onLike, onOpen, layout }) {
   return (
     <article className={`browse-card ${layout === "list" ? "list-card" : ""}`} onClick={() => onOpen(estate.link)}>
       <div className="browse-card-media">
-        <img src={asset(estate.image)} alt={`${estate.title} luxury estate`} style={{ objectPosition: estate.imagePosition }} />
+        <img {...responsiveImageProps(estate.image, layout === "list" ? "(max-width: 760px) 100vw, 42vw" : "(max-width: 760px) 100vw, 34vw")} loading="lazy" decoding="async" alt={`${estate.title} luxury estate`} style={{ objectPosition: estate.imagePosition }} />
         <div className="browse-card-shade" />
         <span className="browse-card-tag">{estate.tag}</span>
         <button className={`browse-heart ${liked ? "liked" : ""}`} onClick={(event) => { event.stopPropagation(); onLike(estate.title); }} aria-label={`Save ${estate.title}`}><Heart weight={liked ? "fill" : "regular"} /></button>
@@ -66,6 +66,10 @@ export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSet
   const [sort, setSort] = useState(settings.browser.defaultSort);
   const [layout, setLayout] = useState("grid");
   const [liked, setLiked] = useState(() => new Set());
+
+  if (settings.hero.enabled && settings.hero.image) {
+    preload(preloadImageUrl(settings.hero.image), { as: "image", fetchPriority: "high" });
+  }
 
   useEffect(() => {
     setSort(settings.browser.defaultSort);
@@ -123,7 +127,7 @@ export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSet
 
   return (
     <div className="estates-page">
-      {settings.hero.enabled ? <section className="estates-hero" style={{ backgroundImage: `url(${asset(settings.hero.image)})`, backgroundPosition: settings.hero.imagePosition }}>
+      {settings.hero.enabled ? <section className="estates-hero" style={{ backgroundImage: `url(${assetUrl(settings.hero.image, 1280)})`, backgroundPosition: settings.hero.imagePosition }}>
         <div className="estates-hero-content shell">
           <h1>{settings.hero.title}</h1>
           <p>{settings.hero.description}</p>

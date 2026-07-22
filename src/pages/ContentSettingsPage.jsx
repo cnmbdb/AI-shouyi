@@ -40,10 +40,10 @@ import {
   siteSettingNormalizers,
 } from "../data/siteSettings.js";
 import { getSiteSettings, saveSiteSetting } from "../lib/platformData.js";
+import { assetUrl } from "../lib/assets.js";
 
 const clone = (value) => structuredClone(value);
 const uid = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-const assetUrl = (path = "") => path.startsWith("http") || path.startsWith("data:") ? path : `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
 
 const sectionMeta = {
   navigation: { title: "顶部导航内容管理", description: "品牌名称、导航项目、显示状态与跳转链接会同步到全部公开页面。", icon: PanelTop },
@@ -94,7 +94,7 @@ function SelectControl({ id, label, value, onChange, options }) {
 function ImageControls({ prefix, image, position, onImage, onPosition }) {
   return (
     <div className="home-image-fields">
-      <div className="home-image-preview">{image ? <img src={assetUrl(image)} alt="图片预览" /> : <ImageIcon />}</div>
+      <div className="home-image-preview">{image ? <img src={assetUrl(image, 768)} loading="lazy" decoding="async" alt="图片预览" /> : <ImageIcon />}</div>
       <FieldGroup>
         <TextControl id={`${prefix}-image`} label="图片地址" value={image} onChange={onImage} description="支持 /images/... 或完整 https:// 地址" />
         <TextControl id={`${prefix}-position`} label="图片焦点" value={position} onChange={onPosition} placeholder="center center" />
