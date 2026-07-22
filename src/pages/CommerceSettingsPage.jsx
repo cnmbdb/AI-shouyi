@@ -146,6 +146,7 @@ export function CommerceSettingsPage({ section, onNotice }) {
       const saved = result.value ?? settings;
       queryClient.setQueryData(["commerce-settings"], (current) => ({ ...current, settings: { ...(current?.settings ?? {}), [section]: saved } }));
       queryClient.invalidateQueries({ queryKey: ["commerce-settings"] });
+      if (section === "products") queryClient.invalidateQueries({ queryKey: ["store-product"] });
       setDirty(false);
       onNotice(pageMeta[section].success);
     },
@@ -157,14 +158,14 @@ export function CommerceSettingsPage({ section, onNotice }) {
 
   return (
     <div className="home-settings-page commerce-settings-page">
-      {section === "products" ? <ProductCatalogEditor settings={settings} edit={edit} onNotice={onNotice} /> : null}
+      {section === "products" ? <ProductCatalogEditor settings={settings} edit={edit} dirty={dirty} pending={mutation.isPending} onNotice={onNotice} onPublish={() => mutation.mutate(settings)} /> : null}
       {section === "payment" ? <PaymentSettingsEditor settings={settings} edit={edit} onRefresh={() => query.refetch()} /> : null}
       <PublishBar dirty={dirty} pending={mutation.isPending} label={section === "products" ? "保存后商品分类、详情和分享链接同步发布。" : "渠道密钥经受信任服务保存，不进入公开配置。"} onReset={() => { setSettings(clone(defaultCommerceSettings[section])); setDirty(true); }} onPublish={() => mutation.mutate(settings)} />
     </div>
   );
 }
 
-function ProductCatalogEditor({ settings, edit, onNotice }) {
+function ProductCatalogEditor({ settings, edit, dirty, pending, onNotice, onPublish }) {
   const [editingId, setEditingId] = useState(null);
   const categoryMap = useMemo(() => new Map(settings.categories.map((item) => [item.id, item.name])), [settings.categories]);
   const editingIndex = settings.items.findIndex((item) => item.id === editingId);
@@ -253,12 +254,12 @@ function ProductCatalogEditor({ settings, edit, onNotice }) {
           </Card>
         </AccordionContent>
       </AccordionItem>
-      {editingProduct ? <ProductEditorDialog product={editingProduct} index={editingIndex} categories={settings.categories} edit={edit} onClose={() => setEditingId(null)} onShare={() => copyProductLink(editingProduct)} /> : null}
+      {editingProduct ? <ProductEditorDialog product={editingProduct} index={editingIndex} categories={settings.categories} edit={edit} dirty={dirty} pending={pending} onClose={() => setEditingId(null)} onPublish={onPublish} onShare={() => copyProductLink(editingProduct)} /> : null}
     </Accordion>
   );
 }
 
-function ProductEditorDialog({ product, index, categories, edit, onClose, onShare }) {
+function ProductEditorDialog({ product, index, categories, edit, dirty, pending, onClose, onPublish, onShare }) {
   const set = (field, value) => edit((next) => { next.items[index][field] = value; });
   const supportsRental = product.billingType !== "buyout";
   const supportsBuyout = product.billingType !== "rental";
@@ -268,7 +269,7 @@ function ProductEditorDialog({ product, index, categories, edit, onClose, onShar
       <DialogContent className="commerce-product-dialog" onInteractOutside={(event) => event.preventDefault()}>
         <DialogHeader>
           <DialogTitle>编辑商品 · {product.name}</DialogTitle>
-          <DialogDescription className="commerce-product-dialog-description">详情页地址：{shareUrl}</DialogDescription>
+          <DialogDescription className="commerce-product-dialog-description">上传或编辑后点击“保存并发布”，商品详情页会同步刷新。地址：{shareUrl}</DialogDescription>
         </DialogHeader>
         <ScrollArea className="commerce-product-dialog-scroll">
           <div className="commerce-editor-content">
@@ -284,8 +285,9 @@ function ProductEditorDialog({ product, index, categories, edit, onClose, onShar
         <DialogFooter className="commerce-product-dialog-footer">
           <ToggleControl id={`product-enabled-${product.id}`} label="上架该商品" checked={product.enabled} onChange={(value) => set("enabled", value)} />
           <Button variant="outline" size="sm" onClick={onShare}><Copy />复制链接</Button>
-          <Button variant="outline" size="sm" onClick={() => window.open(shareUrl, "_blank", "noopener,noreferrer")}><ExternalLink />预览详情</Button>
-          <Button size="sm" onClick={onClose}>完成编辑</Button>
+          <Button variant="outline" size="sm" disabled={dirty || pending} onClick={() => window.open(shareUrl, "_blank", "noopener,noreferrer")}><ExternalLink />{dirty ? "请先保存发布" : "预览详情"}</Button>
+          <Button variant="outline" size="sm" onClick={onClose}>完成编辑</Button>
+          <Button size="sm" disabled={!dirty || pending} onClick={onPublish}><CheckCircle2 />{pending ? "发布中..." : dirty ? "保存并发布" : "已发布"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

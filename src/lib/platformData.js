@@ -23,6 +23,7 @@ const siteImageExtensions = {
 };
 const siteImageLimit = 6 * 1024 * 1024;
 const commerceFallbackKey = "aether-commerce-settings:v1";
+export const commerceProductsRefreshKey = "aether-commerce-products:updated";
 
 const isMissingCommerceTable = (error) => error?.code === "42P01" || error?.code === "PGRST205";
 const isMissingFunction = (error) => error?.context?.status === 404 || /not found|failed to send a request to the edge function/i.test(error?.message ?? "");
@@ -41,6 +42,11 @@ const writeCommerceFallback = (section, value) => {
   if (typeof window === "undefined") return;
   const current = readCommerceFallback();
   window.localStorage.setItem(commerceFallbackKey, JSON.stringify({ ...current, [section]: value }));
+};
+
+const notifyCommerceProductsUpdated = () => {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(commerceProductsRefreshKey, String(Date.now()));
 };
 
 export async function getPlatformOverview() {
@@ -289,11 +295,13 @@ export async function saveCommerceSetting(section, value) {
 
   try {
     const saved = section === "products" ? await saveProductCatalog(client, value) : await savePaymentChannels(client, value);
+    if (section === "products") notifyCommerceProductsUpdated();
     return { ok: true, section, value: saved, storage: "database" };
   } catch (error) {
     if (!isMissingCommerceTable(error)) throw error;
     const safeValue = section === "payment" ? { channels: normalizePaymentSettings(value).channels.map(publicChannelFallback) } : normalizeCommerceProducts(value);
     writeCommerceFallback(section, safeValue);
+    if (section === "products") notifyCommerceProductsUpdated();
     return { ok: true, section, value: safeValue, storage: "browser" };
   }
 }

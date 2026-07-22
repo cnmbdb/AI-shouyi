@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   CalendarBlank,
@@ -9,7 +9,7 @@ import {
   Package,
   ShareNetwork,
 } from "@phosphor-icons/react";
-import { createStorePayment, getPublicStoreProduct } from "../lib/platformData.js";
+import { commerceProductsRefreshKey, createStorePayment, getPublicStoreProduct } from "../lib/platformData.js";
 import { responsiveImageProps } from "../lib/assets.js";
 
 const money = (value) => `¥${Number(value || 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -45,10 +45,25 @@ async function copyText(value) {
 }
 
 export function StoreProductPage({ categoryId, productId, legacySlug, user, onNavigate, onNotice }) {
-  const query = useQuery({ queryKey: ["store-product", categoryId, productId, legacySlug], queryFn: () => getPublicStoreProduct(categoryId, productId, legacySlug), retry: false, staleTime: 60_000 });
+  const query = useQuery({
+    queryKey: ["store-product", categoryId, productId, legacySlug],
+    queryFn: () => getPublicStoreProduct(categoryId, productId, legacySlug),
+    retry: false,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
+  });
   const [billing, setBilling] = useState("rental");
   const [ordering, setOrdering] = useState(false);
   const product = query.data;
+
+  useEffect(() => {
+    const syncPublishedProduct = (event) => {
+      if (event.key === commerceProductsRefreshKey) void query.refetch();
+    };
+    window.addEventListener("storage", syncPublishedProduct);
+    return () => window.removeEventListener("storage", syncPublishedProduct);
+  }, [query.refetch]);
   const canonicalUrl = product ? new URL(`/estates/${encodeURIComponent(product.categoryId || "uncategorized")}/${encodeURIComponent(product.id)}`, window.location.origin).toString() : window.location.href;
   const plans = useMemo(() => {
     if (!product) return [];
