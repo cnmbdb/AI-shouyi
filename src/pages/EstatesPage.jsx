@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { preload } from "react-dom";
 import {
   ArrowRight,
-  Bathtub,
-  Bed,
+  CalendarBlank,
   CaretDown,
+  GraphicsCard,
   Heart,
   ListBullets,
   MapPin,
-  Ruler,
+  Memory,
   SlidersHorizontal,
   Sparkle,
   SquaresFour,
@@ -36,7 +36,7 @@ function PropertyCard({ estate, liked, onLike, onOpen, layout }) {
   return (
     <article className={`browse-card ${layout === "list" ? "list-card" : ""}`} onClick={() => onOpen(estate.link)}>
       <div className="browse-card-media">
-        <img {...responsiveImageProps(estate.image, layout === "list" ? "(max-width: 760px) 100vw, 42vw" : "(max-width: 760px) 100vw, 34vw")} loading="lazy" decoding="async" alt={`${estate.title} luxury estate`} style={{ objectPosition: estate.imagePosition }} />
+        <img {...responsiveImageProps(estate.image, layout === "list" ? "(max-width: 760px) 100vw, 42vw" : "(max-width: 760px) 100vw, 34vw")} loading="lazy" decoding="async" alt={`${estate.title} GPU compute product`} style={{ objectPosition: estate.imagePosition }} />
         <div className="browse-card-shade" />
         <span className="browse-card-tag">{estate.tag}</span>
         <button className={`browse-heart ${liked ? "liked" : ""}`} onClick={(event) => { event.stopPropagation(); onLike(estate.title); }} aria-label={`Save ${estate.title}`}><Heart weight={liked ? "fill" : "regular"} /></button>
@@ -46,9 +46,9 @@ function PropertyCard({ estate, liked, onLike, onOpen, layout }) {
         </div>
       </div>
       <div className="browse-card-specs">
-        <span><Bed /> {estate.beds} Beds</span>
-        <span><Bathtub /> {estate.baths} Baths</span>
-        <span><Ruler /> {estate.area}</span>
+        <span><GraphicsCard weight="duotone" /> {estate.gpuModel}</span>
+        <span><Memory weight="duotone" /> {estate.vram}</span>
+        <span><CalendarBlank weight="duotone" /> {estate.hostingTerm}</span>
       </div>
     </article>
   );

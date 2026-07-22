@@ -6,6 +6,16 @@ const throwIfError = (error) => {
   if (error) throw new Error(error.message || "数据请求失败");
 };
 
+const siteImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
+const siteImageExtensions = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/avif": "avif",
+};
+const siteImageLimit = 6 * 1024 * 1024;
+
 export async function getPlatformOverview() {
   const client = requireSupabase();
   const [devicesResult, ordersResult, earningsResult, transactionsResult] = await Promise.all([
@@ -77,6 +87,35 @@ export async function saveSiteSetting(section, value) {
   const { error } = await client.from("site_settings").upsert({ user_id: user.id, section_key: section, value }, { onConflict: "section_key" });
   throwIfError(error);
   return { ok: true, section, value };
+}
+
+export async function uploadSiteImage(file, scope = "content") {
+  if (!file || !siteImageTypes.has(file.type)) throw new Error("请选择 JPG、PNG、WebP、GIF 或 AVIF 图片");
+  if (file.size > siteImageLimit) throw new Error("图片不能超过 6 MB");
+
+  const client = requireSupabase();
+  const { data: { user }, error: userError } = await client.auth.getUser();
+  throwIfError(userError);
+  if (!user) throw new Error("请先登录");
+
+  const safeScope = String(scope).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "") || "content";
+  const formData = new FormData();
+  formData.append("file", file, `upload.${siteImageExtensions[file.type]}`);
+  formData.append("scope", safeScope);
+
+  const { data, error } = await client.functions.invoke("site-media-upload", { body: formData });
+  if (error) {
+    let message = error.message || "图片上传失败";
+    try {
+      const payload = await error.context?.json?.();
+      message = payload?.error || message;
+    } catch {
+      // Keep the transport error when the response has no JSON body.
+    }
+    throw new Error(message);
+  }
+  if (!data?.url) throw new Error("图片公开地址生成失败");
+  return data;
 }
 
 export async function getBlogPosts() {

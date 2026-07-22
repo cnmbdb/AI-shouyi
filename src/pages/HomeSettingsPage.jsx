@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   ChevronRight,
   House,
-  Image as ImageIcon,
   Plus,
   RotateCcw,
   Trash2,
@@ -24,14 +23,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageControls } from "@/components/ImageControls.jsx";
 import { createHomeItem, defaultHomeSettings, homeIconOptions, normalizeHomeSettings } from "../data/homeSettings.js";
 import { getSiteSettings, saveSiteSetting } from "../lib/platformData.js";
-import { assetUrl } from "../lib/assets.js";
 
 const clone = (value) => structuredClone(value);
 
@@ -55,18 +54,6 @@ function IconControl({ id, value, onChange }) {
         <SelectContent><SelectGroup>{homeIconOptions.map(([name, label]) => <SelectItem value={name} key={name}>{label} · {name}</SelectItem>)}</SelectGroup></SelectContent>
       </Select>
     </Field>
-  );
-}
-
-function ImageControls({ prefix, image, position, onImage, onPosition }) {
-  return (
-    <div className="home-image-fields">
-      <div className="home-image-preview">{image ? <img src={assetUrl(image, 768)} loading="lazy" decoding="async" alt="图片预览" /> : <ImageIcon />}</div>
-      <FieldGroup>
-        <TextControl id={`${prefix}-image`} label="图片地址" value={image} onChange={onImage} description="支持 /images/... 或完整 https:// 地址" />
-        <TextControl id={`${prefix}-position`} label="图片焦点" value={position} onChange={onPosition} placeholder="center center" />
-      </FieldGroup>
-    </div>
   );
 }
 
@@ -115,7 +102,7 @@ function ItemCard({ title, subtitle, onDelete, children }) {
 
 export function HomeSettingsPage({ onNotice }) {
   const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings, staleTime: 30_000 });
+  const query = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings, staleTime: 30_000, refetchOnWindowFocus: false });
   const [settings, setSettings] = useState(() => clone(defaultHomeSettings));
   const [dirty, setDirty] = useState(false);
 

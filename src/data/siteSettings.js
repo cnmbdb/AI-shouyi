@@ -171,12 +171,23 @@ export function normalizeFooterSettings(value) {
 
 export function normalizeProductSettings(value) {
   const source = value && typeof value === "object" ? value : {};
+  const productDefaults = new Map(defaultProductSettings.items.map((item) => [item.id, item]));
   return {
     ...clone(defaultProductSettings),
     ...source,
     hero: { ...clone(defaultProductSettings.hero), ...(source.hero ?? {}), title: source.title ?? source.hero?.title ?? defaultProductSettings.hero.title, description: source.subtitle ?? source.hero?.description ?? defaultProductSettings.hero.description },
     browser: { ...clone(defaultProductSettings.browser), ...(source.browser ?? {}), defaultSort: ["high", "low"].includes(source.defaultSort) ? source.defaultSort : source.browser?.defaultSort ?? defaultProductSettings.browser.defaultSort },
-    items: (Array.isArray(source.items) ? source.items : clone(defaultProductSettings.items)).map((item, index) => withId("product", { enabled: true, ...item, imagePosition: item.imagePosition ?? item.position ?? "center center" }, index)),
+    items: (Array.isArray(source.items) ? source.items : clone(defaultProductSettings.items)).map((item, index) => {
+      const fallback = productDefaults.get(item.id) ?? {};
+      return withId("product", {
+        enabled: true,
+        ...item,
+        gpuModel: item.gpuModel ?? fallback.gpuModel ?? String(item.beds ?? "GPU 型号"),
+        vram: item.vram ?? fallback.vram ?? String(item.baths ?? "显存"),
+        hostingTerm: item.hostingTerm ?? fallback.hostingTerm ?? String(item.area ?? "12 个月"),
+        imagePosition: item.imagePosition ?? item.position ?? "center center",
+      }, index);
+    }),
     cta: {
       ...clone(defaultProductSettings.cta),
       ...(source.cta ?? {}),
