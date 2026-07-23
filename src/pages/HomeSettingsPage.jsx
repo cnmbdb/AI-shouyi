@@ -139,14 +139,13 @@ export function HomeSettingsPage({ onNotice }) {
     <div className="home-settings-page">
       <Accordion className="home-settings-accordion" type="multiple" defaultValue={["hero"]}>
         <AccordionItem value="hero">
-          <SectionHeaderRow title="首屏 Hero" description="背景图、主标题、左右文案与两个按钮" enabled={settings.hero.enabled} onEnabled={(value) => setField("hero", "enabled", value)} />
+          <SectionHeaderRow title="首屏 Hero" description="背景图、主标题与左右文案" enabled={settings.hero.enabled} onEnabled={(value) => setField("hero", "enabled", value)} />
           <AccordionContent>
             <Card size="sm"><CardContent className="home-section-content">
               <ImageControls prefix="hero-bg" image={settings.hero.backgroundImage} position={settings.hero.backgroundPosition} onImage={(value) => setField("hero", "backgroundImage", value)} onPosition={(value) => setField("hero", "backgroundPosition", value)} />
               <ImageControls prefix="hero-fg" image={settings.hero.foregroundImage} position={settings.hero.foregroundPosition} onImage={(value) => setField("hero", "foregroundImage", value)} onPosition={(value) => setField("hero", "foregroundPosition", value)} />
               <div className="home-fields-grid"><TextControl id="hero-title" label="超大标题" value={settings.hero.title} onChange={(value) => setField("hero", "title", value)} /><TextControl id="hero-heading" label="左侧标题" value={settings.hero.heading} onChange={(value) => setField("hero", "heading", value)} /><TextControl id="hero-tagline" label="右侧文案" value={settings.hero.tagline} onChange={(value) => setField("hero", "tagline", value)} /></div>
               <TextControl id="hero-description" label="左侧介绍" value={settings.hero.description} textarea onChange={(value) => setField("hero", "description", value)} />
-              <div className="home-button-grid"><TextControl id="hero-primary-label" label="主按钮文案" value={settings.hero.primaryButton.label} onChange={(value) => setNested("hero", "primaryButton", "label", value)} /><LinkControl id="hero-primary-link" value={settings.hero.primaryButton.link} onChange={(value) => setNested("hero", "primaryButton", "link", value)} /><TextControl id="hero-secondary-label" label="次按钮文案" value={settings.hero.secondaryButton.label} onChange={(value) => setNested("hero", "secondaryButton", "label", value)} /><LinkControl id="hero-secondary-link" value={settings.hero.secondaryButton.link} onChange={(value) => setNested("hero", "secondaryButton", "link", value)} /></div>
             </CardContent></Card>
           </AccordionContent>
         </AccordionItem>

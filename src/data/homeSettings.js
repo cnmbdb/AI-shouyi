@@ -17,8 +17,6 @@ export const defaultHomeSettings = {
     heading: "Elegance Above the Skyline",
     description: "Aether Lane curates extraordinary homes in the world's most breathtaking places. Where design, nature and innovation exist in perfect harmony.",
     tagline: "Your Dream Residence Starts Here",
-    primaryButton: { label: "Explore Estates", link: "/estates" },
-    secondaryButton: { label: "Watch Video", link: "#video" },
   },
   features: {
     enabled: true,

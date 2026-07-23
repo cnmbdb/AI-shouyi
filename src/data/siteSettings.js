@@ -65,7 +65,7 @@ export const defaultFooterSettings = {
 export const defaultProductSettings = {
   hero: {
     enabled: true,
-    image: "/images/estates-hero.png",
+    image: "/images/gpu-carousel-card.png",
     imagePosition: "center center",
     title: "Explore Our Estates",
     description: "Discover extraordinary properties in the world's most breathtaking locations.",
@@ -174,10 +174,12 @@ export function normalizeFooterSettings(value) {
 export function normalizeProductSettings(value) {
   const source = value && typeof value === "object" ? value : {};
   const productDefaults = new Map(defaultProductSettings.items.map((item) => [item.id, item]));
+  const savedHeroImage = source.hero?.image;
+  const normalizedHeroImage = ["/images/estates-hero.png", "/images/estates-hero-game-cards.png"].includes(savedHeroImage) ? defaultProductSettings.hero.image : savedHeroImage;
   return {
     ...clone(defaultProductSettings),
     ...source,
-    hero: { ...clone(defaultProductSettings.hero), ...(source.hero ?? {}), title: source.title ?? source.hero?.title ?? defaultProductSettings.hero.title, description: source.subtitle ?? source.hero?.description ?? defaultProductSettings.hero.description },
+    hero: { ...clone(defaultProductSettings.hero), ...(source.hero ?? {}), image: normalizedHeroImage ?? defaultProductSettings.hero.image, title: source.title ?? source.hero?.title ?? defaultProductSettings.hero.title, description: source.subtitle ?? source.hero?.description ?? defaultProductSettings.hero.description },
     browser: { ...clone(defaultProductSettings.browser), ...(source.browser ?? {}), defaultSort: ["high", "low"].includes(source.defaultSort) ? source.defaultSort : source.browser?.defaultSort ?? defaultProductSettings.browser.defaultSort },
     items: (Array.isArray(source.items) ? source.items : clone(defaultProductSettings.items)).map((item, index) => {
       const fallback = productDefaults.get(item.id) ?? {};

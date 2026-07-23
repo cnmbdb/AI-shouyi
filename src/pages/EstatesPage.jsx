@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { preload } from "react-dom";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import {
   ArrowRight,
   CalendarBlank,
@@ -14,7 +16,187 @@ import {
   SquaresFour,
 } from "@phosphor-icons/react";
 import { defaultProductSettings } from "../data/siteSettings.js";
-import { assetUrl, preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
+import { preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
+
+gsap.registerPlugin(useGSAP);
+
+const HERO_CARD_COUNT = 5;
+
+const carouselSlot = (index, activeIndex) => {
+  let difference = (index - activeIndex + HERO_CARD_COUNT) % HERO_CARD_COUNT;
+  if (difference > 2) difference -= HERO_CARD_COUNT;
+  return difference;
+};
+
+function GpuHeroCarousel({ image }) {
+  const rootRef = useRef(null);
+  const shellRefs = useRef([]);
+  const cardRefs = useRef([]);
+  const timelineRef = useRef(null);
+  const hoveredCardRef = useRef(null);
+  const reducedMotionRef = useRef(false);
+
+  const { contextSafe } = useGSAP(() => {
+    const shells = gsap.utils.toArray(".gpu-carousel-card-shell", rootRef.current);
+    if (rootRef.current) rootRef.current.dataset.gsapReady = String(shells.length);
+    if (shells.length !== HERO_CARD_COUNT) return undefined;
+
+    const media = gsap.matchMedia();
+
+    media.add({
+      isDesktop: "(min-width: 721px)",
+      isMobile: "(max-width: 720px)",
+      reduceMotion: "(prefers-reduced-motion: reduce)",
+    }, (context) => {
+      const { isMobile, reduceMotion } = context.conditions;
+      if (rootRef.current) rootRef.current.dataset.gsapMedia = `${isMobile ? "mobile" : "desktop"}-${reduceMotion ? "reduced" : "motion"}`;
+      const initialActiveIndex = 2;
+      const horizontalStep = isMobile ? 58 : 72;
+
+      reducedMotionRef.current = reduceMotion;
+
+      const cardState = (index, activeIndex) => {
+        const slot = carouselSlot(index, activeIndex);
+        const distance = Math.abs(slot);
+        return {
+          xPercent: -50 + slot * horizontalStep,
+          yPercent: -50,
+          y: distance === 0 ? (isMobile ? 18 : 8) : distance === 1 ? (isMobile ? 38 : 34) : (isMobile ? 56 : 62),
+          scale: distance === 0 ? 1 : distance === 1 ? (isMobile ? 0.84 : 0.86) : (isMobile ? 0.67 : 0.72),
+          rotation: slot * (isMobile ? 5 : 5.5),
+          rotationY: slot * (isMobile ? -2 : -3),
+          autoAlpha: distance === 2 ? 0.82 : 1,
+          zIndex: 10 - distance,
+          transformOrigin: "50% 88%",
+          force3D: true,
+        };
+      };
+
+      shells.forEach((shell, index) => gsap.set(shell, cardState(index, initialActiveIndex)));
+
+      if (reduceMotion) {
+        timelineRef.current = null;
+        return undefined;
+      }
+
+      const timeline = gsap.timeline({
+        repeat: -1,
+        defaults: { duration: 0.9, ease: "power3.inOut", overwrite: "auto" },
+      });
+
+      for (let step = 1; step <= HERO_CARD_COUNT; step += 1) {
+        const activeIndex = (initialActiveIndex + step) % HERO_CARD_COUNT;
+        const label = `carousel-step-${step}`;
+        timeline.addLabel(label, timeline.duration() + 2.35);
+        shells.forEach((shell, index) => timeline.to(shell, cardState(index, activeIndex), label));
+      }
+
+      timelineRef.current = timeline;
+
+      return () => {
+        timeline.kill();
+        if (timelineRef.current === timeline) timelineRef.current = null;
+      };
+    });
+
+    const handleVisibilityChange = () => {
+      const timeline = timelineRef.current;
+      if (!timeline) return;
+      if (document.hidden) timeline.pause();
+      else if (hoveredCardRef.current === null) timeline.resume();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      timelineRef.current?.kill();
+      media.revert();
+    };
+  }, { scope: rootRef });
+
+  const holdCard = contextSafe((index) => {
+    const cards = cardRefs.current.filter(Boolean);
+    const shell = shellRefs.current[index];
+    const selectedCard = cardRefs.current[index];
+    if (!shell || !selectedCard) return;
+
+    hoveredCardRef.current = index;
+    timelineRef.current?.pause();
+    shell.dataset.restingZ = String(gsap.getProperty(shell, "zIndex") || 10);
+    gsap.set(shell, { zIndex: 30 });
+    gsap.killTweensOf(cards);
+
+    const duration = reducedMotionRef.current ? 0 : 0.42;
+    const shellRotation = Number(gsap.getProperty(shell, "rotation")) || 0;
+
+    cards.forEach((card, cardIndex) => {
+      gsap.to(card, {
+        y: cardIndex === index ? -34 : 0,
+        scale: cardIndex === index ? 1.08 : 0.97,
+        rotation: cardIndex === index ? -shellRotation : 0,
+        rotationX: cardIndex === index ? -4 : 0,
+        autoAlpha: cardIndex === index ? 1 : 0.7,
+        duration,
+        ease: cardIndex === index ? "back.out(1.7)" : "power2.out",
+        overwrite: "auto",
+      });
+    });
+  });
+
+  const releaseCard = contextSafe((index) => {
+    if (hoveredCardRef.current !== index) return;
+    hoveredCardRef.current = null;
+
+    const cards = cardRefs.current.filter(Boolean);
+    const shell = shellRefs.current[index];
+    const duration = reducedMotionRef.current ? 0 : 0.38;
+
+    gsap.to(cards, {
+      y: 0,
+      scale: 1,
+      rotation: 0,
+      rotationX: 0,
+      autoAlpha: 1,
+      duration,
+      ease: "power3.out",
+      overwrite: "auto",
+      onComplete: () => {
+        if (shell) gsap.set(shell, { zIndex: Number(shell.dataset.restingZ) || 10 });
+        if (hoveredCardRef.current === null && !document.hidden) timelineRef.current?.resume();
+      },
+    });
+  });
+
+  return (
+    <div className="gpu-hero-carousel" ref={rootRef} aria-label="GPU compute card carousel">
+      {Array.from({ length: HERO_CARD_COUNT }, (_, index) => (
+        <button
+          className="gpu-carousel-card-shell"
+          key={`gpu-hero-card-${index + 1}`}
+          ref={(node) => { shellRefs.current[index] = node; }}
+          type="button"
+          aria-label={`GPU 算力卡片 ${index + 1}，悬停或聚焦可暂停轮播`}
+          onPointerEnter={() => holdCard(index)}
+          onPointerLeave={() => releaseCard(index)}
+          onFocus={() => holdCard(index)}
+          onBlur={() => releaseCard(index)}
+        >
+          <span className="gpu-carousel-card" ref={(node) => { cardRefs.current[index] = node; }}>
+            <img
+              {...responsiveImageProps(image, "(max-width: 720px) 50vw, 27vw")}
+              alt={`GPU data center compute card ${index + 1}`}
+              loading="eager"
+              decoding="async"
+              fetchPriority={index === 2 ? "high" : "auto"}
+              draggable="false"
+            />
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function SelectField({ label, value, onChange, children }) {
   return (
@@ -127,7 +309,8 @@ export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSet
 
   return (
     <div className="estates-page">
-      {settings.hero.enabled ? <section className="estates-hero" style={{ backgroundImage: `url(${assetUrl(settings.hero.image, 1280)})`, backgroundPosition: settings.hero.imagePosition }}>
+      {settings.hero.enabled ? <section className="estates-hero">
+        <GpuHeroCarousel image={settings.hero.image} />
         <div className="estates-hero-content shell">
           <h1>{settings.hero.title}</h1>
           <p>{settings.hero.description}</p>

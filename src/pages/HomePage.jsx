@@ -15,14 +15,12 @@ import {
   MapPin,
   Medal,
   Mountains,
-  Play,
   Quotes,
   ShieldCheck,
   Sparkle,
   UserFocus,
   UsersThree,
   Wallet,
-  X,
 } from "@phosphor-icons/react";
 import { defaultHomeSettings } from "../data/homeSettings.js";
 import { assetUrl, preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
@@ -36,13 +34,11 @@ function ArrowButton({ label = "Open", onClick, dark = false, asSpan = false }) 
 }
 
 export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice }) {
-  const [videoOpen, setVideoOpen] = useState(false);
   const [liked, setLiked] = useState(() => new Set());
   const [testimonialPage, setTestimonialPage] = useState(0);
 
   const handleLink = (link) => {
     if (!link) return;
-    if (link === "#video") { setVideoOpen(true); return; }
     if (link.startsWith("#")) {
       document.querySelector(link)?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
@@ -80,10 +76,6 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
             <div className="hero-copy hero-copy-left">
               <h2>{hero.heading}</h2>
               <p>{hero.description}</p>
-              <div className="hero-actions">
-                <button className="primary-button" onClick={() => handleLink(hero.primaryButton.link)}>{hero.primaryButton.label} <ArrowButton label={hero.primaryButton.label} dark asSpan /></button>
-                <button className="glass-button" onClick={() => handleLink(hero.secondaryButton.link)}>{hero.secondaryButton.label} <span><Play weight="fill" /></span></button>
-              </div>
             </div>
             <p className="hero-tagline">{hero.tagline}</p>
           </div>
@@ -174,15 +166,6 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
         </section>
       ) : null}
 
-      {videoOpen ? (
-        <div className="modal-backdrop" role="presentation" onClick={() => setVideoOpen(false)}>
-          <div className="video-modal" role="dialog" aria-modal="true" aria-label="Aether Lane film" onClick={(event) => event.stopPropagation()}>
-            <button className="modal-close" onClick={() => setVideoOpen(false)} aria-label="Close video"><X /></button>
-            <div className="video-still"><span><Play weight="fill" /></span></div>
-            <h2>Life Above the Ordinary</h2><p>A cinematic glimpse into the private world of Aether Lane.</p>
-          </div>
-        </div>
-      ) : null}
     </>
   );
 }

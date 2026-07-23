@@ -73,6 +73,59 @@ final result: passed
 
 ---
 
+# Design QA — Product browsing five-card Hero
+
+- Source visual truth: `/Users/a2333/IDE/AI算力收益/public/images/estates-hero-game-cards.png`
+- Implementation screenshot: `/Users/a2333/IDE/AI算力收益/design-qa-assets/product-hero-implementation.png`
+- Normalized Hero crop: `/Users/a2333/IDE/AI算力收益/design-qa-assets/product-hero-implementation-crop.png`
+- Side-by-side comparison: `/Users/a2333/IDE/AI算力收益/design-qa-assets/product-hero-comparison.png`
+- Mobile evidence: `/Users/a2333/IDE/AI算力收益/design-qa-assets/product-hero-mobile.png`
+- Desktop viewport: 1117 × 761 CSS pixels. Browser reported device pixel ratio 2; its screenshot output was 1117 × 761 pixels. The 1117 × 686-pixel Hero crop was normalized to the source's 1200 × 737 pixels for comparison.
+- Mobile viewport: 390 × 844 CSS pixels with a 390 × 460-pixel Hero.
+- State: public `/estates` product-browsing route, default theme, filters visible.
+
+## Full-view comparison evidence
+
+The comparison board places the supplied five-card reference on the left and the rendered Hero on the right. At the annotated 1117-pixel desktop width, the Hero follows the source's 1200:737 ratio at approximately 686 pixels high. All five cards, discount labels, planet background, glow, perspective, and bottom globe detail remain visible without stretching or desktop cropping.
+
+## Focused region comparison evidence
+
+The requested change is limited to the Hero image and its frame, so the normalized Hero crop is also the focused comparison. Additional component crops were not needed. The mobile capture confirms that the responsive crop keeps the central Space Explorer card and adjacent cards readable while allowing the existing navigation and page copy to remain in place.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the in-image typography is preserved from the supplied raster. Existing product-page navigation, heading, description, and breadcrumb typography remain unchanged as required by the scoped browser annotation.
+- Spacing and layout rhythm: desktop Hero height increased from 308 pixels to approximately 686 pixels at the annotated viewport. The section now matches the reference ratio and hands off cleanly to the filter/results area.
+- Colors and visual tokens: the black space background and neon violet, green, blue, yellow, and pink card accents match the supplied source exactly. The surrounding product-page tokens were not redesigned.
+- Image quality and asset fidelity: the exact supplied 1200 × 737 PNG is retained as the source asset. WebP 768-pixel and full-size route variants were created without changing composition. Desktop uses `contain` against black to avoid cropping; mobile uses `cover` with a centered focal point.
+- Copy and content: every label and card detail inside the reference bitmap is retained. Existing page title, description, breadcrumb, navigation, and catalog content remain functional and independently configurable.
+
+## Findings
+
+No actionable P0, P1, or P2 differences remain for the requested background replacement and sizing change.
+
+## Comparison history
+
+### Pass 1 — passed
+
+The first post-build browser comparison showed the full reference composition at the intended desktop aspect ratio, with no stretching, missing cards, broken handoff, or console errors. No visual fixes were required after comparison.
+
+## Interaction and runtime checks
+
+- Public `/estates` route renders the new `/images/estates-hero-game-cards-1280.webp` asset.
+- Product settings normalize the legacy `/images/estates-hero.png` default to `/images/estates-hero-game-cards.png` and show the new value in the existing Hero image control.
+- Desktop and 390-pixel mobile breakpoints were rendered and inspected.
+- Browser console errors checked on public and administrator settings routes: none.
+- Production build: `npm run build` passes.
+
+## Follow-up polish
+
+- [P3] The existing page title and breadcrumb intentionally overlay the upper-left of the reference image. They were preserved because the annotation requested only the background image and height change; their placement can be adjusted separately if more of the top card artwork should remain unobstructed.
+
+final result: passed
+
+---
+
 # Design QA — Console dual-fan GPU brand icon
 
 - Source visual truth: `/var/folders/_d/n7glc63n3zd218wc78wjmj880000gn/T/codex-clipboard-adefce78-f8fd-46f8-a0a5-147a3fbe12f6.png`
