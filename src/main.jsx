@@ -3,9 +3,12 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRootRoute, createRoute, createRouter, RouterProvider } from "@tanstack/react-router";
 import { App } from "./App.jsx";
-import { ThemeProvider } from "./components/ThemeProvider.jsx";
 import { TooltipProvider } from "./components/ui/tooltip.jsx";
 import "./styles.css";
+
+document.documentElement.classList.remove("dark");
+document.documentElement.style.colorScheme = "light";
+window.localStorage.removeItem("aether-ui-theme:v1");
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,13 +40,11 @@ const TanStackDevtools = import.meta.env.DEV
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <TooltipProvider>
-        <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
-          <Suspense fallback={null}><TanStackDevtools /></Suspense>
-        </QueryClientProvider>
-      </TooltipProvider>
-    </ThemeProvider>
+    <TooltipProvider>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+        <Suspense fallback={null}><TanStackDevtools /></Suspense>
+      </QueryClientProvider>
+    </TooltipProvider>
   </React.StrictMode>,
 );

@@ -13,7 +13,6 @@ import {
   WalletCardsIcon,
 } from "lucide-react";
 import { Logo } from "../components/SiteChrome.jsx";
-import { ThemeToggle } from "../components/ThemeProvider.jsx";
 import {
   loadCurrentUser,
   loginAccount,
@@ -134,7 +133,7 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate }) {
       <div className="auth-backdrop" aria-hidden="true" />
       <header className="auth-header">
         <Logo onNavigate={onNavigate} />
-        <div className="auth-header-actions"><ThemeToggle /><Button className="auth-back" variant="ghost" size="sm" onClick={() => onNavigate("home")}><ArrowLeftIcon data-icon="inline-start" />返回首页</Button></div>
+        <div className="auth-header-actions"><Button className="auth-back" variant="ghost" size="sm" onClick={() => onNavigate("home")}><ArrowLeftIcon data-icon="inline-start" />返回首页</Button></div>
       </header>
 
       <section className="auth-intro">

@@ -71,6 +71,69 @@ No actionable P0, P1 or P2 differences remain in the desktop comparison. The mai
 
 final result: passed
 
+---
+
+# Design QA - CMS complete-source and crop previews
+
+- Route: `http://localhost:4173/console/settings/home`
+- Target: the first image editor under `首屏四卡片`.
+
+## Visual and interaction verification
+
+- The editor now shows the complete uncropped landscape source in a dedicated `完整原图` area using contain-fit, without stretching it into the height of the adjacent form.
+- A separate square `裁剪预览` thumbnail shows the public card crop and the persisted `42% 66%` focal state.
+- Changing the horizontal focal value from `42` to `0` leaves the complete source unchanged and updates only the crop result to `0% 66%` immediately.
+- Reloading discards the temporary test value, restores `42% 66%`, and leaves `保存并发布` disabled.
+- The same source-plus-crop anatomy is shared by the other cropped CMS image controls with section-appropriate aspect ratios.
+- The page remains vertically scrollable and the sticky publish bar remains usable.
+
+final result: passed
+
+---
+
+# Design QA - Unified percentage focal previews
+
+- Primary route: `http://localhost:4173/console/settings/home`
+- Additional route: `http://localhost:4173/console/settings/products`
+- Browser: Codex in-app Browser
+- Scope: normalize all cropped CMS images to two-axis percentage controls with live preview feedback.
+
+## Coverage verification
+
+- Home Hero background and foreground expose separate horizontal and vertical controls from 0 to 100.
+- Feature cards, About artwork, featured project cards, testimonial background, and all three testimonial avatars use the shared percentage focal editor.
+- The product Hero rendered five image editors; all five exposed two focal axes and a visible crop-status overlay.
+- Footer artwork, Blog Hero, public product cards, and commerce product images use the same shared control and normalize saved legacy values when loaded.
+- Contain-fit navigation/footer logos and payment icons intentionally omit crop controls because focal positioning does not affect their rendering.
+
+## Interaction verification
+
+- The persisted Home Hero value `100%` normalized to horizontal `100`, vertical `50`, and preview status `100% 50%`.
+- Changing the horizontal value to `0` immediately changed the preview status and computed `object-position` to `0% 50%`.
+- Reloading discarded the temporary test value, restored `100% 50%`, and returned the publish action to its disabled synchronized state.
+- Existing values normalize correctly: `center 46%` → `50% 46%`, `right center` → `100% 50%`, and out-of-range percentages clamp to 0–100.
+- Browser warning/error logs were empty, `git diff --check` passed, and the production build passed.
+
+final result: passed
+
+---
+
+# Design QA - Console settings scrolling
+
+- Route: `http://localhost:4173/console/settings/home`
+- Scope: restore vertical scrolling for long section-based settings pages.
+
+## Layout verification
+
+- The console shell is constrained to one viewport and no longer mixes window scrolling with a viewport-height sidebar.
+- `.console-main` is the single vertical scroll container, with momentum scrolling and contained overscroll behavior.
+- The content area reserves bottom space for the sticky publish card and device safe-area inset, so the final accordion and actions can scroll completely above it.
+- Client-side navigation between console routes resets the main scroll position to the top.
+- At 1117 × 761, the test content produced a 3232px scroll area and reached `scrollTop: 2471`; at 390 × 844 it produced a 3128px scroll area and reached `scrollTop: 2284`.
+- In both viewport tests the shell matched the viewport, the document did not become a competing scroll container, and the publish card was fully visible at the bottom.
+
+final result: passed
+
 # Design QA — Product browsing five-card Hero
 
 - Source visual truth: `/Users/a2333/IDE/AI算力收益/public/images/estates-hero-game-cards.png`
@@ -416,5 +479,82 @@ final result: passed
 - Production build passes.
 - Patch whitespace validation passes.
 - Existing reduced-motion, hidden-document pause, hover/focus draw interaction, and lowest-layer wrap behavior remain intact.
+
+final result: passed
+
+---
+
+# Design QA — Single white daytime theme
+
+- Public route: `http://localhost:4173/estates`
+- Authentication route: `http://localhost:4173/auth`
+- Administrator route: `http://localhost:4173/console/settings/products`
+- Scope: remove dark mode, system-theme switching, theme toggles, and theme-specific Product Hero media controls.
+
+## Theme verification
+
+- All three routes render with no `dark` class on the document root and a computed `color-scheme` of `light`.
+- Public, authentication, and console surfaces expose no light/dark theme toggle.
+- The product page background remains white, and the authenticated authentication state uses the light monochrome artwork overlay.
+- Browser console warning/error logs are empty on all checked routes.
+
+## Product Hero CMS verification
+
+- The public Product Hero renders five cards, all resolving to the responsive `gpu2-1280.webp` daytime asset at the tested desktop viewport.
+- Product settings render five card editors with one image URL and focal-position control per card.
+- All five saved daytime image inputs contain `/images/gpu2.png`; no light-theme or dark-theme image labels remain.
+- Legacy theme-specific Hero data normalizes to the daytime/light image and is republished without `lightImage`, `darkImage`, or matching focal-position keys.
+
+## Regression and interaction checks
+
+- Selecting `RTX 4090` in the public GPU model filter changes the results heading from 6 products to 1 product.
+- The compute-oriented filters remain deployment region, GPU model, VRAM, hosting term, and maximum price.
+- `git diff --check` and the production build pass.
+
+This section supersedes earlier dark-theme QA notes; the product now intentionally supports one white daytime theme only.
+
+final result: passed
+
+---
+
+# Design QA - Shared public header frosted glass
+
+- Routes: `http://localhost:4173/` and `http://localhost:4173/estates`
+- Desktop viewport: 1117 × 761
+- Mobile viewport: 390 × 844
+- Scope: replace the blue-purple shared header fill with a white translucent frosted-glass material.
+
+## Visual verification
+
+- The shared header computes to `rgba(255, 255, 255, 0.5)` with `blur(22px) saturate(165%)`.
+- A fine translucent white border, inset highlight, and soft neutral shadow provide separation without restoring a solid color fill.
+- Brand, navigation, mobile menu, and user-entry text use dark neutral colors for contrast.
+- The material remains readable over the Home hero artwork and the white Estates page.
+
+## Responsive and interaction verification
+
+- The mobile navigation panel uses the same material family at 82% white opacity with 24px blur.
+- Opening the mobile menu reveals all six navigation items, and the 390px viewport has no horizontal overflow.
+- Clicking the desktop Estates navigation item changes the client-side route from Home to `/estates`.
+- Browser warning/error logs are empty.
+
+final result: passed
+
+---
+
+# Design QA - CMS image focal-position preview
+
+- Route: `http://localhost:4173/console/settings/home`
+- Target: Home Hero background image preview and its `图片焦点` field.
+
+## Interaction verification
+
+- The Home Hero preview is a visible 16:9 crop frame rather than a stretched portrait thumbnail, measuring approximately 303 × 170 pixels at the tested desktop viewport.
+- The preview includes an explicit `裁剪预览` status bar that shows the current focal-position value.
+- The persisted focal-position value `100%` renders in the preview as computed `object-position: 100% 50%`.
+- Changing the field to `0% 50%` immediately updates the same preview image, crop direction, and status text to `0% 50%` without saving.
+- The shared image control now applies this behavior to all site-settings previews that expose focal-position editing.
+- Reloading discards the temporary test value, restores `100%`, and leaves `保存并发布` disabled.
+- Browser warning/error logs are empty.
 
 final result: passed

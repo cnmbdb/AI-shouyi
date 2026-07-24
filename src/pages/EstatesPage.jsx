@@ -19,7 +19,6 @@ import {
 } from "@phosphor-icons/react";
 import { defaultProductSettings } from "../data/siteSettings.js";
 import { preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
-import { useTheme } from "../components/ThemeProvider.jsx";
 
 gsap.registerPlugin(useGSAP);
 
@@ -266,14 +265,13 @@ function PropertyCard({ estate, liked, onLike, onOpen, layout }) {
 }
 
 export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSettings }) {
-  const theme = useTheme()?.theme ?? "light";
   const heroCards = useMemo(() => settings.hero.cards.map((card) => ({
     id: card.id,
-    image: theme === "light" ? card.lightImage : card.darkImage,
-    imagePosition: theme === "light" ? card.lightImagePosition : card.darkImagePosition,
+    image: card.image,
+    imagePosition: card.imagePosition,
     link: card.link,
-  })), [settings.hero.cards, theme]);
-  const heroAspectRatio = theme === "light" ? "986 / 1410" : "1086 / 1448";
+  })), [settings.hero.cards]);
+  const heroAspectRatio = "986 / 1410";
   const catalog = useMemo(() => settings.items.filter((item) => item.enabled !== false), [settings.items]);
   const regions = useMemo(() => [...new Set(catalog.map((item) => item.locationGroup).filter(Boolean))], [catalog]);
   const gpuModels = useMemo(() => [...new Set(catalog.map((item) => item.gpuModel).filter(Boolean))], [catalog]);

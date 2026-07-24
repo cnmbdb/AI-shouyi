@@ -1,4 +1,5 @@
 import { estateCatalog } from "./estateCatalog.js";
+import { normalizeFocalPosition } from "../lib/focalPosition.js";
 
 const withId = (prefix, item, index) => ({ id: item.id || `${prefix}-${index + 1}`, ...item });
 const clone = (value) => structuredClone(value);
@@ -10,10 +11,8 @@ const numberWithin = (value, fallback, min, max) => {
 
 const defaultProductHeroCards = Array.from({ length: 5 }, (_, index) => ({
   id: `hero-card-${index + 1}`,
-  lightImage: "/images/gpu2.png",
-  lightImagePosition: "center center",
-  darkImage: "/images/gpu-carousel-card.png",
-  darkImagePosition: "center center",
+  image: "/images/gpu2.png",
+  imagePosition: "50% 50%",
   link: "/estates",
 }));
 
@@ -135,7 +134,7 @@ export const defaultBlogSettings = {
   hero: {
     enabled: true,
     backgroundImage: "",
-    backgroundPosition: "center center",
+    backgroundPosition: "50% 50%",
     title: "Stories Above\nthe Skyline",
     description: "Curated perspectives on design, architecture, luxury living, travel, and the art of extraordinary spaces.",
   },
@@ -200,6 +199,7 @@ export function normalizeFooterSettings(value) {
       items: (Array.isArray(column.items) ? column.items : []).map((item, itemIndex) => withId(`footer-${columnIndex}`, { enabled: true, ...item }, itemIndex)),
     }, columnIndex)),
     legalLinks: (Array.isArray(source.legalLinks) ? source.legalLinks : clone(defaultFooterSettings.legalLinks)).map((item, index) => withId("legal", item, index)),
+    imagePosition: normalizeFocalPosition(source.imagePosition ?? defaultFooterSettings.imagePosition),
   };
 }
 
@@ -213,23 +213,23 @@ export function normalizeProductSettings(value) {
   delete normalizedHero.description;
   delete normalizedHero.homeLabel;
   delete normalizedHero.currentLabel;
-  const legacyLightImage = normalizedHero.lightImage ?? defaultProductHeroCards[0].lightImage;
-  const legacyLightImagePosition = normalizedHero.lightImagePosition ?? defaultProductHeroCards[0].lightImagePosition;
+  const legacyLightImage = normalizedHero.lightImage ?? defaultProductHeroCards[0].image;
+  const legacyLightImagePosition = normalizedHero.lightImagePosition ?? defaultProductHeroCards[0].imagePosition;
   const savedLegacyDarkImage = normalizedHero.image;
-  const legacyDarkImage = ["/images/estates-hero.png", "/images/estates-hero-game-cards.png"].includes(savedLegacyDarkImage)
-    ? defaultProductHeroCards[0].darkImage
-    : savedLegacyDarkImage ?? defaultProductHeroCards[0].darkImage;
-  const legacyDarkImagePosition = normalizedHero.imagePosition ?? defaultProductHeroCards[0].darkImagePosition;
+  const legacySharedImage = normalizedHero.lightImage ?? (["/images/estates-hero.png", "/images/estates-hero-game-cards.png", "/images/gpu-carousel-card.png"].includes(savedLegacyDarkImage)
+    ? defaultProductHeroCards[0].image
+    : savedLegacyDarkImage ?? legacyLightImage);
+  const legacySharedImagePosition = normalizedHero.lightImagePosition ?? normalizedHero.imagePosition ?? legacyLightImagePosition;
   const savedHeroCards = Array.isArray(normalizedHero.cards) ? normalizedHero.cards : [];
-  const normalizedHeroCards = defaultProductHeroCards.map((fallback, index) => withId("hero-card", {
-    ...fallback,
-    ...(savedHeroCards[index] ?? {}),
-    lightImage: savedHeroCards[index]?.lightImage ?? legacyLightImage,
-    lightImagePosition: savedHeroCards[index]?.lightImagePosition ?? legacyLightImagePosition,
-    darkImage: savedHeroCards[index]?.darkImage ?? savedHeroCards[index]?.image ?? legacyDarkImage,
-    darkImagePosition: savedHeroCards[index]?.darkImagePosition ?? savedHeroCards[index]?.imagePosition ?? legacyDarkImagePosition,
-    link: savedHeroCards[index]?.link ?? "/estates",
-  }, index));
+  const normalizedHeroCards = defaultProductHeroCards.map((fallback, index) => {
+    const savedCard = savedHeroCards[index] ?? {};
+    return {
+      id: savedCard.id || fallback.id,
+      image: savedCard.image ?? savedCard.lightImage ?? legacySharedImage,
+      imagePosition: normalizeFocalPosition(savedCard.imagePosition ?? savedCard.lightImagePosition ?? legacySharedImagePosition),
+      link: savedCard.link ?? fallback.link,
+    };
+  });
   delete normalizedHero.image;
   delete normalizedHero.imagePosition;
   delete normalizedHero.lightImage;
@@ -272,7 +272,7 @@ export function normalizeProductSettings(value) {
         gpuModel: item.gpuModel ?? fallback.gpuModel ?? String(item.beds ?? "GPU 型号"),
         vram: item.vram ?? fallback.vram ?? String(item.baths ?? "显存"),
         hostingTerm: item.hostingTerm ?? fallback.hostingTerm ?? String(item.area ?? "12 个月"),
-        imagePosition: item.imagePosition ?? item.position ?? "center center",
+        imagePosition: normalizeFocalPosition(item.imagePosition ?? item.position),
       }, index);
     }),
     cta: {
@@ -289,7 +289,7 @@ export function normalizeBlogSettings(value) {
   return {
     ...clone(defaultBlogSettings),
     ...source,
-    hero: { ...clone(defaultBlogSettings.hero), ...(source.hero ?? {}), title: source.title ?? source.hero?.title ?? defaultBlogSettings.hero.title, description: source.subtitle ?? source.hero?.description ?? defaultBlogSettings.hero.description },
+    hero: { ...clone(defaultBlogSettings.hero), ...(source.hero ?? {}), backgroundPosition: normalizeFocalPosition(source.hero?.backgroundPosition ?? defaultBlogSettings.hero.backgroundPosition), title: source.title ?? source.hero?.title ?? defaultBlogSettings.hero.title, description: source.subtitle ?? source.hero?.description ?? defaultBlogSettings.hero.description },
     featured: { ...clone(defaultBlogSettings.featured), ...(source.featured ?? {}), label: source.featuredLabel ?? source.featured?.label ?? defaultBlogSettings.featured.label },
     categories: {
       ...clone(defaultBlogSettings.categories),

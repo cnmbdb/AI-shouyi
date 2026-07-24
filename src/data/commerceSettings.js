@@ -1,3 +1,5 @@
+import { normalizeFocalPosition } from "../lib/focalPosition.js";
+
 const clone = (value) => structuredClone(value);
 const withId = (prefix, item, index) => ({ id: item.id || `${prefix}-${index + 1}`, ...item });
 
@@ -16,7 +18,7 @@ export const defaultCommerceProducts = {
       name: "RTX 5090 跑算计划",
       summary: "旗舰桌面级 GPU，适合高性能推理、创作和持续跑算。",
       image: "/images/estate-luna-ridge.png",
-      imagePosition: "center center",
+      imagePosition: "50% 50%",
       gpuModel: "NVIDIA GeForce RTX 5090",
       vram: "32 GB",
       hostingTerm: "24 个月",
@@ -46,7 +48,7 @@ export const defaultCommerceProducts = {
       name: "H100 SXM 企业跑算计划",
       summary: "面向大模型训练和高吞吐推理的企业级算力设备。",
       image: "/images/estate-coast.png",
-      imagePosition: "center center",
+      imagePosition: "50% 50%",
       gpuModel: "NVIDIA H100 SXM",
       vram: "80 GB",
       hostingTerm: "24 个月",
@@ -76,7 +78,7 @@ export const defaultCommerceProducts = {
       name: "L40S 算力设备",
       summary: "适合图形、视频、生成式 AI 和推理业务的一次性买断设备。",
       image: "/images/estate-vista-mare.png",
-      imagePosition: "center center",
+      imagePosition: "50% 50%",
       gpuModel: "NVIDIA L40S",
       vram: "48 GB",
       hostingTerm: "买断",
@@ -166,7 +168,7 @@ const normalizeProduct = (item, index, categories) => {
   name: "未命名算力商品",
   summary: "",
   image: "/images/estate-luna-ridge.png",
-  imagePosition: "center center",
+  imagePosition: "50% 50%",
   gpuModel: "NVIDIA GPU",
   vram: "24 GB",
   hostingTerm: "12 个月",
@@ -193,6 +195,7 @@ const normalizeProduct = (item, index, categories) => {
   }, index);
   normalized.slug = slugifyCommerce(item?.slug || item?.name, `product-${index + 1}`);
   normalized.shareToken = String(item?.shareToken || normalized.slug || normalized.id).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 80) || `share-${index + 1}`;
+  normalized.imagePosition = normalizeFocalPosition(normalized.imagePosition);
   return normalized;
 };
 

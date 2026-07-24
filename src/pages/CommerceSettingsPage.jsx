@@ -193,7 +193,7 @@ function ProductCatalogEditor({ settings, edit, dirty, pending, onNotice, onPubl
       name: "新算力商品",
       summary: "",
       image: "/images/estate-luna-ridge.png",
-      imagePosition: "center center",
+      imagePosition: "50% 50%",
       gpuModel: "NVIDIA GPU",
       vram: "24 GB",
       hostingTerm: "12 个月",
@@ -273,7 +273,7 @@ function ProductEditorDialog({ product, index, categories, edit, dirty, pending,
         </DialogHeader>
         <ScrollArea className="commerce-product-dialog-scroll">
           <div className="commerce-editor-content">
-        <ImageControls prefix={`store-product-${product.id}`} image={product.image} position={product.imagePosition} onImage={(value) => set("image", value)} onPosition={(value) => set("imagePosition", value)} />
+        <ImageControls prefix={`store-product-${product.id}`} image={product.image} position={product.imagePosition} onImage={(value) => set("image", value)} onPosition={(value) => set("imagePosition", value)} previewAspect="1 / 1" />
         <FieldGroup className="home-fields-grid"><TextControl id={`product-name-${product.id}`} label="商品名称" value={product.name} onChange={(value) => set("name", value)} /><TextControl id={`product-sku-${product.id}`} label="SKU" value={product.sku} onChange={(value) => set("sku", value)} /><SelectControl id={`product-category-${product.id}`} label="商品分类" value={product.categoryId || "__none__"} options={[["__none__", "未分类"], ...categories.map((item) => [item.id, item.name])]} onChange={(value) => set("categoryId", value === "__none__" ? "" : value)} /><TextControl id={`product-slug-${product.id}`} label="SEO 标识" value={product.slug} onChange={(value) => set("slug", slugify(value, `product-${index + 1}`))} description="分享路径固定为 /estates/商品分类ID/商品ID" /><TextControl id={`product-share-${product.id}`} label="分享标识（兼容）" value={product.shareToken} onChange={(value) => set("shareToken", value.replace(/[^a-zA-Z0-9_-]/g, ""))} /><TextControl id={`product-order-${product.id}`} label="显示顺序" type="number" value={product.sortOrder} onChange={(value) => set("sortOrder", value)} /></FieldGroup>
         <TextControl id={`product-summary-${product.id}`} label="商品摘要" textarea value={product.summary} onChange={(value) => set("summary", value)} />
         <FieldGroup className="home-fields-grid"><TextControl id={`product-gpu-${product.id}`} label="GPU 型号" value={product.gpuModel} onChange={(value) => set("gpuModel", value)} /><TextControl id={`product-vram-${product.id}`} label="显存" value={product.vram} onChange={(value) => set("vram", value)} /><TextControl id={`product-term-${product.id}`} label="托管 / 交付说明" value={product.hostingTerm} onChange={(value) => set("hostingTerm", value)} /><TextControl id={`product-stock-${product.id}`} label="库存" type="number" min="0" value={product.inventory} onChange={(value) => set("inventory", value)} /></FieldGroup>

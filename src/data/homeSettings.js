@@ -1,3 +1,5 @@
+import { normalizeFocalPosition } from "../lib/focalPosition.js";
+
 export const homeIconOptions = [
   ["Buildings", "建筑"], ["Mountains", "山峰"], ["Cube", "立方体"], ["FlowerLotus", "莲花"],
   ["Diamond", "钻石"], ["UserFocus", "用户"], ["ShieldCheck", "安全"], ["Leaf", "叶子"],
@@ -10,9 +12,9 @@ export const defaultHomeSettings = {
   hero: {
     enabled: true,
     backgroundImage: "/images/hero-galaxy-home.png",
-    backgroundPosition: "center 46%",
+    backgroundPosition: "50% 46%",
     foregroundImage: "/images/hero-foreground.png",
-    foregroundPosition: "center 46%",
+    foregroundPosition: "50% 46%",
     title: "Galaxy Home",
     heading: "Elegance Above the Skyline",
     description: "Aether Lane curates extraordinary homes in the world's most breathtaking places. Where design, nature and innovation exist in perfect harmony.",
@@ -33,7 +35,7 @@ export const defaultHomeSettings = {
     title: "Beyond Luxury,\nAbove Everything",
     description: "We believe a home is more than a place — it's a feeling. Aether Lane is dedicated to crafting one-of-a-kind experiences that uplift, inspire and last for generations.",
     image: "/images/estate-coast.png",
-    imagePosition: "57% center",
+    imagePosition: "57% 50%",
     buttonLabel: "Learn More About Us",
     buttonLink: "#contact",
     benefits: [
@@ -68,11 +70,11 @@ export const defaultHomeSettings = {
     enabled: true,
     eyebrow: "What Our Clients Say",
     backgroundImage: "/images/estate-coast.png",
-    backgroundPosition: "right center",
+    backgroundPosition: "100% 50%",
     items: [
-      { id: "testimonial-isabella", rating: 5, text: "Aether Lane turned our dream into reality. The attention to detail and personalized service were beyond anything we expected.", name: "Isabella M.", role: "Entrepreneur", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&crop=face", link: "#contact" },
-      { id: "testimonial-julian", rating: 5, text: "From the first viewing to the final handshake, every step was seamless. Our home is more beautiful than we ever imagined.", name: "Julian R.", role: "Investor", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=face", link: "#contact" },
-      { id: "testimonial-sophia", rating: 5, text: "Working with Aether Lane felt like we had known them forever. A level of dedication and honesty rarely seen these days.", name: "Sophia L.", role: "Designer", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&crop=face", link: "#contact" },
+      { id: "testimonial-isabella", rating: 5, text: "Aether Lane turned our dream into reality. The attention to detail and personalized service were beyond anything we expected.", name: "Isabella M.", role: "Entrepreneur", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&crop=face", avatarPosition: "50% 50%", link: "#contact" },
+      { id: "testimonial-julian", rating: 5, text: "From the first viewing to the final handshake, every step was seamless. Our home is more beautiful than we ever imagined.", name: "Julian R.", role: "Investor", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=face", avatarPosition: "50% 50%", link: "#contact" },
+      { id: "testimonial-sophia", rating: 5, text: "Working with Aether Lane felt like we had known them forever. A level of dedication and honesty rarely seen these days.", name: "Sophia L.", role: "Designer", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&crop=face", avatarPosition: "50% 50%", link: "#contact" },
     ],
   },
   cta: {
@@ -97,8 +99,15 @@ function mergeSettings(defaults, saved) {
 }
 
 export function normalizeHomeSettings(saved) {
-  if (!saved?.version || !saved.hero) return structuredClone(defaultHomeSettings);
-  return mergeSettings(defaultHomeSettings, saved);
+  const normalized = !saved?.version || !saved.hero ? structuredClone(defaultHomeSettings) : mergeSettings(defaultHomeSettings, saved);
+  normalized.hero.backgroundPosition = normalizeFocalPosition(normalized.hero.backgroundPosition);
+  normalized.hero.foregroundPosition = normalizeFocalPosition(normalized.hero.foregroundPosition);
+  normalized.features.items = normalized.features.items.map((item) => ({ ...item, imagePosition: normalizeFocalPosition(item.imagePosition) }));
+  normalized.about.imagePosition = normalizeFocalPosition(normalized.about.imagePosition);
+  normalized.featured.items = normalized.featured.items.map((item) => ({ ...item, imagePosition: normalizeFocalPosition(item.imagePosition) }));
+  normalized.testimonials.backgroundPosition = normalizeFocalPosition(normalized.testimonials.backgroundPosition);
+  normalized.testimonials.items = normalized.testimonials.items.map((item) => ({ ...item, avatarPosition: normalizeFocalPosition(item.avatarPosition) }));
+  return normalized;
 }
 
 export function createHomeItem(prefix, template = {}) {

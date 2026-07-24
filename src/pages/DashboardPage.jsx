@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
@@ -29,7 +29,6 @@ import {
   WalletIcon as Wallet,
   XIcon as X,
 } from "lucide-react";
-import { ThemeToggle } from "../components/ThemeProvider.jsx";
 import { BrandLogoMark } from "../components/BrandLogo.jsx";
 import { getPlatformOverview, getSiteSettings } from "../lib/platformData.js";
 import { normalizeNavigationSettings } from "../data/siteSettings.js";
@@ -244,6 +243,7 @@ function FinancePage({ kind }) {
 
 export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, onUserUpdated, notice }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const mainRef = useRef(null);
   const isAdmin = user.role === "admin";
   const navGroups = isAdmin ? [assetNavGroup, ...adminNavGroups] : [assetNavGroup];
   const needsOverview = ["/console", "/console/devices", "/console/orders"].includes(pathname);
@@ -261,6 +261,10 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
   const settingSection = isAdmin && pathname.startsWith("/console/settings/") ? pathname.split("/").pop() : null;
   const [title, description] = pageMeta[pathname] ?? (settingSection ? [settingMeta[settingSection]?.title, settingMeta[settingSection]?.description] : ["控制台", ""]);
 
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0 });
+  }, [pathname]);
+
   return (
     <div className="console-shell">
       <aside className={cn("console-sidebar", sidebarOpen && "open")}>
@@ -270,12 +274,11 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
         <div className="console-help"><Gear /><div><strong>需要帮助？</strong><span>工单平均 10 分钟响应</span></div><Button variant="outline" size="xs" onClick={() => onNotice("已为你打开在线支持工单")}>联系支持</Button></div>
       </aside>
 
-      <main className="console-main">
+      <main ref={mainRef} className="console-main">
         <header className="console-topbar">
           <Button className="console-menu-button" variant="outline" size="icon-sm" onClick={() => setSidebarOpen(true)} aria-label="打开菜单"><List /></Button>
           <div><h1>{title}</h1><p>{description}</p></div>
           <div className="console-top-actions">
-            <ThemeToggle />
             <Button className="notification-button" variant="outline" size="icon-sm" aria-label="通知"><Bell /><i /></Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild><Button className="console-profile" variant="ghost"><Avatar size="sm">{user.avatar_url ? <AvatarImage src={user.avatar_url} alt="" /> : null}<AvatarFallback style={{ backgroundColor: user.avatar_color, color: "white" }}>{user.username.slice(0, 1).toUpperCase()}</AvatarFallback></Avatar><div><strong>{user.display_name || user.username}</strong><small>{isAdmin ? "管理员" : "普通用户"}</small></div><CaretDown data-icon="inline-end" /></Button></DropdownMenuTrigger>
