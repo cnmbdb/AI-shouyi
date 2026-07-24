@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { assetUrl } from "@/lib/assets.js";
 import { uploadSiteImage } from "@/lib/platformData.js";
 
-export function ImageControls({ prefix, image, position, onImage, onPosition, variant = "content", placeholder = null }) {
+export function ImageControls({ prefix, image, position, onImage, onPosition, variant = "content", placeholder = null, label = "" }) {
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
@@ -35,6 +35,7 @@ export function ImageControls({ prefix, image, position, onImage, onPosition, va
 
   return (
     <div className={`home-image-fields${variant === "logo" ? " home-logo-image-fields" : ""}`}>
+      {label ? <strong className="home-image-fields-label">{label}</strong> : null}
       <div className="home-image-preview">{image ? <img src={assetUrl(image, 768)} loading="lazy" decoding="async" alt="图片预览" /> : placeholder ?? <ImageIcon />}</div>
       <FieldGroup>
         <Field className="home-control">

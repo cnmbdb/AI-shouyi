@@ -71,8 +71,6 @@ No actionable P0, P1 or P2 differences remain in the desktop comparison. The mai
 
 final result: passed
 
----
-
 # Design QA — Product browsing five-card Hero
 
 - Source visual truth: `/Users/a2333/IDE/AI算力收益/public/images/estates-hero-game-cards.png`
@@ -167,5 +165,161 @@ No visual fixes were required after the browser comparison. The simplified fan d
 - Light/dark theme switching keeps the GPU icon at the same brand-green color.
 - Browser console errors checked: none.
 - Production build: `npm run build` passes.
+
+final result: passed
+
+---
+
+# Design QA — GPU card GSAP carousel Hero
+
+- Source visual truth: `/var/folders/_d/n7glc63n3zd218wc78wjmj880000gn/T/codex-clipboard-db97845c-c337-4d0d-8ad1-3b7e9c270e6f.png`
+- Implementation screenshot: `/Users/a2333/IDE/AI算力收益/design-qa-assets/gpu-carousel-final.png`
+- Hover/focus evidence: `/Users/a2333/IDE/AI算力收益/design-qa-assets/gpu-carousel-hold.png`
+- Mobile evidence: `/Users/a2333/IDE/AI算力收益/design-qa-assets/gpu-carousel-mobile.png`
+- Side-by-side comparison: `/Users/a2333/IDE/AI算力收益/design-qa-assets/gpu-carousel-comparison.png`
+- Desktop viewport: 1117 × 761 CSS pixels at screenshot density 1. The 1200 × 737 source was normalized to 1117 × 686 pixels and compared with the implementation's 1117 × 686 Hero region.
+- Mobile viewport: 390 × 844 CSS pixels at screenshot density 1; the Hero measured 390 × 520 CSS pixels with no horizontal document overflow.
+- State: public `/estates` route, default unheld carousel for the main comparison, plus focused-card hold state and mobile state.
+
+## Full-view comparison evidence
+
+The comparison board places the supplied five-card fan on the left and the implemented GPU carousel Hero on the right. Both use a black stage, five overlapping portrait cards, a dominant centered card, smaller angled adjacent cards, and progressively lower outer cards. The implementation intentionally preserves the site's persistent shared header and configurable page copy above the card fan.
+
+## Focused region comparison evidence
+
+The Hero itself is the focused region because the request concerns its card anatomy and interaction. The focused hold capture verifies the additional state that cannot exist in the static source: selecting a card pauses the five-card group, raises and straightens the selected card, increases its stacking order, and dims the remaining cards. The mobile capture verifies that the main card and both adjacent cards remain legible at 390 pixels while the outer cards are intentionally clipped by the Hero frame.
+
+## Required fidelity surfaces
+
+- Fonts and typography: card typography is preserved inside the supplied `gpu.png` raster; the existing navigation, title, description, and breadcrumb typography remain unchanged and readable.
+- Spacing and layout rhythm: five cards follow the reference fan hierarchy with a centered primary card, symmetric spacing, stepped vertical offsets, and controlled overlap. The 686-pixel desktop Hero hands off cleanly to the results area; mobile uses a compact 520-pixel Hero.
+- Colors and visual tokens: the black stage, saturated magenta/red card art, NVIDIA Green focus ring, and restrained shadows maintain the product's compute visual language without introducing decorative dashboard colors.
+- Image quality and asset fidelity: all five cards use the exact supplied `gpu.png` artwork through responsive PNG/WebP variants. The central card receives high fetch priority; the cards remain sharp and unstretched at desktop and mobile sizes.
+- Copy and content: the public page copy and all five card images render correctly. Product settings expose `/images/gpu-carousel-card.png` in the existing Hero image control.
+
+## Findings
+
+No actionable P0, P1, or P2 differences remain. The composition matches the reference's five-card fan while the requested GSAP loop and draw-a-card hold state are fully implemented.
+
+## Comparison history
+
+### Pass 1 — passed
+
+The final normalized side-by-side comparison found no blocking visual mismatch. No visual changes were required after this comparison pass.
+
+## Interaction and runtime checks
+
+- Exactly five independently animated card buttons render in the Hero.
+- A full autoplay dwell-and-transition cycle advances the GSAP timeline.
+- Focusing a card pauses shell transforms, lifts the selected card by 52 pixels, scales it to 1.1, straightens it, and dims the other four cards to 0.58 opacity.
+- Moving focus to another page control restores the cards and resumes the timeline.
+- The timeline pauses while the document is hidden and respects `prefers-reduced-motion`.
+- Mobile at 390 × 844 renders all five cards inside an overflow-clipped 520-pixel Hero with `documentElement.scrollWidth === 390`.
+- Browser console errors checked on `/estates`: none.
+- Administrator product settings display `/images/gpu-carousel-card.png` in the Hero image field.
+
+## Follow-up polish
+
+- [P3] Because all five cards intentionally reuse the same supplied `gpu.png`, the carousel communicates motion through position, scale, rotation, and selection rather than changing artwork between slides.
+
+final result: passed
+
+---
+
+# Design QA — GPU carousel reference layout and rear-wrap motion
+
+- Source visual truth: `/tmp/codex-remote-attachments/019f90d0-80fa-7762-9cf7-068af0bf167c/CEE3BE10-89B0-44D9-BA7A-A6E54423939E/1-粘贴的图片-1.jpg`
+- Resting implementation screenshot: `/Users/a2333/IDE/AI算力收益/design-qa-assets/gpu-carousel-layout-v2.png`
+- Rear-wrap midpoint evidence: `/Users/a2333/IDE/AI算力收益/design-qa-assets/gpu-carousel-wrap-behind-mid-v2.png`
+- True-depth rear-wrap evidence: `/Users/a2333/IDE/AI算力收益/design-qa-assets/gpu-carousel-wrap-true-depth.png`
+- Mobile evidence: `/Users/a2333/IDE/AI算力收益/design-qa-assets/gpu-carousel-mobile-v2.png`
+- Side-by-side comparison: `/Users/a2333/IDE/AI算力收益/design-qa-assets/gpu-carousel-comparison-v2.png`
+- Desktop viewport and density: source and browser capture are both 1200 × 737 pixels at screenshot density 1, so no density normalization was needed.
+- Mobile viewport: 390 × 844 CSS pixels at screenshot density 1.
+- State: public `/estates` route, desktop resting fan, first left-to-right wrap midpoint, and mobile resting fan.
+
+## Full-view comparison evidence
+
+The side-by-side board shows the supplied reference and implementation at the same 1200 × 737 pixel frame. The implementation now follows the reference geometry closely: one dominant centered card, two approximately 78%-scale inner cards, two approximately 66%-scale outer cards, symmetric horizontal offsets, progressively lower tops, and inward-facing rotations. The entire fan sits lower than the isolated reference to preserve the existing configurable title, description, and breadcrumb above it.
+
+## Focused region comparison evidence
+
+- Resting geometry: the implementation center card is 298 pixels wide at x=451; inner cards are approximately 257 pixels wide at x=274 and x=668; outer cards are approximately 239 pixels wide at x=116 and x=845. This reproduces the reference's compact, symmetric five-card hand.
+- Vertical hierarchy: inner cards begin approximately 43 pixels below the center card and outer cards approximately 88 pixels below it, closely matching the source's 42-pixel and 97-pixel steps.
+- Rear-wrap state: the initial z-index-only implementation could still be depth-sorted above sibling cards by the `preserve-3d` parent. In the corrected midpoint capture, the wrapping card uses `z-index: 0`, `translateZ(-320px)`, and `pointer-events: none`, while the four visible cards stay at z-indices 30–50. The screenshot shows only the four foreground cards because the moving card is fully occluded behind them.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the GPU card artwork retains its original embedded typography. Existing public-page navigation, title, body copy, and breadcrumb typography remain unchanged.
+- Spacing and layout rhythm: card size ratios, horizontal spacing, vertical steps, overlap, and rotation now track the supplied reference while preserving the existing Hero content zone.
+- Colors and visual tokens: the black stage and saturated GPU card artwork remain unchanged; no unrelated color or dashboard styling was introduced.
+- Image quality and asset fidelity: all five cards continue to use the exact configured `gpu.png`-derived responsive asset without stretching. Desktop and mobile captures remain sharp.
+- Copy and content: public copy, card content, navigation, filtering UI, and administrator-configured Hero media behavior remain intact.
+
+## Findings
+
+No actionable P0, P1, or P2 differences remain for the requested card layout, 4.5-second cadence, or lowest-layer wrap behavior.
+
+## Comparison history
+
+### Pass 1 — blocked
+
+Post-handoff user verification found that z-index alone did not guarantee rear occlusion because the carousel parent preserved a shared 3D scene. The wrapping card could still appear above the other cards during part of its crossing path.
+
+Fixes made:
+
+- Flattened and isolated the sibling stacking context on `.gpu-hero-carousel`.
+- Moved the wrapping shell to `translateZ(-320px)` and `z-index: 0` for the complete crossing tween.
+- Disabled pointer events during the crossing so hover cannot promote the wrapping card to the foreground.
+- Restored `translateZ(0)`, the normal outer-card z-index, and pointer events only after the crossing finishes.
+
+### Pass 2 — passed
+
+The corrected midpoint capture shows four foreground cards with the wrapping card completely hidden behind them. Computed browser state confirms the moving shell remains at `translateZ(-320px)` and `z-index: 0` throughout the captured crossing state.
+
+## Interaction and runtime checks
+
+- Browser-observed center-card sequence advanced from card 3 to card 4 to card 5 in consecutive 4.5-second intervals.
+- During the corrected wrap, the former leftmost card travels at `translateZ(-320px)` and `z-index: 0`; every other card remains above it at z-index 30 or higher.
+- Focus-based draw-a-card interaction still pauses the timeline, raises the selected card 52 pixels, and dims the other cards; moving focus away resumes the loop.
+- Mobile at 390 × 844 has no horizontal document overflow (`scrollWidth === 390`).
+- Production build has no application runtime errors. The local in-app preview reported only a Vite HMR WebSocket connection error; rendering and the production bundle remain unaffected.
+- Production build: `npm run build` passes.
+
+## Follow-up polish
+
+- [P3] The implementation's supplied GPU artwork has a slightly wider portrait ratio than the varied game-card artwork in the reference; preserving the exact configured asset avoids cropping card text or hardware imagery.
+
+final result: passed
+
+---
+
+# Design QA — Product Hero copy removal and theme-aware surface
+
+- Source visual feedback: `/var/folders/_d/n7glc63n3zd218wc78wjmj880000gn/T/codex-clipboard-c1ff1476-2fd2-4b8b-8043-83c321f05de0.png`
+- Route: `http://localhost:4173/estates`
+- States checked: desktop light theme, desktop dark theme, mobile light theme at 390 × 844, and administrator product settings.
+
+## Public Hero verification
+
+- The Hero renders exactly five GPU card buttons and preserves the existing GSAP fan carousel, 4.5-second cadence, hover/focus hold behavior, and lowest-layer wrap path.
+- The Hero contains no title, description, or breadcrumb DOM.
+- `.estates-hero` and `.gpu-hero-carousel` both compute to a fully transparent background.
+- In light theme, `.estates-page` computes to `rgb(255, 255, 255)`.
+- In dark theme, `.estates-page` computes to `rgb(0, 0, 0)`.
+- The dark-theme card artwork finishes loading and remains readable against the black surface.
+
+## Administrator settings verification
+
+- The Product Hero accordion is labeled `五卡轮播素材图与图片焦点`.
+- It retains visibility, image URL, focal-position, and upload controls.
+- Page title, page description, Home breadcrumb, and current-page breadcrumb controls are absent.
+- Product settings normalization strips legacy Hero copy and breadcrumb keys so they are no longer republished as dead configuration.
+
+## Responsive and runtime checks
+
+- Mobile at 390 × 844 renders five cards with no Hero copy and no horizontal document overflow (`scrollWidth === 390`).
+- Production build: `npm run build` passes.
+- Patch whitespace validation: `git diff --check` passes.
 
 final result: passed

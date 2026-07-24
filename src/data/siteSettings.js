@@ -67,10 +67,8 @@ export const defaultProductSettings = {
     enabled: true,
     image: "/images/gpu-carousel-card.png",
     imagePosition: "center center",
-    title: "Explore Our Estates",
-    description: "Discover extraordinary properties in the world's most breathtaking locations.",
-    homeLabel: "Home",
-    currentLabel: "Estates",
+    lightImage: "/images/gpu2.png",
+    lightImagePosition: "center center",
   },
   browser: {
     enabled: true,
@@ -173,13 +171,21 @@ export function normalizeFooterSettings(value) {
 
 export function normalizeProductSettings(value) {
   const source = value && typeof value === "object" ? value : {};
+  const normalizedSource = clone(source);
+  delete normalizedSource.title;
+  delete normalizedSource.subtitle;
+  const normalizedHero = normalizedSource.hero && typeof normalizedSource.hero === "object" ? normalizedSource.hero : {};
+  delete normalizedHero.title;
+  delete normalizedHero.description;
+  delete normalizedHero.homeLabel;
+  delete normalizedHero.currentLabel;
   const productDefaults = new Map(defaultProductSettings.items.map((item) => [item.id, item]));
-  const savedHeroImage = source.hero?.image;
+  const savedHeroImage = normalizedHero.image;
   const normalizedHeroImage = ["/images/estates-hero.png", "/images/estates-hero-game-cards.png"].includes(savedHeroImage) ? defaultProductSettings.hero.image : savedHeroImage;
   return {
     ...clone(defaultProductSettings),
-    ...source,
-    hero: { ...clone(defaultProductSettings.hero), ...(source.hero ?? {}), image: normalizedHeroImage ?? defaultProductSettings.hero.image, title: source.title ?? source.hero?.title ?? defaultProductSettings.hero.title, description: source.subtitle ?? source.hero?.description ?? defaultProductSettings.hero.description },
+    ...normalizedSource,
+    hero: { ...clone(defaultProductSettings.hero), ...normalizedHero, image: normalizedHeroImage ?? defaultProductSettings.hero.image },
     browser: { ...clone(defaultProductSettings.browser), ...(source.browser ?? {}), defaultSort: ["high", "low"].includes(source.defaultSort) ? source.defaultSort : source.browser?.defaultSort ?? defaultProductSettings.browser.defaultSort },
     items: (Array.isArray(source.items) ? source.items : clone(defaultProductSettings.items)).map((item, index) => {
       const fallback = productDefaults.get(item.id) ?? {};

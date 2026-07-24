@@ -6,6 +6,7 @@ const localImages = {
   "estates-hero-game-cards": 1200,
   "estates-hero": 1981,
   "gpu-carousel-card": 1086,
+  "gpu2": 988,
   "hero-foreground": 1672,
   "hero-galaxy-home": 1672,
   "retreat-pool": 1672,

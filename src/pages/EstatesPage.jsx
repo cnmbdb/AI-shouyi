@@ -17,10 +17,14 @@ import {
 } from "@phosphor-icons/react";
 import { defaultProductSettings } from "../data/siteSettings.js";
 import { preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
+import { useTheme } from "../components/ThemeProvider.jsx";
 
 gsap.registerPlugin(useGSAP);
 
 const HERO_CARD_COUNT = 5;
+const HERO_CAROUSEL_INTERVAL = 4.5;
+const HERO_CAROUSEL_TRANSITION = 0.9;
+const HERO_CAROUSEL_WRAP_DEPTH = -320;
 
 const carouselSlot = (index, activeIndex) => {
   let difference = (index - activeIndex + HERO_CARD_COUNT) % HERO_CARD_COUNT;
@@ -28,7 +32,7 @@ const carouselSlot = (index, activeIndex) => {
   return difference;
 };
 
-function GpuHeroCarousel({ image }) {
+function GpuHeroCarousel({ image, imagePosition, aspectRatio }) {
   const rootRef = useRef(null);
   const shellRefs = useRef([]);
   const cardRefs = useRef([]);
@@ -38,7 +42,6 @@ function GpuHeroCarousel({ image }) {
 
   const { contextSafe } = useGSAP(() => {
     const shells = gsap.utils.toArray(".gpu-carousel-card-shell", rootRef.current);
-    if (rootRef.current) rootRef.current.dataset.gsapReady = String(shells.length);
     if (shells.length !== HERO_CARD_COUNT) return undefined;
 
     const media = gsap.matchMedia();
@@ -49,25 +52,27 @@ function GpuHeroCarousel({ image }) {
       reduceMotion: "(prefers-reduced-motion: reduce)",
     }, (context) => {
       const { isMobile, reduceMotion } = context.conditions;
-      if (rootRef.current) rootRef.current.dataset.gsapMedia = `${isMobile ? "mobile" : "desktop"}-${reduceMotion ? "reduced" : "motion"}`;
       const initialActiveIndex = 2;
-      const horizontalStep = isMobile ? 58 : 72;
 
       reducedMotionRef.current = reduceMotion;
 
       const cardState = (index, activeIndex) => {
         const slot = carouselSlot(index, activeIndex);
         const distance = Math.abs(slot);
+        const direction = Math.sign(slot);
+        const horizontalOffset = distance === 0 ? 0 : direction * (isMobile
+          ? (distance === 1 ? 60 : 116)
+          : (distance === 1 ? 66 : 122));
         return {
-          xPercent: -50 + slot * horizontalStep,
+          xPercent: -50 + horizontalOffset,
           yPercent: -50,
-          y: distance === 0 ? (isMobile ? 18 : 8) : distance === 1 ? (isMobile ? 38 : 34) : (isMobile ? 56 : 62),
-          scale: distance === 0 ? 1 : distance === 1 ? (isMobile ? 0.84 : 0.86) : (isMobile ? 0.67 : 0.72),
-          rotation: slot * (isMobile ? 5 : 5.5),
-          rotationY: slot * (isMobile ? -2 : -3),
-          autoAlpha: distance === 2 ? 0.82 : 1,
-          zIndex: 10 - distance,
-          transformOrigin: "50% 88%",
+          y: distance === 0 ? (isMobile ? 16 : 8) : distance === 1 ? (isMobile ? 27 : 16) : (isMobile ? 46 : 42),
+          scale: distance === 0 ? 1 : distance === 1 ? (isMobile ? 0.8 : 0.78) : (isMobile ? 0.67 : 0.66),
+          rotation: slot * (isMobile ? 4.8 : 4.5),
+          rotationY: slot * (isMobile ? -1.5 : -2),
+          autoAlpha: distance === 2 ? 0.9 : 1,
+          zIndex: 50 - distance * 10,
+          transformOrigin: "50% 50%",
           force3D: true,
         };
       };
@@ -81,14 +86,34 @@ function GpuHeroCarousel({ image }) {
 
       const timeline = gsap.timeline({
         repeat: -1,
-        defaults: { duration: 0.9, ease: "power3.inOut", overwrite: "auto" },
+        defaults: { duration: HERO_CAROUSEL_TRANSITION, ease: "power3.inOut", overwrite: "auto" },
       });
 
       for (let step = 1; step <= HERO_CARD_COUNT; step += 1) {
+        const previousActiveIndex = (initialActiveIndex + step - 1) % HERO_CARD_COUNT;
         const activeIndex = (initialActiveIndex + step) % HERO_CARD_COUNT;
+        const wrappingIndex = shells.findIndex((_, index) => carouselSlot(index, previousActiveIndex) === -2);
         const label = `carousel-step-${step}`;
-        timeline.addLabel(label, timeline.duration() + 2.35);
-        shells.forEach((shell, index) => timeline.to(shell, cardState(index, activeIndex), label));
+        const targetStates = shells.map((_, index) => cardState(index, activeIndex));
+
+        timeline.addLabel(label, timeline.duration() + HERO_CAROUSEL_INTERVAL - HERO_CAROUSEL_TRANSITION);
+
+        shells.forEach((shell, index) => {
+          const { zIndex, ...motionState } = targetStates[index];
+          const isWrapping = index === wrappingIndex;
+          timeline.set(shell, {
+            zIndex: isWrapping ? 0 : zIndex,
+            z: isWrapping ? HERO_CAROUSEL_WRAP_DEPTH : 0,
+            pointerEvents: isWrapping ? "none" : "auto",
+          }, label);
+          timeline.to(shell, isWrapping ? { ...motionState, z: HERO_CAROUSEL_WRAP_DEPTH } : motionState, label);
+        });
+
+        timeline.set(
+          shells[wrappingIndex],
+          { z: 0, zIndex: targetStates[wrappingIndex].zIndex, pointerEvents: "auto" },
+          `${label}+=${HERO_CAROUSEL_TRANSITION}`,
+        );
       }
 
       timelineRef.current = timeline;
@@ -132,11 +157,11 @@ function GpuHeroCarousel({ image }) {
 
     cards.forEach((card, cardIndex) => {
       gsap.to(card, {
-        y: cardIndex === index ? -34 : 0,
-        scale: cardIndex === index ? 1.08 : 0.97,
+        y: cardIndex === index ? -52 : 0,
+        scale: cardIndex === index ? 1.1 : 0.96,
         rotation: cardIndex === index ? -shellRotation : 0,
         rotationX: cardIndex === index ? -4 : 0,
-        autoAlpha: cardIndex === index ? 1 : 0.7,
+        autoAlpha: cardIndex === index ? 1 : 0.58,
         duration,
         ease: cardIndex === index ? "back.out(1.7)" : "power2.out",
         overwrite: "auto",
@@ -169,7 +194,7 @@ function GpuHeroCarousel({ image }) {
   });
 
   return (
-    <div className="gpu-hero-carousel" ref={rootRef} aria-label="GPU compute card carousel">
+    <div className="gpu-hero-carousel" ref={rootRef} aria-label="GPU compute card carousel" style={{ "--gpu-card-aspect": aspectRatio }}>
       {Array.from({ length: HERO_CARD_COUNT }, (_, index) => (
         <button
           className="gpu-carousel-card-shell"
@@ -179,6 +204,7 @@ function GpuHeroCarousel({ image }) {
           aria-label={`GPU 算力卡片 ${index + 1}，悬停或聚焦可暂停轮播`}
           onPointerEnter={() => holdCard(index)}
           onPointerLeave={() => releaseCard(index)}
+          onPointerCancel={() => releaseCard(index)}
           onFocus={() => holdCard(index)}
           onBlur={() => releaseCard(index)}
         >
@@ -190,6 +216,7 @@ function GpuHeroCarousel({ image }) {
               decoding="async"
               fetchPriority={index === 2 ? "high" : "auto"}
               draggable="false"
+              style={{ objectPosition: imagePosition }}
             />
           </span>
         </button>
@@ -237,6 +264,10 @@ function PropertyCard({ estate, liked, onLike, onOpen, layout }) {
 }
 
 export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSettings }) {
+  const theme = useTheme()?.theme ?? "light";
+  const heroImage = theme === "light" ? settings.hero.lightImage : settings.hero.image;
+  const heroImagePosition = theme === "light" ? settings.hero.lightImagePosition : settings.hero.imagePosition;
+  const heroAspectRatio = theme === "light" ? "988 / 1414" : "1086 / 1448";
   const catalog = useMemo(() => settings.items.filter((item) => item.enabled !== false), [settings.items]);
   const propertyTypes = useMemo(() => [...new Set(catalog.map((item) => item.type).filter(Boolean))], [catalog]);
   const featureOptions = useMemo(() => [...new Set(catalog.flatMap((item) => item.features ?? []))], [catalog]);
@@ -249,8 +280,8 @@ export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSet
   const [layout, setLayout] = useState("grid");
   const [liked, setLiked] = useState(() => new Set());
 
-  if (settings.hero.enabled && settings.hero.image) {
-    preload(preloadImageUrl(settings.hero.image), { as: "image", fetchPriority: "high" });
+  if (settings.hero.enabled && heroImage) {
+    preload(preloadImageUrl(heroImage), { as: "image", fetchPriority: "high" });
   }
 
   useEffect(() => {
@@ -310,12 +341,7 @@ export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSet
   return (
     <div className="estates-page">
       {settings.hero.enabled ? <section className="estates-hero">
-        <GpuHeroCarousel image={settings.hero.image} />
-        <div className="estates-hero-content shell">
-          <h1>{settings.hero.title}</h1>
-          <p>{settings.hero.description}</p>
-          <div className="breadcrumb"><button onClick={() => onNavigate("home")}>{settings.hero.homeLabel}</button><span>›</span><strong>{settings.hero.currentLabel}</strong></div>
-        </div>
+        <GpuHeroCarousel image={heroImage} imagePosition={heroImagePosition} aspectRatio={heroAspectRatio} />
       </section> : null}
 
       {settings.browser.enabled ? <section className={`estate-browser shell ${settings.browser.showFilters ? "" : "no-filters"}`} aria-label="Estate catalog">
