@@ -2,6 +2,20 @@ import { estateCatalog } from "./estateCatalog.js";
 
 const withId = (prefix, item, index) => ({ id: item.id || `${prefix}-${index + 1}`, ...item });
 const clone = (value) => structuredClone(value);
+const numberWithin = (value, fallback, min, max) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.min(max, Math.max(min, numeric));
+};
+
+const defaultProductHeroCards = Array.from({ length: 5 }, (_, index) => ({
+  id: `hero-card-${index + 1}`,
+  lightImage: "/images/gpu2.png",
+  lightImagePosition: "center center",
+  darkImage: "/images/gpu-carousel-card.png",
+  darkImagePosition: "center center",
+  link: "/estates",
+}));
 
 export const defaultNavigationSettings = {
   siteName: "Aether Lane",
@@ -65,21 +79,41 @@ export const defaultFooterSettings = {
 export const defaultProductSettings = {
   hero: {
     enabled: true,
-    image: "/images/gpu-carousel-card.png",
-    imagePosition: "center center",
-    lightImage: "/images/gpu2.png",
-    lightImagePosition: "center center",
+    desktopHeight: 737,
+    mobileHeight: 520,
+    desktopCardWidth: 298,
+    mobileCardWidth: 190,
+    intervalSeconds: 4.5,
+    cards: clone(defaultProductHeroCards),
   },
   browser: {
     enabled: true,
-    filterTitle: "Filter Estates",
-    resultTitle: "Found {count} Exceptional Estates",
-    sortLabel: "Sort by:",
-    clearLabel: "Clear Filters",
-    emptyTitle: "No estates match these filters.",
+    filterTitle: "筛选算力",
+    filterDescription: "按部署区域、GPU、显存和租用周期匹配",
+    resultTitle: "找到 {count} 个可用算力产品",
+    sortLabel: "排序",
+    clearLabel: "清除筛选",
+    emptyTitle: "暂无符合条件的算力产品",
+    regionLabel: "部署区域",
+    allRegionsLabel: "全部区域",
+    gpuLabel: "GPU 型号",
+    allGpuLabel: "全部型号",
+    vramLabel: "显存容量",
+    allVramLabel: "全部容量",
+    termLabel: "租用周期",
+    anyTermLabel: "全部周期",
+    priceLabel: "价格上限",
+    unlimitedPriceLabel: "不限",
+    sortHighLabel: "价格从高到低",
+    sortLowLabel: "价格从低到高",
     defaultSort: "high",
     showFilters: true,
     showSort: true,
+    showRegionFilter: true,
+    showGpuFilter: true,
+    showVramFilter: true,
+    showTermFilter: true,
+    showPriceFilter: true,
   },
   items: estateCatalog.map((item, index) => ({
     id: `product-${index + 1}`,
@@ -179,14 +213,57 @@ export function normalizeProductSettings(value) {
   delete normalizedHero.description;
   delete normalizedHero.homeLabel;
   delete normalizedHero.currentLabel;
+  const legacyLightImage = normalizedHero.lightImage ?? defaultProductHeroCards[0].lightImage;
+  const legacyLightImagePosition = normalizedHero.lightImagePosition ?? defaultProductHeroCards[0].lightImagePosition;
+  const savedLegacyDarkImage = normalizedHero.image;
+  const legacyDarkImage = ["/images/estates-hero.png", "/images/estates-hero-game-cards.png"].includes(savedLegacyDarkImage)
+    ? defaultProductHeroCards[0].darkImage
+    : savedLegacyDarkImage ?? defaultProductHeroCards[0].darkImage;
+  const legacyDarkImagePosition = normalizedHero.imagePosition ?? defaultProductHeroCards[0].darkImagePosition;
+  const savedHeroCards = Array.isArray(normalizedHero.cards) ? normalizedHero.cards : [];
+  const normalizedHeroCards = defaultProductHeroCards.map((fallback, index) => withId("hero-card", {
+    ...fallback,
+    ...(savedHeroCards[index] ?? {}),
+    lightImage: savedHeroCards[index]?.lightImage ?? legacyLightImage,
+    lightImagePosition: savedHeroCards[index]?.lightImagePosition ?? legacyLightImagePosition,
+    darkImage: savedHeroCards[index]?.darkImage ?? savedHeroCards[index]?.image ?? legacyDarkImage,
+    darkImagePosition: savedHeroCards[index]?.darkImagePosition ?? savedHeroCards[index]?.imagePosition ?? legacyDarkImagePosition,
+    link: savedHeroCards[index]?.link ?? "/estates",
+  }, index));
+  delete normalizedHero.image;
+  delete normalizedHero.imagePosition;
+  delete normalizedHero.lightImage;
+  delete normalizedHero.lightImagePosition;
   const productDefaults = new Map(defaultProductSettings.items.map((item) => [item.id, item]));
-  const savedHeroImage = normalizedHero.image;
-  const normalizedHeroImage = ["/images/estates-hero.png", "/images/estates-hero-game-cards.png"].includes(savedHeroImage) ? defaultProductSettings.hero.image : savedHeroImage;
   return {
     ...clone(defaultProductSettings),
     ...normalizedSource,
-    hero: { ...clone(defaultProductSettings.hero), ...normalizedHero, image: normalizedHeroImage ?? defaultProductSettings.hero.image },
-    browser: { ...clone(defaultProductSettings.browser), ...(source.browser ?? {}), defaultSort: ["high", "low"].includes(source.defaultSort) ? source.defaultSort : source.browser?.defaultSort ?? defaultProductSettings.browser.defaultSort },
+    hero: {
+      ...clone(defaultProductSettings.hero),
+      ...normalizedHero,
+      desktopHeight: numberWithin(normalizedHero.desktopHeight, defaultProductSettings.hero.desktopHeight, 520, 960),
+      mobileHeight: numberWithin(normalizedHero.mobileHeight, defaultProductSettings.hero.mobileHeight, 420, 760),
+      desktopCardWidth: numberWithin(normalizedHero.desktopCardWidth, defaultProductSettings.hero.desktopCardWidth, 180, 420),
+      mobileCardWidth: numberWithin(normalizedHero.mobileCardWidth, defaultProductSettings.hero.mobileCardWidth, 140, 280),
+      intervalSeconds: numberWithin(normalizedHero.intervalSeconds, defaultProductSettings.hero.intervalSeconds, 2, 15),
+      cards: normalizedHeroCards,
+    },
+    browser: (() => {
+      const savedBrowser = source.browser && typeof source.browser === "object" ? source.browser : {};
+      const legacyCopy = {
+        filterTitle: savedBrowser.filterTitle === "Filter Estates" ? defaultProductSettings.browser.filterTitle : savedBrowser.filterTitle,
+        resultTitle: savedBrowser.resultTitle === "Found {count} Exceptional Estates" ? defaultProductSettings.browser.resultTitle : savedBrowser.resultTitle,
+        sortLabel: savedBrowser.sortLabel === "Sort by:" ? defaultProductSettings.browser.sortLabel : savedBrowser.sortLabel,
+        clearLabel: savedBrowser.clearLabel === "Clear Filters" ? defaultProductSettings.browser.clearLabel : savedBrowser.clearLabel,
+        emptyTitle: savedBrowser.emptyTitle === "No estates match these filters." ? defaultProductSettings.browser.emptyTitle : savedBrowser.emptyTitle,
+      };
+      return {
+        ...clone(defaultProductSettings.browser),
+        ...savedBrowser,
+        ...Object.fromEntries(Object.entries(legacyCopy).filter(([, value]) => value !== undefined)),
+        defaultSort: ["high", "low"].includes(source.defaultSort) ? source.defaultSort : savedBrowser.defaultSort ?? defaultProductSettings.browser.defaultSort,
+      };
+    })(),
     items: (Array.isArray(source.items) ? source.items : clone(defaultProductSettings.items)).map((item, index) => {
       const fallback = productDefaults.get(item.id) ?? {};
       return withId("product", {

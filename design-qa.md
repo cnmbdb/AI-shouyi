@@ -124,6 +124,40 @@ final result: passed
 
 ---
 
+# Design QA - Compute product filter sidebar and CMS
+
+- Public route: `http://localhost:4173/estates`
+- Administrator route: `http://localhost:4173/console/settings/products`
+- Target flow: select a GPU filter on the public product page, verify the result count and active-filter state, clear it, then confirm the corresponding administrator controls exist and are editable.
+
+## Public filter verification
+
+- The old real-estate fields are removed from the public sidebar. No Location, Property Type, Bedrooms, or Features controls remain.
+- The sidebar now exposes deployment region, GPU model, VRAM, hosting term, and maximum price controls using compute-product terminology.
+- All selectable region, GPU, VRAM, and hosting-term values are derived from enabled product cards rather than duplicated configuration lists.
+- Selecting RTX 4090 changes the rendered result count from six cards to one, changes the active-filter count from zero to one, and enables the clear button.
+- Clearing filters restores all six cards, resets the GPU control to its all-model state, and disables the clear button.
+- The result heading, sort label, and sort option copy use the new compute-product configuration.
+- Desktop rendering keeps a compact sticky sidebar, accessible focus states, a semantic active-filter count, and no framework overlay or relevant console errors.
+
+## Administrator settings verification
+
+- The Product browsing `浏览与筛选区` accordion now groups settings into public copy, filter dimensions, and result sorting.
+- Administrators can edit the sidebar title and description, result and empty copy, clear-button label, every group and all-option label, price-unlimited copy, sort labels, and default sort.
+- Independent visibility switches exist for deployment region, GPU model, VRAM, hosting term, maximum price, the complete filter sidebar, and the sort control.
+- Editing the sidebar title enables publishing. Reloading discards the temporary test value and restores the persisted title without publishing.
+- Legacy real-estate copy is migrated to the new compute defaults during Product settings normalization.
+
+## Build and runtime
+
+- Production build passes.
+- `git diff --check` passes.
+- Public and administrator browser warning/error logs are empty.
+
+final result: passed
+
+---
+
 # Design QA — Console dual-fan GPU brand icon
 
 - Source visual truth: `/var/folders/_d/n7glc63n3zd218wc78wjmj880000gn/T/codex-clipboard-adefce78-f8fd-46f8-a0a5-147a3fbe12f6.png`
@@ -321,5 +355,66 @@ final result: passed
 - Mobile at 390 × 844 renders five cards with no Hero copy and no horizontal document overflow (`scrollWidth === 390`).
 - Production build: `npm run build` passes.
 - Patch whitespace validation: `git diff --check` passes.
+
+final result: passed
+
+---
+
+# Design QA — Light-theme GPU2 card crop
+
+- Route: `http://localhost:4173/estates`
+- Source asset: `/Users/a2333/IDE/AI算力收益/gpu2.png`
+- Public cropped asset: `/Users/a2333/IDE/AI算力收益/public/images/gpu2.png`
+- States checked: desktop light theme, desktop dark theme, mobile light theme at 390 × 844, and administrator product Hero settings.
+
+## Asset and layout verification
+
+- The light-theme source is cropped from 1086 × 1448 to 986 × 1410, including a final two-pixel right-edge and four-pixel bottom-edge refinement that removes the remaining white strips without redrawing the artwork.
+- Responsive WebP variants exist at 768 and 1280 pixels wide.
+- The carousel uses the cropped card's true `986 / 1410` aspect ratio in light theme, so the complete rounded border remains visible without stretching or top/bottom clipping.
+- Dark theme retains the original `/images/gpu-carousel-card.png` source and `1086 / 1448` aspect ratio.
+- Exactly five cards remain active and the GSAP timing, hover/focus hold, and rear-wrap animation are unchanged.
+
+## CMS and responsive verification
+
+- Product Hero settings expose separate labeled image, focal-position, and upload controls for light and dark theme card artwork.
+- Desktop light theme requests `/images/gpu2-768.webp` or `/images/gpu2-1280.webp` according to viewport density.
+- Desktop dark theme requests `/images/gpu-carousel-card-1280.webp`.
+- Mobile at 390 × 844 renders five light-theme cards with no horizontal document overflow (`scrollWidth === 390`).
+- Browser console contains no errors or warnings.
+- Production build and `git diff --check` pass.
+
+final result: passed
+
+---
+
+# Design QA — Product Hero CMS controls
+
+- Administrator route: `http://localhost:4173/console/settings/products`
+- Public route: `http://localhost:4173/estates`
+- Scope: the complete five-card Product Hero configuration and its public rendering.
+
+## Administrator controls
+
+- The Product Hero accordion opens directly and retains the section visibility switch.
+- The editor exposes desktop maximum section height, mobile section height, desktop primary-card width, mobile primary-card width, and carousel interval controls.
+- Exactly five independent card editors render. Each card has a whole-card click link plus separate light-theme and dark-theme image URL, focal-position, preview, and local-upload controls.
+- Editing the carousel interval enables the publish action. The temporary test value was discarded by reloading, leaving the persisted 4.5-second configuration unchanged.
+- Publishing passes the Product settings through normalization, so numeric values are bounded and legacy shared Hero image fields migrate into the five-card structure.
+
+## Public rendering
+
+- The public Hero renders exactly five interactive GPU card buttons.
+- Browser-computed desktop values match the CMS defaults: 737 px Hero height, 298 px primary-card width, 520 px mobile Hero height variable, and 190 px mobile primary-card width variable.
+- All five light-theme cards resolve to the responsive `gpu2-1280.webp` asset at the tested desktop viewport.
+- The center card advanced after one 4.5-second interval, confirming the CMS interval drives the GSAP timeline.
+- Clicking a configured `/estates` card link remains on the client-side `/estates` route and preserves all five cards.
+- Desktop viewport has no horizontal document overflow.
+
+## Build and compatibility
+
+- Production build passes.
+- Patch whitespace validation passes.
+- Existing reduced-motion, hidden-document pause, hover/focus draw interaction, and lowest-layer wrap behavior remain intact.
 
 final result: passed

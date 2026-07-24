@@ -161,6 +161,7 @@ export function ContentSettingsPage({ section, onNotice }) {
       queryClient.setQueryData(["public-settings"], (current) => ({ settings: { ...(current?.settings ?? {}), [section]: value } }));
       queryClient.invalidateQueries({ queryKey: ["site-settings"] });
       queryClient.invalidateQueries({ queryKey: ["public-settings"] });
+      setSettings(clone(value));
       setDirty(false);
       onNotice(`${meta.title.replace("内容管理", "")}已保存并发布`);
     },
@@ -177,7 +178,7 @@ export function ContentSettingsPage({ section, onNotice }) {
       {section === "products" ? <ProductEditor settings={settings} edit={edit} /> : null}
       {section === "blog" ? <BlogEditor settings={settings} edit={edit} /> : null}
 
-      <PublishBar dirty={dirty} pending={mutation.isPending} label="保存并发布" onReset={() => { setSettings(clone(defaults[section])); setDirty(true); }} onPublish={() => mutation.mutate(settings)} />
+      <PublishBar dirty={dirty} pending={mutation.isPending} label="保存并发布" onReset={() => { setSettings(clone(defaults[section])); setDirty(true); }} onPublish={() => mutation.mutate(normalize ? normalize(settings) : settings)} />
     </div>
   );
 }
@@ -209,11 +210,112 @@ function FooterEditor({ settings, edit }) {
   );
 }
 
+function ProductHeroCardEditor({ card, index, edit }) {
+  return (
+    <ItemCard title={`轮播卡片 ${index + 1}`} subtitle="浅色/深色图片、焦点与整卡跳转">
+      <TextControl
+        id={`product-hero-card-link-${card.id}`}
+        label="卡片点击跳转链接"
+        value={card.link}
+        placeholder="/estates/... 或 https://..."
+        description="点击公开页该轮播卡片时跳转到此地址。"
+        onChange={(value) => edit((next) => { next.hero.cards[index].link = value; })}
+      />
+      <ImageControls
+        label="浅色主题图片"
+        prefix={`product-hero-card-light-${card.id}`}
+        image={card.lightImage}
+        position={card.lightImagePosition}
+        onImage={(value) => edit((next) => { next.hero.cards[index].lightImage = value; })}
+        onPosition={(value) => edit((next) => { next.hero.cards[index].lightImagePosition = value; })}
+      />
+      <ImageControls
+        label="深色主题图片"
+        prefix={`product-hero-card-dark-${card.id}`}
+        image={card.darkImage}
+        position={card.darkImagePosition}
+        onImage={(value) => edit((next) => { next.hero.cards[index].darkImage = value; })}
+        onPosition={(value) => edit((next) => { next.hero.cards[index].darkImagePosition = value; })}
+      />
+    </ItemCard>
+  );
+}
+
+function ProductBrowserEditor({ settings, edit }) {
+  const browser = settings.browser;
+  return (
+    <div className="product-browser-settings">
+      <ItemCard title="公开文案" subtitle="筛选栏、结果区和无结果状态">
+        <div className="home-fields-grid">
+          <TextControl id="browser-filter-title" label="筛选栏标题" value={browser.filterTitle} onChange={(value) => edit((next) => { next.browser.filterTitle = value; })} />
+          <TextControl id="browser-filter-description" label="筛选栏说明" value={browser.filterDescription} onChange={(value) => edit((next) => { next.browser.filterDescription = value; })} />
+          <TextControl id="browser-result-title" label="产品结果标题" value={browser.resultTitle} onChange={(value) => edit((next) => { next.browser.resultTitle = value; })} placeholder="例如：找到 {count} 个可用算力产品" description="使用 {count} 自动显示当前筛选结果数量。" />
+          <TextControl id="browser-empty-title" label="无结果文案" value={browser.emptyTitle} onChange={(value) => edit((next) => { next.browser.emptyTitle = value; })} />
+          <TextControl id="browser-clear-label" label="清除按钮文案" value={browser.clearLabel} onChange={(value) => edit((next) => { next.browser.clearLabel = value; })} />
+        </div>
+      </ItemCard>
+
+      <ItemCard title="筛选维度" subtitle="选项自动读取已启用产品，避免前后台数据不一致">
+        <div className="home-fields-grid">
+          <TextControl id="browser-region-label" label="部署区域标题" value={browser.regionLabel} onChange={(value) => edit((next) => { next.browser.regionLabel = value; })} />
+          <TextControl id="browser-all-regions-label" label="全部区域选项" value={browser.allRegionsLabel} onChange={(value) => edit((next) => { next.browser.allRegionsLabel = value; })} />
+          <TextControl id="browser-gpu-label" label="GPU 型号标题" value={browser.gpuLabel} onChange={(value) => edit((next) => { next.browser.gpuLabel = value; })} />
+          <TextControl id="browser-all-gpu-label" label="全部 GPU 选项" value={browser.allGpuLabel} onChange={(value) => edit((next) => { next.browser.allGpuLabel = value; })} />
+          <TextControl id="browser-vram-label" label="显存容量标题" value={browser.vramLabel} onChange={(value) => edit((next) => { next.browser.vramLabel = value; })} />
+          <TextControl id="browser-all-vram-label" label="全部显存选项" value={browser.allVramLabel} onChange={(value) => edit((next) => { next.browser.allVramLabel = value; })} />
+          <TextControl id="browser-term-label" label="租用周期标题" value={browser.termLabel} onChange={(value) => edit((next) => { next.browser.termLabel = value; })} />
+          <TextControl id="browser-any-term-label" label="全部周期选项" value={browser.anyTermLabel} onChange={(value) => edit((next) => { next.browser.anyTermLabel = value; })} />
+          <TextControl id="browser-price-label" label="价格筛选标题" value={browser.priceLabel} onChange={(value) => edit((next) => { next.browser.priceLabel = value; })} />
+          <TextControl id="browser-unlimited-price-label" label="价格不限文案" value={browser.unlimitedPriceLabel} onChange={(value) => edit((next) => { next.browser.unlimitedPriceLabel = value; })} />
+        </div>
+        <div className="product-filter-toggle-grid">
+          <ToggleControl id="browser-region-enabled" label="显示部署区域" checked={browser.showRegionFilter} onChange={(value) => edit((next) => { next.browser.showRegionFilter = value; })} />
+          <ToggleControl id="browser-gpu-enabled" label="显示 GPU 型号" checked={browser.showGpuFilter} onChange={(value) => edit((next) => { next.browser.showGpuFilter = value; })} />
+          <ToggleControl id="browser-vram-enabled" label="显示显存容量" checked={browser.showVramFilter} onChange={(value) => edit((next) => { next.browser.showVramFilter = value; })} />
+          <ToggleControl id="browser-term-enabled" label="显示租用周期" checked={browser.showTermFilter} onChange={(value) => edit((next) => { next.browser.showTermFilter = value; })} />
+          <ToggleControl id="browser-price-enabled" label="显示价格上限" checked={browser.showPriceFilter} onChange={(value) => edit((next) => { next.browser.showPriceFilter = value; })} />
+        </div>
+      </ItemCard>
+
+      <ItemCard title="结果排序" subtitle="公开产品列表工具栏的排序行为">
+        <div className="home-fields-grid">
+          <TextControl id="browser-sort-label" label="排序标题" value={browser.sortLabel} onChange={(value) => edit((next) => { next.browser.sortLabel = value; })} />
+          <TextControl id="browser-sort-high-label" label="价格从高到低文案" value={browser.sortHighLabel} onChange={(value) => edit((next) => { next.browser.sortHighLabel = value; })} />
+          <TextControl id="browser-sort-low-label" label="价格从低到高文案" value={browser.sortLowLabel} onChange={(value) => edit((next) => { next.browser.sortLowLabel = value; })} />
+          <SelectControl id="browser-sort" label="默认排序" value={browser.defaultSort} options={[["high", "价格从高到低"], ["low", "价格从低到高"]]} onChange={(value) => edit((next) => { next.browser.defaultSort = value; })} />
+        </div>
+        <div className="product-filter-toggle-grid">
+          <ToggleControl id="browser-filters" label="显示筛选侧栏" checked={browser.showFilters} onChange={(value) => edit((next) => { next.browser.showFilters = value; })} />
+          <ToggleControl id="browser-sort-enabled" label="显示排序控件" checked={browser.showSort} onChange={(value) => edit((next) => { next.browser.showSort = value; })} />
+        </div>
+      </ItemCard>
+    </div>
+  );
+}
+
 function ProductEditor({ settings, edit }) {
   return (
     <Accordion className="home-settings-accordion" type="multiple" defaultValue={["hero"]}>
-      <AccordionItem value="hero"><SectionHeader title="产品页首屏" description="浅色与深色主题的五卡轮播素材" enabled={settings.hero.enabled} onEnabled={(value) => edit((next) => { next.hero.enabled = value; })} /><AccordionContent><Card size="sm"><CardContent className="home-section-content"><ImageControls label="浅色主题卡片图" prefix="product-hero-light" image={settings.hero.lightImage} position={settings.hero.lightImagePosition} onImage={(value) => edit((next) => { next.hero.lightImage = value; })} onPosition={(value) => edit((next) => { next.hero.lightImagePosition = value; })} /><ImageControls label="深色主题卡片图" prefix="product-hero-dark" image={settings.hero.image} position={settings.hero.imagePosition} onImage={(value) => edit((next) => { next.hero.image = value; })} onPosition={(value) => edit((next) => { next.hero.imagePosition = value; })} /></CardContent></Card></AccordionContent></AccordionItem>
-      <AccordionItem value="browser"><SectionHeader title="浏览与筛选区" description="结果标题、筛选文案、排序和空状态" enabled={settings.browser.enabled} onEnabled={(value) => edit((next) => { next.browser.enabled = value; })} /><AccordionContent><Card size="sm"><CardContent className="home-section-content"><TextControl id="browser-result-title" label="产品结果标题文案" value={settings.browser.resultTitle} onChange={(value) => edit((next) => { next.browser.resultTitle = value; })} placeholder="例如：Found {count} Exceptional Estates" description="公开页产品列表上方的标题；使用 {count} 自动显示当前产品数量。" /><div className="home-fields-grid"><TextControl id="browser-filter-title" label="筛选标题" value={settings.browser.filterTitle} onChange={(value) => edit((next) => { next.browser.filterTitle = value; })} /><TextControl id="browser-sort-label" label="排序文案" value={settings.browser.sortLabel} onChange={(value) => edit((next) => { next.browser.sortLabel = value; })} /><TextControl id="browser-clear-label" label="清除筛选文案" value={settings.browser.clearLabel} onChange={(value) => edit((next) => { next.browser.clearLabel = value; })} /><TextControl id="browser-empty-title" label="空状态文案" value={settings.browser.emptyTitle} onChange={(value) => edit((next) => { next.browser.emptyTitle = value; })} /></div><div className="home-fields-grid"><SelectControl id="browser-sort" label="默认排序" value={settings.browser.defaultSort} options={[["high", "价格从高到低"], ["low", "价格从低到高"]]} onChange={(value) => edit((next) => { next.browser.defaultSort = value; })} /><div><ToggleControl id="browser-filters" label="显示筛选栏" checked={settings.browser.showFilters} onChange={(value) => edit((next) => { next.browser.showFilters = value; })} /><ToggleControl id="browser-sort-enabled" label="显示排序控件" checked={settings.browser.showSort} onChange={(value) => edit((next) => { next.browser.showSort = value; })} /></div></div></CardContent></Card></AccordionContent></AccordionItem>
+      <AccordionItem value="hero">
+        <SectionHeader title="产品页首屏" description="区块尺寸、卡片尺寸、轮播速度、图片与跳转" count={settings.hero.cards.length} enabled={settings.hero.enabled} onEnabled={(value) => edit((next) => { next.hero.enabled = value; })} />
+        <AccordionContent>
+          <Card size="sm">
+            <CardContent className="home-section-content">
+              <div className="home-fields-grid">
+                <TextControl id="product-hero-desktop-height" label="桌面端区块最大高度（px）" type="number" value={settings.hero.desktopHeight} description="区块宽度始终铺满页面，高度范围 520–960。" onChange={(value) => edit((next) => { next.hero.desktopHeight = Number(value); })} />
+                <TextControl id="product-hero-mobile-height" label="移动端区块高度（px）" type="number" value={settings.hero.mobileHeight} description="小屏首屏高度，范围 420–760。" onChange={(value) => edit((next) => { next.hero.mobileHeight = Number(value); })} />
+                <TextControl id="product-hero-desktop-card-width" label="桌面端主卡宽度（px）" type="number" value={settings.hero.desktopCardWidth} description="中间主卡尺寸，两侧卡片按比例跟随；范围 180–420。" onChange={(value) => edit((next) => { next.hero.desktopCardWidth = Number(value); })} />
+                <TextControl id="product-hero-mobile-card-width" label="移动端主卡宽度（px）" type="number" value={settings.hero.mobileCardWidth} description="范围 140–280，区块会隐藏超出边界的部分。" onChange={(value) => edit((next) => { next.hero.mobileCardWidth = Number(value); })} />
+                <TextControl id="product-hero-interval" label="轮播间隔（秒）" type="number" value={settings.hero.intervalSeconds} description="每次自动轮换一张卡片的时间，范围 2–15 秒。" onChange={(value) => edit((next) => { next.hero.intervalSeconds = Number(value); })} />
+              </div>
+            </CardContent>
+          </Card>
+          <div className="home-item-list product-hero-card-settings">
+            {settings.hero.cards.map((card, index) => <ProductHeroCardEditor key={card.id} card={card} index={index} edit={edit} />)}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="browser"><SectionHeader title="浏览与筛选区" description="算力筛选维度、结果文案、模块开关和排序" enabled={settings.browser.enabled} onEnabled={(value) => edit((next) => { next.browser.enabled = value; })} /><AccordionContent><ProductBrowserEditor settings={settings} edit={edit} /></AccordionContent></AccordionItem>
       <AccordionItem value="items"><SectionHeader title="产品卡片" description="图片、标签、名称、GPU 规格、价格与整卡点击跳转" count={settings.items.length} /><AccordionContent><div className="home-item-list">{settings.items.map((item, index) => <ItemCard key={item.id} title={item.title} subtitle={`产品 ${index + 1}`} onDelete={() => edit((next) => { next.items.splice(index, 1); })}><div className="home-fields-grid"><TextControl id={`product-tag-${item.id}`} label="标签" value={item.tag} onChange={(value) => edit((next) => { next.items[index].tag = value; })} /><TextControl id={`product-name-${item.id}`} label="名称" value={item.title} onChange={(value) => edit((next) => { next.items[index].title = value; })} /><TextControl id={`product-location-${item.id}`} label="位置/分组" value={item.location} onChange={(value) => edit((next) => { next.items[index].location = value; next.items[index].locationGroup = value; })} /><TextControl id={`product-type-${item.id}`} label="类型" value={item.type} onChange={(value) => edit((next) => { next.items[index].type = value; })} /><TextControl id={`product-price-${item.id}`} label="价格文案" value={item.price} onChange={(value) => edit((next) => { next.items[index].price = value; })} /><TextControl id={`product-price-value-${item.id}`} label="排序价格数值" type="number" value={item.priceValue} onChange={(value) => edit((next) => { next.items[index].priceValue = Number(value) || 0; })} /><TextControl id={`product-gpu-${item.id}`} label="GPU 型号" value={item.gpuModel} onChange={(value) => edit((next) => { next.items[index].gpuModel = value; })} /><TextControl id={`product-vram-${item.id}`} label="显存容量" value={item.vram} onChange={(value) => edit((next) => { next.items[index].vram = value; })} /><TextControl id={`product-term-${item.id}`} label="托管周期" value={item.hostingTerm} onChange={(value) => edit((next) => { next.items[index].hostingTerm = value; })} /><TextControl id={`product-link-${item.id}`} label="点击跳转链接" value={item.link} placeholder="/estates/... 或 https://..." description="点击公开页整张产品卡片时跳转到此地址。" onChange={(value) => edit((next) => { next.items[index].link = value; })} /></div><ImageControls prefix={`product-${item.id}`} image={item.image} position={item.imagePosition} onImage={(value) => edit((next) => { next.items[index].image = value; })} onPosition={(value) => edit((next) => { next.items[index].imagePosition = value; })} /><ToggleControl id={`product-enabled-${item.id}`} label="显示该产品" checked={item.enabled} onChange={(value) => edit((next) => { next.items[index].enabled = value; })} /></ItemCard>)}</div><Button variant="outline" size="sm" onClick={() => edit((next) => { next.items.push({ id: uid("product"), tag: "New", title: "新产品", location: "", locationGroup: "", price: "¥0", priceValue: 0, type: "Compute", gpuModel: "GPU 型号", vram: "24 GB", hostingTerm: "12 个月", features: [], image: "/images/hero-galaxy-home.png", imagePosition: "center center", link: "/estates", enabled: true }); })}><Plus />添加产品</Button></AccordionContent></AccordionItem>
       <AccordionItem value="cta"><SectionHeader title="底部行动区" description="标题、文案和两个按钮链接" enabled={settings.cta.enabled} onEnabled={(value) => edit((next) => { next.cta.enabled = value; })} /><AccordionContent><Card size="sm"><CardContent className="home-section-content"><TextControl id="product-cta-title" label="标题" value={settings.cta.title} onChange={(value) => edit((next) => { next.cta.title = value; })} /><TextControl id="product-cta-description" label="文案" value={settings.cta.description} onChange={(value) => edit((next) => { next.cta.description = value; })} /><div className="home-button-grid"><TextControl id="product-cta-primary-label" label="主按钮文案" value={settings.cta.primaryButton.label} onChange={(value) => edit((next) => { next.cta.primaryButton.label = value; })} /><TextControl id="product-cta-primary-link" label="主按钮链接" value={settings.cta.primaryButton.link} onChange={(value) => edit((next) => { next.cta.primaryButton.link = value; })} /><TextControl id="product-cta-secondary-label" label="次按钮文案" value={settings.cta.secondaryButton.label} onChange={(value) => edit((next) => { next.cta.secondaryButton.label = value; })} /><TextControl id="product-cta-secondary-link" label="次按钮链接" value={settings.cta.secondaryButton.link} onChange={(value) => edit((next) => { next.cta.secondaryButton.link = value; })} /></div></CardContent></Card></AccordionContent></AccordionItem>
     </Accordion>

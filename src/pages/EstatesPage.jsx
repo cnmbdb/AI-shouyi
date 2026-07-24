@@ -4,8 +4,10 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import {
   ArrowRight,
+  ArrowCounterClockwise,
   CalendarBlank,
   CaretDown,
+  CurrencyDollar,
   GraphicsCard,
   Heart,
   ListBullets,
@@ -22,7 +24,6 @@ import { useTheme } from "../components/ThemeProvider.jsx";
 gsap.registerPlugin(useGSAP);
 
 const HERO_CARD_COUNT = 5;
-const HERO_CAROUSEL_INTERVAL = 4.5;
 const HERO_CAROUSEL_TRANSITION = 0.9;
 const HERO_CAROUSEL_WRAP_DEPTH = -320;
 
@@ -32,7 +33,7 @@ const carouselSlot = (index, activeIndex) => {
   return difference;
 };
 
-function GpuHeroCarousel({ image, imagePosition, aspectRatio }) {
+function GpuHeroCarousel({ cards, intervalSeconds, aspectRatio, onCardOpen }) {
   const rootRef = useRef(null);
   const shellRefs = useRef([]);
   const cardRefs = useRef([]);
@@ -96,7 +97,7 @@ function GpuHeroCarousel({ image, imagePosition, aspectRatio }) {
         const label = `carousel-step-${step}`;
         const targetStates = shells.map((_, index) => cardState(index, activeIndex));
 
-        timeline.addLabel(label, timeline.duration() + HERO_CAROUSEL_INTERVAL - HERO_CAROUSEL_TRANSITION);
+        timeline.addLabel(label, timeline.duration() + intervalSeconds - HERO_CAROUSEL_TRANSITION);
 
         shells.forEach((shell, index) => {
           const { zIndex, ...motionState } = targetStates[index];
@@ -138,7 +139,7 @@ function GpuHeroCarousel({ image, imagePosition, aspectRatio }) {
       timelineRef.current?.kill();
       media.revert();
     };
-  }, { scope: rootRef });
+  }, { scope: rootRef, dependencies: [intervalSeconds], revertOnUpdate: true });
 
   const holdCard = contextSafe((index) => {
     const cards = cardRefs.current.filter(Boolean);
@@ -195,13 +196,14 @@ function GpuHeroCarousel({ image, imagePosition, aspectRatio }) {
 
   return (
     <div className="gpu-hero-carousel" ref={rootRef} aria-label="GPU compute card carousel" style={{ "--gpu-card-aspect": aspectRatio }}>
-      {Array.from({ length: HERO_CARD_COUNT }, (_, index) => (
+      {cards.map((card, index) => (
         <button
           className="gpu-carousel-card-shell"
-          key={`gpu-hero-card-${index + 1}`}
+          key={card.id}
           ref={(node) => { shellRefs.current[index] = node; }}
           type="button"
-          aria-label={`GPU 算力卡片 ${index + 1}，悬停或聚焦可暂停轮播`}
+          aria-label={`GPU 算力卡片 ${index + 1}，悬停或聚焦可暂停轮播，点击跳转`}
+          onClick={() => onCardOpen(card.link)}
           onPointerEnter={() => holdCard(index)}
           onPointerLeave={() => releaseCard(index)}
           onPointerCancel={() => releaseCard(index)}
@@ -210,13 +212,13 @@ function GpuHeroCarousel({ image, imagePosition, aspectRatio }) {
         >
           <span className="gpu-carousel-card" ref={(node) => { cardRefs.current[index] = node; }}>
             <img
-              {...responsiveImageProps(image, "(max-width: 720px) 50vw, 27vw")}
+              {...responsiveImageProps(card.image, "(max-width: 720px) 50vw, 27vw")}
               alt={`GPU data center compute card ${index + 1}`}
               loading="eager"
               decoding="async"
               fetchPriority={index === 2 ? "high" : "auto"}
               draggable="false"
-              style={{ objectPosition: imagePosition }}
+              style={{ objectPosition: card.imagePosition }}
             />
           </span>
         </button>
@@ -228,7 +230,7 @@ function GpuHeroCarousel({ image, imagePosition, aspectRatio }) {
 function SelectField({ label, value, onChange, children }) {
   return (
     <label className="catalog-field">
-      {label ? <span>{label}</span> : null}
+      {label ? <span className="catalog-field-label">{label}</span> : null}
       <span className="select-shell">
         <select value={value} onChange={onChange}>{children}</select>
         <CaretDown weight="bold" aria-hidden="true" />
@@ -237,8 +239,8 @@ function SelectField({ label, value, onChange, children }) {
   );
 }
 
-function CheckField({ checked, label, onChange }) {
-  return <label className="check-field"><input type="checkbox" checked={checked} onChange={onChange} /><span aria-hidden="true" />{label}</label>;
+function FilterLabel({ icon: Icon, children }) {
+  return <span className="filter-control-label"><Icon weight="duotone" aria-hidden="true" />{children}</span>;
 }
 
 function PropertyCard({ estate, liked, onLike, onOpen, layout }) {
@@ -265,56 +267,73 @@ function PropertyCard({ estate, liked, onLike, onOpen, layout }) {
 
 export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSettings }) {
   const theme = useTheme()?.theme ?? "light";
-  const heroImage = theme === "light" ? settings.hero.lightImage : settings.hero.image;
-  const heroImagePosition = theme === "light" ? settings.hero.lightImagePosition : settings.hero.imagePosition;
-  const heroAspectRatio = theme === "light" ? "988 / 1414" : "1086 / 1448";
+  const heroCards = useMemo(() => settings.hero.cards.map((card) => ({
+    id: card.id,
+    image: theme === "light" ? card.lightImage : card.darkImage,
+    imagePosition: theme === "light" ? card.lightImagePosition : card.darkImagePosition,
+    link: card.link,
+  })), [settings.hero.cards, theme]);
+  const heroAspectRatio = theme === "light" ? "986 / 1410" : "1086 / 1448";
   const catalog = useMemo(() => settings.items.filter((item) => item.enabled !== false), [settings.items]);
-  const propertyTypes = useMemo(() => [...new Set(catalog.map((item) => item.type).filter(Boolean))], [catalog]);
-  const featureOptions = useMemo(() => [...new Set(catalog.flatMap((item) => item.features ?? []))], [catalog]);
-  const [location, setLocation] = useState("All Locations");
-  const [types, setTypes] = useState(() => new Set());
-  const [maxPrice, setMaxPrice] = useState(50);
-  const [bedrooms, setBedrooms] = useState("Any");
-  const [features, setFeatures] = useState(() => new Set());
+  const regions = useMemo(() => [...new Set(catalog.map((item) => item.locationGroup).filter(Boolean))], [catalog]);
+  const gpuModels = useMemo(() => [...new Set(catalog.map((item) => item.gpuModel).filter(Boolean))], [catalog]);
+  const vramOptions = useMemo(() => [...new Set(catalog.map((item) => item.vram).filter(Boolean))], [catalog]);
+  const hostingTerms = useMemo(() => [...new Set(catalog.map((item) => item.hostingTerm).filter(Boolean))], [catalog]);
+  const catalogPriceRange = useMemo(() => {
+    const prices = catalog.map((item) => Number(item.priceValue)).filter(Number.isFinite);
+    return { min: prices.length ? Math.min(...prices) : 0, max: prices.length ? Math.max(...prices) : 1 };
+  }, [catalog]);
+  const [region, setRegion] = useState("all");
+  const [gpuModel, setGpuModel] = useState("all");
+  const [vram, setVram] = useState("all");
+  const [hostingTerm, setHostingTerm] = useState("all");
+  const [priceCap, setPriceCap] = useState(null);
   const [sort, setSort] = useState(settings.browser.defaultSort);
   const [layout, setLayout] = useState("grid");
   const [liked, setLiked] = useState(() => new Set());
 
-  if (settings.hero.enabled && heroImage) {
-    preload(preloadImageUrl(heroImage), { as: "image", fetchPriority: "high" });
+  if (settings.hero.enabled && heroCards[2]?.image) {
+    preload(preloadImageUrl(heroCards[2].image), { as: "image", fetchPriority: "high" });
   }
 
   useEffect(() => {
     setSort(settings.browser.defaultSort);
   }, [settings.browser.defaultSort]);
 
-  const toggleSet = (setter, value) => setter((current) => {
-    const next = new Set(current);
-    if (next.has(value)) next.delete(value); else next.add(value);
-    return next;
-  });
+  useEffect(() => {
+    setPriceCap((current) => current !== null && current >= catalogPriceRange.max ? null : current);
+  }, [catalogPriceRange.max]);
 
   const visibleEstates = useMemo(() => {
-    const minimumBeds = bedrooms === "Any" ? 0 : Number(bedrooms);
     const filtered = catalog.filter((estate) => {
-      if (location !== "All Locations" && estate.locationGroup !== location) return false;
-      if (types.size && !types.has(estate.type)) return false;
-      if (estate.priceValue > maxPrice) return false;
-      if (Number(estate.beds) < minimumBeds) return false;
-      if (features.size && ![...features].every((feature) => (estate.features ?? []).includes(feature))) return false;
+      if (region !== "all" && estate.locationGroup !== region) return false;
+      if (gpuModel !== "all" && estate.gpuModel !== gpuModel) return false;
+      if (vram !== "all" && estate.vram !== vram) return false;
+      if (hostingTerm !== "all" && estate.hostingTerm !== hostingTerm) return false;
+      if (priceCap !== null && Number(estate.priceValue) > priceCap) return false;
       return true;
     });
     return filtered.toSorted((a, b) => sort === "high" ? b.priceValue - a.priceValue : a.priceValue - b.priceValue);
-  }, [bedrooms, catalog, features, location, maxPrice, sort, types]);
+  }, [catalog, gpuModel, hostingTerm, priceCap, region, sort, vram]);
 
   const resultCount = visibleEstates.length;
+  const activeFilterCount = [region, gpuModel, vram, hostingTerm].filter((value) => value !== "all").length + (priceCap === null ? 0 : 1);
+
+  const formatPriceValue = (value) => {
+    const exactPrice = catalog.find((item) => Number(item.priceValue) === Number(value))?.price;
+    if (exactPrice) return exactPrice;
+    const samplePrice = catalog.find((item) => item.price)?.price ?? "";
+    if (/^\$[\d,.]+M$/i.test(samplePrice)) return `$${Number(value).toFixed(1)}M`;
+    if (/^¥/.test(samplePrice)) return `¥${Number(value).toLocaleString()}`;
+    return String(Number(value).toLocaleString());
+  };
 
   const clearFilters = () => {
-    setLocation("All Locations");
-    setTypes(new Set());
-    setMaxPrice(50);
-    setBedrooms("Any");
-    setFeatures(new Set());
+    setRegion("all");
+    setGpuModel("all");
+    setVram("all");
+    setHostingTerm("all");
+    setPriceCap(null);
   };
 
   const toggleLike = (title) => setLiked((current) => {
@@ -340,38 +359,52 @@ export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSet
 
   return (
     <div className="estates-page">
-      {settings.hero.enabled ? <section className="estates-hero">
-        <GpuHeroCarousel image={heroImage} imagePosition={heroImagePosition} aspectRatio={heroAspectRatio} />
+      {settings.hero.enabled ? <section className="estates-hero" style={{
+        "--estates-hero-height": `${settings.hero.desktopHeight}px`,
+        "--estates-hero-mobile-height": `${settings.hero.mobileHeight}px`,
+        "--gpu-card-width": `${settings.hero.desktopCardWidth}px`,
+        "--gpu-card-mobile-width": `${settings.hero.mobileCardWidth}px`,
+      }}>
+        <GpuHeroCarousel cards={heroCards} intervalSeconds={settings.hero.intervalSeconds} aspectRatio={heroAspectRatio} onCardOpen={openLink} />
       </section> : null}
 
-      {settings.browser.enabled ? <section className={`estate-browser shell ${settings.browser.showFilters ? "" : "no-filters"}`} aria-label="Estate catalog">
+      {settings.browser.enabled ? <section className={`estate-browser shell ${settings.browser.showFilters ? "" : "no-filters"}`} aria-label="GPU compute catalog">
         {settings.browser.showFilters ? <aside className="filter-panel">
-          <div className="filter-title"><strong>{settings.browser.filterTitle}</strong><SlidersHorizontal weight="bold" /></div>
-          <SelectField label="Location" value={location} onChange={(event) => setLocation(event.target.value)}>
-            {["All Locations", "California", "Malibu", "Rocky Alps", "Bali", "Amalfi Coast", "Mauritius"].map((option) => <option key={option}>{option}</option>)}
-          </SelectField>
-
-          <fieldset className="filter-group">
-            <legend>Property Type</legend>
-            <CheckField checked={types.size === 0} label="All Types" onChange={() => setTypes(new Set())} />
-            {propertyTypes.map((type) => <CheckField key={type} checked={types.has(type)} label={type} onChange={() => toggleSet(setTypes, type)} />)}
-          </fieldset>
-
-          <div className="price-filter">
-            <span>Price Range</span>
-            <div className="range-wrap"><input aria-label="Maximum price in millions" type="range" min="1" max="50" step="1" value={maxPrice} onChange={(event) => setMaxPrice(Number(event.target.value))} /></div>
-            <div className="range-labels"><span>$500K</span><span>{maxPrice === 50 ? "$50M+" : `$${maxPrice}M`}</span></div>
+          <div className="filter-title">
+            <span className="filter-title-icon"><SlidersHorizontal weight="bold" aria-hidden="true" /></span>
+            <span className="filter-title-copy"><strong>{settings.browser.filterTitle}</strong><small>{settings.browser.filterDescription}</small></span>
+            <span className={`filter-active-count ${activeFilterCount ? "active" : ""}`} aria-label={`已启用 ${activeFilterCount} 个筛选条件`}>{activeFilterCount}</span>
           </div>
 
-          <SelectField label="Bedrooms" value={bedrooms} onChange={(event) => setBedrooms(event.target.value)}>
-            <option>Any</option><option value="3">3+</option><option value="4">4+</option><option value="5">5+</option><option value="6">6+</option>
-          </SelectField>
+          <div className="filter-controls">
+            {settings.browser.showRegionFilter ? <SelectField label={<FilterLabel icon={MapPin}>{settings.browser.regionLabel}</FilterLabel>} value={region} onChange={(event) => setRegion(event.target.value)}>
+              <option value="all">{settings.browser.allRegionsLabel}</option>
+              {regions.map((option) => <option key={option} value={option}>{option}</option>)}
+            </SelectField> : null}
 
-          <fieldset className="filter-group feature-filter">
-            <legend>Features</legend>
-            {featureOptions.map((feature) => <CheckField key={feature} checked={features.has(feature)} label={feature} onChange={() => toggleSet(setFeatures, feature)} />)}
-          </fieldset>
-          <button className="clear-filters" onClick={clearFilters}>{settings.browser.clearLabel} <span aria-hidden="true">◯</span></button>
+            {settings.browser.showGpuFilter ? <SelectField label={<FilterLabel icon={GraphicsCard}>{settings.browser.gpuLabel}</FilterLabel>} value={gpuModel} onChange={(event) => setGpuModel(event.target.value)}>
+              <option value="all">{settings.browser.allGpuLabel}</option>
+              {gpuModels.map((option) => <option key={option} value={option}>{option}</option>)}
+            </SelectField> : null}
+
+            {settings.browser.showVramFilter ? <SelectField label={<FilterLabel icon={Memory}>{settings.browser.vramLabel}</FilterLabel>} value={vram} onChange={(event) => setVram(event.target.value)}>
+              <option value="all">{settings.browser.allVramLabel}</option>
+              {vramOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+            </SelectField> : null}
+
+            {settings.browser.showTermFilter ? <SelectField label={<FilterLabel icon={CalendarBlank}>{settings.browser.termLabel}</FilterLabel>} value={hostingTerm} onChange={(event) => setHostingTerm(event.target.value)}>
+              <option value="all">{settings.browser.anyTermLabel}</option>
+              {hostingTerms.map((option) => <option key={option} value={option}>{option}</option>)}
+            </SelectField> : null}
+
+            {settings.browser.showPriceFilter ? <div className="price-filter">
+              <span className="catalog-field-label"><FilterLabel icon={CurrencyDollar}>{settings.browser.priceLabel}</FilterLabel></span>
+              <div className="range-wrap"><input aria-label={settings.browser.priceLabel} type="range" min={catalogPriceRange.min} max={catalogPriceRange.max} step="0.1" value={priceCap ?? catalogPriceRange.max} onChange={(event) => { const value = Number(event.target.value); setPriceCap(value >= catalogPriceRange.max ? null : value); }} /></div>
+              <div className="range-labels"><span>{formatPriceValue(catalogPriceRange.min)}</span><strong>{priceCap === null ? settings.browser.unlimitedPriceLabel : `≤ ${formatPriceValue(priceCap)}`}</strong></div>
+            </div> : null}
+          </div>
+
+          <button className="clear-filters" disabled={!activeFilterCount} onClick={clearFilters}><ArrowCounterClockwise weight="bold" aria-hidden="true" />{settings.browser.clearLabel}</button>
         </aside> : null}
 
         <div className="catalog-results">
@@ -379,7 +412,7 @@ export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSet
             <h2>{settings.browser.resultTitle.replace("{count}", String(resultCount))}</h2>
             <div className="catalog-controls">
               {settings.browser.showSort ? <><span>{settings.browser.sortLabel}</span>
-              <span className="sort-select"><select value={sort} onChange={(event) => setSort(event.target.value)}><option value="high">Price: High to Low</option><option value="low">Price: Low to High</option></select><CaretDown weight="bold" /></span></> : null}
+              <span className="sort-select"><select value={sort} onChange={(event) => setSort(event.target.value)}><option value="high">{settings.browser.sortHighLabel}</option><option value="low">{settings.browser.sortLowLabel}</option></select><CaretDown weight="bold" /></span></> : null}
               <div className="layout-toggle" aria-label="Layout">
                 <button className={layout === "grid" ? "active" : ""} onClick={() => setLayout("grid")} aria-label="Grid view"><SquaresFour weight="fill" /></button>
                 <button className={layout === "list" ? "active" : ""} onClick={() => setLayout("list")} aria-label="List view"><ListBullets weight="bold" /></button>
