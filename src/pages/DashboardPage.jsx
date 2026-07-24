@@ -298,7 +298,7 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
           {pathname === "/console/store/products" && isAdmin ? <CommerceSettingsPage section="products" onNotice={onNotice} /> : null}
           {pathname === "/console/store/payment" && isAdmin ? <CommerceSettingsPage section="payment" onNotice={onNotice} /> : null}
           {settingSection === "home" ? <HomeSettingsPage onNotice={onNotice} /> : null}
-          {settingSection && settingSection !== "home" ? <ContentSettingsPage section={settingSection} onNotice={onNotice} /> : null}
+          {settingSection && settingSection !== "home" ? <ContentSettingsPage key={settingSection} section={settingSection} onNotice={onNotice} /> : null}
         </div>
       </main>
       {sidebarOpen ? <button className="console-overlay" onClick={() => setSidebarOpen(false)} aria-label="关闭菜单" /> : null}

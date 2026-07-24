@@ -9,6 +9,29 @@ const numberWithin = (value, fallback, min, max) => {
   return Math.min(max, Math.max(min, numeric));
 };
 
+const legacyNavigationLabels = {
+  Home: "首页",
+  About: "关于我们",
+  Estates: "算力产品",
+  Projects: "精选项目",
+  Blog: "博客",
+  Inquire: "联系我们",
+};
+
+const legacyFooterLabels = {
+  Navigation: "网站导航",
+  Company: "关于平台",
+  "Our Story": "品牌故事",
+  Careers: "加入我们",
+  Media: "媒体中心",
+  Blog: "博客",
+  Contact: "联系我们",
+  "Privacy Policy": "隐私政策",
+  "Terms of Service": "服务条款",
+};
+
+const localizeLegacyLabel = (label, translations) => translations[label] ?? label;
+
 const defaultProductHeroCards = Array.from({ length: 5 }, (_, index) => ({
   id: `hero-card-${index + 1}`,
   image: "/images/gpu2.png",
@@ -22,12 +45,12 @@ export const defaultNavigationSettings = {
   sticky: true,
   loginLabel: "登录 / 注册",
   items: [
-    { id: "nav-home", label: "Home", link: "/", enabled: true },
-    { id: "nav-about", label: "About", link: "#about", enabled: true },
-    { id: "nav-estates", label: "Estates", link: "/estates", enabled: true },
-    { id: "nav-projects", label: "Projects", link: "#projects", enabled: true },
-    { id: "nav-blog", label: "Blog", link: "/blog", enabled: true },
-    { id: "nav-inquire", label: "Inquire", link: "#contact", enabled: true },
+    { id: "nav-home", label: "首页", link: "/", enabled: true },
+    { id: "nav-about", label: "关于我们", link: "#about", enabled: true },
+    { id: "nav-estates", label: "算力产品", link: "/estates", enabled: true },
+    { id: "nav-projects", label: "精选项目", link: "#projects", enabled: true },
+    { id: "nav-blog", label: "博客", link: "/blog", enabled: true },
+    { id: "nav-inquire", label: "联系我们", link: "#contact", enabled: true },
   ],
 };
 
@@ -35,7 +58,7 @@ export const defaultFooterSettings = {
   enabled: true,
   siteName: "Aether Lane",
   logo: "/images/gpu-logo.svg",
-  description: "Elegance above the skyline.\nExtraordinary homes for\nextraordinary lives.",
+  description: "稳定的算力托管，透明的收益管理。\n连接设备、连接需求、连接价值。",
   socials: [
     { id: "social-instagram", icon: "Instagram", label: "Instagram", link: "https://instagram.com" },
     { id: "social-facebook", icon: "Facebook", label: "Facebook", link: "https://facebook.com" },
@@ -45,33 +68,33 @@ export const defaultFooterSettings = {
   columns: [
     {
       id: "footer-navigation",
-      title: "Navigation",
+      title: "网站导航",
       items: clone(defaultNavigationSettings.items),
     },
     {
       id: "footer-company",
-      title: "Company",
+      title: "关于平台",
       items: [
-        { id: "company-story", label: "Our Story", link: "#about", enabled: true },
-        { id: "company-careers", label: "Careers", link: "#contact", enabled: true },
-        { id: "company-media", label: "Media", link: "#projects", enabled: true },
-        { id: "company-blog", label: "Blog", link: "/blog", enabled: true },
-        { id: "company-contact", label: "Contact", link: "#contact", enabled: true },
+        { id: "company-story", label: "品牌故事", link: "#about", enabled: true },
+        { id: "company-careers", label: "加入我们", link: "#contact", enabled: true },
+        { id: "company-media", label: "媒体中心", link: "#projects", enabled: true },
+        { id: "company-blog", label: "博客", link: "/blog", enabled: true },
+        { id: "company-contact", label: "联系我们", link: "#contact", enabled: true },
       ],
     },
   ],
   contact: {
-    title: "Contact",
+    title: "联系我们",
     phone: "+1 (555) 123-4567",
     email: "hello@aetherlane.com",
-    address: "123 Celestial Way,\nSan Francisco, CA 94107",
+    address: "美国加利福尼亚州旧金山\n天际路 123 号，邮编 94107",
   },
   image: "/images/hero-galaxy-home.png",
   imagePosition: "52% 53%",
-  copyright: "© 2026 Aether Lane. All rights reserved.",
+  copyright: "© 2026 Aether Lane. 保留所有权利。",
   legalLinks: [
-    { id: "legal-privacy", label: "Privacy Policy", link: "#privacy" },
-    { id: "legal-terms", label: "Terms of Service", link: "#terms" },
+    { id: "legal-privacy", label: "隐私政策", link: "#privacy" },
+    { id: "legal-terms", label: "服务条款", link: "#terms" },
   ],
 };
 
@@ -183,22 +206,36 @@ export function normalizeNavigationSettings(value) {
   return {
     ...clone(defaultNavigationSettings),
     ...source,
-    items: items.map((item, index) => withId("nav", { enabled: true, ...item }, index)),
+    loginLabel: source.loginLabel === "Login / Register" ? defaultNavigationSettings.loginLabel : (source.loginLabel ?? defaultNavigationSettings.loginLabel),
+    items: items.map((item, index) => withId("nav", { enabled: true, ...item, label: localizeLegacyLabel(item.label, legacyNavigationLabels) }, index)),
   };
 }
 
 export function normalizeFooterSettings(value) {
   const source = value && typeof value === "object" ? value : {};
+  const legacyDescription = "Elegance above the skyline.\nExtraordinary homes for\nextraordinary lives.";
+  const legacyAddress = "123 Celestial Way,\nSan Francisco, CA 94107";
+  const sourceContact = source.contact ?? {};
   return {
     ...clone(defaultFooterSettings),
     ...source,
-    contact: { ...clone(defaultFooterSettings.contact), ...(source.contact ?? {}), phone: source.phone ?? source.contact?.phone ?? defaultFooterSettings.contact.phone, email: source.email ?? source.contact?.email ?? defaultFooterSettings.contact.email },
+    description: source.description === legacyDescription ? defaultFooterSettings.description : (source.description ?? defaultFooterSettings.description),
+    copyright: source.copyright === "© 2026 Aether Lane. All rights reserved." ? defaultFooterSettings.copyright : (source.copyright ?? defaultFooterSettings.copyright),
+    contact: {
+      ...clone(defaultFooterSettings.contact),
+      ...sourceContact,
+      title: localizeLegacyLabel(sourceContact.title ?? defaultFooterSettings.contact.title, legacyFooterLabels),
+      phone: source.phone ?? sourceContact.phone ?? defaultFooterSettings.contact.phone,
+      email: source.email ?? sourceContact.email ?? defaultFooterSettings.contact.email,
+      address: sourceContact.address === legacyAddress ? defaultFooterSettings.contact.address : (sourceContact.address ?? defaultFooterSettings.contact.address),
+    },
     socials: (Array.isArray(source.socials) ? source.socials : clone(defaultFooterSettings.socials)).map((item, index) => withId("social", item, index)),
     columns: (Array.isArray(source.columns) ? source.columns : clone(defaultFooterSettings.columns)).map((column, columnIndex) => withId("footer-column", {
       ...column,
-      items: (Array.isArray(column.items) ? column.items : []).map((item, itemIndex) => withId(`footer-${columnIndex}`, { enabled: true, ...item }, itemIndex)),
+      title: localizeLegacyLabel(column.title, legacyFooterLabels),
+      items: (Array.isArray(column.items) ? column.items : []).map((item, itemIndex) => withId(`footer-${columnIndex}`, { enabled: true, ...item, label: localizeLegacyLabel(item.label, { ...legacyNavigationLabels, ...legacyFooterLabels }) }, itemIndex)),
     }, columnIndex)),
-    legalLinks: (Array.isArray(source.legalLinks) ? source.legalLinks : clone(defaultFooterSettings.legalLinks)).map((item, index) => withId("legal", item, index)),
+    legalLinks: (Array.isArray(source.legalLinks) ? source.legalLinks : clone(defaultFooterSettings.legalLinks)).map((item, index) => withId("legal", { ...item, label: localizeLegacyLabel(item.label, legacyFooterLabels) }, index)),
     imagePosition: normalizeFocalPosition(source.imagePosition ?? defaultFooterSettings.imagePosition),
   };
 }

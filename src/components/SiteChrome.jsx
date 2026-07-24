@@ -42,7 +42,7 @@ function createSiteLinkHandler(onNavigate, onSection) {
 
 export function Logo({ onNavigate, siteName = "Aether Lane", logo = "", fallback = "tiles" }) {
   return (
-    <button className="brand" type="button" onClick={() => onNavigate("home")} aria-label={`${siteName} home`}>
+    <button className="brand" type="button" onClick={() => onNavigate("home")} aria-label={`${siteName} 返回首页`}>
       {logo || fallback === "gpu" ? <BrandLogoMark logo={logo} imageClassName="brand-logo-image" fallbackClassName="brand-gpu-logo" /> : <span className="brand-mark"><span /><span /><span /><span /></span>}
       <strong>{siteName}</strong>
     </button>
@@ -84,14 +84,14 @@ export function SiteHeader({ page, menuOpen, onMenuToggle, onNavigate, onSection
   return (
     <header className={`topbar shell ${settings.sticky ? "topbar-sticky" : ""}`}>
       <Logo onNavigate={onNavigate} siteName={settings.siteName} logo={settings.logo} fallback="gpu" />
-      <nav className={menuOpen ? "open" : ""} aria-label="Primary navigation">
+      <nav className={menuOpen ? "open" : ""} aria-label="主导航">
         {items.map((item) => {
           const itemPage = activePageForLink(item.link);
           return <button className={itemPage && page === itemPage ? "active" : ""} key={item.id} onClick={() => openLink(item.link)}>{item.label}</button>;
         })}
       </nav>
       <UserMenu user={user} onNavigate={onNavigate} onLogout={onLogout} compact loginLabel={settings.loginLabel} />
-      <button className="menu-toggle" onClick={onMenuToggle} aria-label="Toggle menu">
+      <button className="menu-toggle" onClick={onMenuToggle} aria-label="切换菜单">
         {menuOpen ? <X /> : <List />}
       </button>
     </header>
