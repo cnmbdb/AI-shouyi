@@ -82,7 +82,7 @@ Prototype product hero CMS rule: Product browsing settings manage the complete f
 
 Prototype global theme rule: the public site, authentication flow, and authenticated console use one white daytime theme only. The application must remove any stale `dark` root class and stored theme preference during startup, set `color-scheme: light`, expose no theme toggle, and render only the daytime product Hero media controls and assets.
 
-Prototype shared-header material rule: the persistent public header uses a white translucent frosted-glass surface with backdrop blur, a fine light border, and a soft neutral shadow. Do not use a blue-purple filled navigation background; keep navigation text dark and readable on Home, Estates, Blog, and mobile menus.
+Prototype shared-header material rule: the persistent public header uses a borderless white translucent frosted-glass surface with backdrop blur and a soft neutral shadow. Do not add a white outline or inset border highlight, and do not use a blue-purple filled navigation background; keep navigation text dark and readable on Home, Estates, Blog, and mobile menus.
 
 Prototype CMS crop-result rule: every site-settings image editor that exposes an image focal-position field must apply the current field value to its separate crop-result thumbnail in real time. That thumbnail uses cover cropping and matching `object-position` semantics, displays the current focal value, and uses a section-appropriate aspect ratio when known so administrators see the published crop direction before saving.
 
