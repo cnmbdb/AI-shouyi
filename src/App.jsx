@@ -4,7 +4,7 @@ import { useRouter, useRouterState } from "@tanstack/react-router";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome.jsx";
 import { ConsoleLoader } from "./components/ConsoleLoader.jsx";
 import { loadCurrentUser, logoutAccount, subscribeToAuthChanges } from "./lib/auth.js";
-import { getSiteSettings } from "./lib/platformData.js";
+import { getCachedSiteSettings, getSiteSettings, subscribeToPublishedContent } from "./lib/platformData.js";
 import { normalizeHomeSettings } from "./data/homeSettings.js";
 import { normalizeBlogSettings, normalizeFooterSettings, normalizeNavigationSettings, normalizeProductSettings } from "./data/siteSettings.js";
 
@@ -13,6 +13,7 @@ const DashboardPage = lazy(() => import("./pages/DashboardPage.jsx").then((modul
 const HomePage = lazy(() => import("./pages/HomePage.jsx").then((module) => ({ default: module.HomePage })));
 const EstatesPage = lazy(() => import("./pages/EstatesPage.jsx").then((module) => ({ default: module.EstatesPage })));
 const BlogPage = lazy(() => import("./pages/BlogPage.jsx").then((module) => ({ default: module.BlogPage })));
+const BlogArticlePage = lazy(() => import("./pages/BlogArticlePage.jsx").then((module) => ({ default: module.BlogArticlePage })));
 const StoreProductPage = lazy(() => import("./pages/StoreProductPage.jsx").then((module) => ({ default: module.StoreProductPage })));
 
 const sitePath = {
@@ -27,24 +28,32 @@ export function App() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [menuOpen, setMenuOpen] = useState(false);
   const [notice, setNotice] = useState("");
+  const [cachedPublicSettings] = useState(() => getCachedSiteSettings());
   const session = useQuery({ queryKey: ["session"], queryFn: loadCurrentUser, retry: false, staleTime: 60_000 });
 
   const isConsole = pathname.startsWith("/console");
   const isAuth = pathname.startsWith("/auth");
-  const isAdminPath = pathname === "/console/users" || pathname.startsWith("/console/settings/") || pathname.startsWith("/console/store/");
+  const isAdminPath = pathname === "/console/users" || pathname.startsWith("/console/settings/") || pathname.startsWith("/console/store/") || pathname.startsWith("/console/content/");
+  const isBlogArticle = pathname.startsWith("/blog/");
+  const blogSlug = isBlogArticle ? decodeURIComponent(pathname.slice("/blog/".length)) : "";
   const isStoreProduct = pathname.startsWith("/estates/") || pathname.startsWith("/products/");
   const productRoutePrefix = pathname.startsWith("/estates/") ? "/estates/" : "/products/";
   const productSegments = isStoreProduct ? pathname.slice(productRoutePrefix.length).split("/").filter(Boolean).map(decodeURIComponent) : [];
   const productCategoryId = productSegments.length >= 2 ? productSegments[0] : "";
   const productId = productSegments.length >= 2 ? productSegments[1] : "";
   const legacyProductSlug = productSegments.length === 1 ? productSegments[0] : "";
-  const page = pathname === "/estates" ? "estates" : pathname === "/blog" ? "blog" : isStoreProduct ? "product" : "home";
+  const page = pathname === "/estates" ? "estates" : pathname === "/blog" || isBlogArticle ? "blog" : isStoreProduct ? "product" : "home";
   const publicSettings = useQuery({
     queryKey: ["public-settings"],
     queryFn: getSiteSettings,
     retry: false,
-    staleTime: 5 * 60_000,
+    initialData: cachedPublicSettings,
+    initialDataUpdatedAt: 0,
+    staleTime: 30_000,
     gcTime: 30 * 60_000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
+    refetchOnReconnect: "always",
     enabled: !isConsole,
   });
   const publishedSettings = publicSettings.data?.settings;
@@ -62,6 +71,34 @@ export function App() {
   useEffect(() => subscribeToAuthChanges(() => {
     window.setTimeout(() => queryClient.invalidateQueries({ queryKey: ["session"] }), 0);
   }), [queryClient]);
+
+  useEffect(() => {
+    if (isConsole) return undefined;
+    const refreshPublishedContent = () => {
+      void queryClient.invalidateQueries({ queryKey: ["public-settings"] });
+      void queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
+      void queryClient.invalidateQueries({ queryKey: ["blog-post"] });
+    };
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") refreshPublishedContent();
+    };
+    const unsubscribe = subscribeToPublishedContent({
+      onSiteSettings: () => void queryClient.invalidateQueries({ queryKey: ["public-settings"] }),
+      onBlogPosts: () => {
+        void queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
+        void queryClient.invalidateQueries({ queryKey: ["blog-post"] });
+      },
+    });
+    window.addEventListener("online", refreshPublishedContent);
+    window.addEventListener("aether:app-resume", refreshPublishedContent);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => {
+      unsubscribe();
+      window.removeEventListener("online", refreshPublishedContent);
+      window.removeEventListener("aether:app-resume", refreshPublishedContent);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
+  }, [isConsole, queryClient]);
 
   useEffect(() => {
     if (!notice) return undefined;
@@ -103,6 +140,14 @@ export function App() {
     router.navigate({ to: "/" });
   };
 
+  if (!isConsole && !publicSettings.data && publicSettings.isPending) {
+    return <div className="route-loader">正在同步 ai.suxin.ai 最新配置...</div>;
+  }
+
+  if (!isConsole && !publicSettings.data && publicSettings.isError) {
+    return <div className="route-loader route-loader-error"><div><strong>暂时无法连接内容总控</strong><span>请检查网络后重试，应用不会用内置内容覆盖线上数据。</span><button type="button" onClick={() => publicSettings.refetch()}>重新同步</button></div></div>;
+  }
+
   if (isAuth) {
     if (session.isLoading) return <div className="route-loader">正在确认登录状态...</div>;
     return <Suspense fallback={<div className="route-loader">正在加载账户入口...</div>}><AuthPage pathname={pathname} user={session.data?.user} onSuccess={(user) => {
@@ -132,7 +177,8 @@ export function App() {
         <Suspense fallback={<div className="route-loader">正在加载页面...</div>}>
           {page === "home" ? <HomePage settings={homeSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
           {page === "estates" ? <EstatesPage settings={productSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
-          {page === "blog" ? <BlogPage settings={blogSettings} onNotice={setNotice} /> : null}
+          {page === "blog" && !isBlogArticle ? <BlogPage settings={blogSettings} onNotice={setNotice} onNavigate={navigate} /> : null}
+          {isBlogArticle ? <BlogArticlePage slug={blogSlug} onNavigate={navigate} /> : null}
           {page === "product" ? <StoreProductPage categoryId={productCategoryId} productId={productId} legacySlug={legacyProductSlug} user={session.data?.user} onNavigate={navigate} onNotice={setNotice} /> : null}
         </Suspense>
       </main>

@@ -183,7 +183,7 @@ export function HomeSettingsPage({ onNotice }) {
 
       <Card className="home-settings-publish">
         <CardFooter>
-          <div><strong>{dirty ? "有尚未发布的修改" : "当前配置已同步"}</strong><span>保存后，已打开的首页会在下次读取配置时更新。</span></div>
+          <div><strong>{dirty ? "有尚未发布的修改" : "当前配置已同步"}</strong><span>保存后，网站与 Android APP 会通过 Supabase 自动同步。</span></div>
           <div><Button variant="outline" size="sm" disabled={!dirty || mutation.isPending} onClick={() => { setSettings(clone(defaultHomeSettings)); setDirty(true); }}><RotateCcw />恢复默认内容</Button><Button size="sm" disabled={!dirty || mutation.isPending} onClick={() => mutation.mutate(settings)}><CheckCircle2 />{mutation.isPending ? "发布中..." : "保存并发布"}</Button></div>
         </CardFooter>
       </Card>

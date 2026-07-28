@@ -124,7 +124,7 @@ function PublishBar({ dirty, pending, label, onReset, onPublish }) {
   return (
     <Card className="home-settings-publish">
       <CardFooter>
-        <div><strong>{dirty ? "有尚未发布的修改" : "当前配置已同步"}</strong><span>保存后，公开页面在下次读取配置时更新。</span></div>
+        <div><strong>{dirty ? "有尚未发布的修改" : "当前配置已同步"}</strong><span>保存后，网站与 Android APP 会通过 Supabase 自动同步。</span></div>
         <div><Button variant="outline" size="sm" disabled={!dirty || pending} onClick={onReset}><RotateCcw />恢复默认内容</Button><Button size="sm" disabled={!dirty || pending} onClick={onPublish}><CheckCircle2 />{pending ? "发布中..." : label}</Button></div>
       </CardFooter>
     </Card>

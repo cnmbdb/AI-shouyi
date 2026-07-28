@@ -24,6 +24,9 @@ const siteImageExtensions = {
 const siteImageLimit = 6 * 1024 * 1024;
 const commerceFallbackKey = "aether-commerce-settings:v1";
 export const commerceProductsRefreshKey = "aether-commerce-products:updated";
+const publicSettingsCacheKey = "aether-public-settings:v1";
+const blogPostsCacheKey = "aether-blog-posts:v1";
+let realtimeChannelSequence = 0;
 
 const isMissingCommerceTable = (error) => error?.code === "42P01" || error?.code === "PGRST205";
 const isMissingFunction = (error) => error?.context?.status === 404 || /not found|failed to send a request to the edge function/i.test(error?.message ?? "");
@@ -48,6 +51,28 @@ const notifyCommerceProductsUpdated = () => {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(commerceProductsRefreshKey, String(Date.now()));
 };
+
+const readPublicCache = (key) => {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const cached = JSON.parse(window.localStorage.getItem(key) || "null");
+    return cached?.value;
+  } catch {
+    return undefined;
+  }
+};
+
+const writePublicCache = (key, value) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify({ value, updatedAt: Date.now() }));
+  } catch {
+    // Public content remains available from Supabase when storage is unavailable.
+  }
+};
+
+export const getCachedSiteSettings = () => readPublicCache(publicSettingsCacheKey);
+export const getCachedBlogPosts = () => readPublicCache(blogPostsCacheKey);
 
 export async function getPlatformOverview() {
   const client = requireSupabase();
@@ -121,7 +146,9 @@ export async function getPlatformOverview() {
 export async function getSiteSettings() {
   const { data, error } = await requireSupabase().from("site_settings").select("section_key, value");
   throwIfError(error);
-  return { settings: Object.fromEntries((data ?? []).map((row) => [row.section_key, row.value])) };
+  const result = { settings: Object.fromEntries((data ?? []).map((row) => [row.section_key, row.value])) };
+  writePublicCache(publicSettingsCacheKey, result);
+  return result;
 }
 
 export async function saveSiteSetting(section, value) {
@@ -372,12 +399,82 @@ export async function uploadSiteImage(file, scope = "content") {
 export async function getBlogPosts() {
   const { data, error } = await requireSupabase()
     .from("blog_posts")
-    .select("slug, title, excerpt, category, author_name, author_avatar, image_url, image_position, published_at, read_time_minutes, featured, editors_pick, display_order")
+    .select("slug, title, excerpt, content, category, author_name, author_avatar, image_url, image_position, published_at, read_time_minutes, featured, editors_pick, display_order")
     .eq("published", true)
     .order("display_order")
     .order("published_at", { ascending: false });
   throwIfError(error);
+  const posts = data ?? [];
+  writePublicCache(blogPostsCacheKey, posts);
+  return posts;
+}
+
+export async function getBlogPost(slug) {
+  const { data, error } = await requireSupabase()
+    .from("blog_posts")
+    .select("slug, title, excerpt, content, category, author_name, author_avatar, image_url, image_position, published_at, read_time_minutes, featured, editors_pick, display_order")
+    .eq("slug", slug)
+    .eq("published", true)
+    .maybeSingle();
+  throwIfError(error);
+  return data;
+}
+
+export async function getAdminBlogPosts() {
+  const { data, error } = await requireSupabase()
+    .from("blog_posts")
+    .select("slug, title, excerpt, content, category, author_name, author_avatar, image_url, image_position, published_at, read_time_minutes, featured, editors_pick, display_order, published, updated_at")
+    .order("display_order")
+    .order("published_at", { ascending: false });
+  throwIfError(error);
   return data ?? [];
+}
+
+export async function saveBlogPost(post) {
+  const slug = String(post.slug || "").trim().toLowerCase();
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error("文章 Slug 只能包含小写字母、数字和连字符");
+  const payload = {
+    slug,
+    title: String(post.title || "").trim(),
+    excerpt: String(post.excerpt || "").trim(),
+    content: String(post.content || "").trim(),
+    category: String(post.category || "").trim(),
+    author_name: String(post.author_name || "").trim(),
+    author_avatar: String(post.author_avatar || "").trim() || null,
+    image_url: String(post.image_url || "").trim(),
+    image_position: String(post.image_position || "50% 50%"),
+    published_at: post.published_at,
+    read_time_minutes: Math.max(1, Number(post.read_time_minutes) || 1),
+    featured: Boolean(post.featured),
+    editors_pick: Boolean(post.editors_pick),
+    display_order: Number(post.display_order) || 0,
+    published: Boolean(post.published),
+  };
+  if (!payload.title || !payload.excerpt || !payload.category || !payload.author_name || !payload.image_url || !payload.published_at) {
+    throw new Error("请完整填写标题、摘要、分类、作者、封面和发布日期");
+  }
+  const { data, error } = await requireSupabase().from("blog_posts").upsert(payload, { onConflict: "slug" }).select().single();
+  throwIfError(error);
+  return data;
+}
+
+export async function deleteBlogPost(slug) {
+  const { error } = await requireSupabase().from("blog_posts").delete().eq("slug", slug);
+  throwIfError(error);
+  return { ok: true };
+}
+
+export function subscribeToPublishedContent({ onSiteSettings, onBlogPosts }) {
+  const client = requireSupabase();
+  realtimeChannelSequence += 1;
+  const channel = client
+    .channel(`published-content-${realtimeChannelSequence}`)
+    .on("postgres_changes", { event: "*", schema: "public", table: "site_settings" }, () => onSiteSettings?.())
+    .on("postgres_changes", { event: "*", schema: "public", table: "blog_posts" }, () => onBlogPosts?.())
+    .subscribe();
+  return () => {
+    void client.removeChannel(channel);
+  };
 }
 
 export async function subscribeNewsletter(email) {

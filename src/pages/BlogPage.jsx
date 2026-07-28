@@ -13,9 +13,8 @@ import {
   Sparkle,
   SquaresFour,
 } from "@phosphor-icons/react";
-import { blogFallback } from "../data/blogFallback.js";
 import { defaultBlogSettings } from "../data/siteSettings.js";
-import { getBlogPosts, subscribeNewsletter } from "../lib/platformData.js";
+import { getBlogPosts, getCachedBlogPosts, subscribeNewsletter } from "../lib/platformData.js";
 import { assetUrl, preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
 
 const categoryIcons = { SquaresFour, Buildings, Armchair, FlowerLotus, ChartLineUp, AirplaneTilt };
@@ -82,7 +81,7 @@ function EditorsCard({ post, onOpen }) {
   );
 }
 
-export function BlogPage({ onNotice, settings = defaultBlogSettings }) {
+export function BlogPage({ onNotice, onNavigate, settings = defaultBlogSettings }) {
   const [category, setCategory] = useState("All");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -90,11 +89,15 @@ export function BlogPage({ onNotice, settings = defaultBlogSettings }) {
     queryKey: ["blog-posts"],
     queryFn: getBlogPosts,
     retry: false,
-    staleTime: 5 * 60_000,
+    initialData: getCachedBlogPosts,
+    initialDataUpdatedAt: 0,
+    staleTime: 30_000,
     gcTime: 30 * 60_000,
-    placeholderData: blogFallback,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
+    refetchOnReconnect: "always",
   });
-  const posts = postsQuery.data?.length ? postsQuery.data : blogFallback;
+  const posts = postsQuery.data ?? [];
 
   if (settings.hero.enabled && settings.hero.backgroundImage) {
     preload(preloadImageUrl(settings.hero.backgroundImage), { as: "image", fetchPriority: "high" });
@@ -113,7 +116,7 @@ export function BlogPage({ onNotice, settings = defaultBlogSettings }) {
     return category === "All" || post.category === category;
   }), [category, posts]);
 
-  const openArticle = (post) => onNotice(`${post.title} — article view ready to build next.`);
+  const openArticle = (post) => onNavigate(`/blog/${encodeURIComponent(post.slug)}`);
 
   const subscribe = async (event) => {
     event.preventDefault();
@@ -184,9 +187,12 @@ export function BlogPage({ onNotice, settings = defaultBlogSettings }) {
         </div> : null}
 
         {settings.articles.enabled ? <div className="blog-grid">
-          {articles.length ? articles.map((post) => <ArticleCard key={post.slug} post={post} onOpen={openArticle} />) : (
+          {postsQuery.isPending ? <div className="blog-empty">正在读取 ai.suxin.ai 已发布文章...</div> : null}
+          {postsQuery.isError ? <div className="blog-empty">文章读取失败，请检查网络后重试。</div> : null}
+          {!postsQuery.isPending && !postsQuery.isError && articles.length ? articles.map((post) => <ArticleCard key={post.slug} post={post} onOpen={openArticle} />) : null}
+          {!postsQuery.isPending && !postsQuery.isError && !articles.length ? (
             <div className="blog-empty">{settings.articles.emptyText.replace("{category}", category)}</div>
-          )}
+          ) : null}
         </div> : null}
 
         {settings.editors.enabled ? <section className="editors-section">

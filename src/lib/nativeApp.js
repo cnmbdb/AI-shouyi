@@ -71,11 +71,16 @@ export async function initializeNativeApp(router) {
     void handleAppUrl(url, router);
   });
 
+  const appStateChange = await App.addListener("appStateChange", ({ isActive }) => {
+    if (isActive) window.dispatchEvent(new Event("aether:app-resume"));
+  });
+
   const launchUrl = await App.getLaunchUrl();
   if (launchUrl?.url) await handleAppUrl(launchUrl.url, router);
 
   return () => {
     void backButton.remove();
     void appUrlOpen.remove();
+    void appStateChange.remove();
   };
 }

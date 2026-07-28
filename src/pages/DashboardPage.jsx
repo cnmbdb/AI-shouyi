@@ -30,13 +30,14 @@ import {
   XIcon as X,
 } from "lucide-react";
 import { BrandLogoMark } from "../components/BrandLogo.jsx";
-import { getPlatformOverview, getSiteSettings } from "../lib/platformData.js";
+import { getCachedSiteSettings, getPlatformOverview, getSiteSettings } from "../lib/platformData.js";
 import { normalizeNavigationSettings } from "../data/siteSettings.js";
 import { UserManagementPage } from "./UserManagementPage.jsx";
 import { HomeSettingsPage } from "./HomeSettingsPage.jsx";
 import { ContentSettingsPage } from "./ContentSettingsPage.jsx";
 import { AccountSettingsPage } from "./AccountSettingsPage.jsx";
 import { CommerceSettingsPage } from "./CommerceSettingsPage.jsx";
+import { BlogPostsPage } from "./BlogPostsPage.jsx";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ const assetNavGroup = {
 
 const adminNavGroups = [
   { label: "平台管理", items: [{ path: "/console/users", label: "用户管理", icon: Users }] },
+  { label: "内容总控", items: [{ path: "/console/content/articles", label: "文章管理", icon: Newspaper }] },
   {
     label: "商城",
     items: [
@@ -86,6 +88,7 @@ const pageMeta = {
   "/console/transactions": ["资金明细", "查看全部入账、结算与提现记录"],
   "/console/account": ["账户设置", "修改个人资料、头像和登录密码"],
   "/console/users": ["用户管理", "查看平台账号、验证状态并配置用户角色"],
+  "/console/content/articles": ["文章管理", "统一管理网站与 Android APP 的文章、封面、正文和发布状态"],
   "/console/store/products": ["商品列表", "管理商品分类、规格、详情、租用买断价格与续费规则"],
   "/console/store/payment": ["支付设置", "管理支付提供方、渠道、费率、金额限制、密钥与回调"],
 };
@@ -248,7 +251,7 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
   const navGroups = isAdmin ? [assetNavGroup, ...adminNavGroups] : [assetNavGroup];
   const needsOverview = ["/console", "/console/devices", "/console/orders"].includes(pathname);
   const overview = useQuery({ queryKey: ["platform-overview"], queryFn: getPlatformOverview, staleTime: 60_000, enabled: needsOverview });
-  const siteSettings = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings, staleTime: 30_000, refetchOnWindowFocus: false });
+  const siteSettings = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings, initialData: getCachedSiteSettings, initialDataUpdatedAt: 0, staleTime: 30_000 });
   const navigationSettings = useMemo(() => normalizeNavigationSettings(siteSettings.data?.settings?.navigation), [siteSettings.data?.settings?.navigation]);
   const data = overview.data ? {
     ...fallbackOverview,
@@ -295,6 +298,7 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
           {pathname === "/console/transactions" ? <FinancePage kind="transactions" /> : null}
           {pathname === "/console/account" ? <AccountSettingsPage user={user} onUserUpdated={onUserUpdated} onNotice={onNotice} /> : null}
           {pathname === "/console/users" && isAdmin ? <UserManagementPage currentUser={user} onNotice={onNotice} /> : null}
+          {pathname === "/console/content/articles" && isAdmin ? <BlogPostsPage onNotice={onNotice} /> : null}
           {pathname === "/console/store/products" && isAdmin ? <CommerceSettingsPage section="products" onNotice={onNotice} /> : null}
           {pathname === "/console/store/payment" && isAdmin ? <CommerceSettingsPage section="payment" onNotice={onNotice} /> : null}
           {settingSection === "home" ? <HomeSettingsPage onNotice={onNotice} /> : null}
