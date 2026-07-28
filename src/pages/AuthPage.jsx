@@ -36,7 +36,7 @@ const modeCopy = {
   resetSent: ["邮件已发送", "请打开邮件中的链接设置新密码"],
 };
 
-export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate }) {
+export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navigationSettings }) {
   const recoveryRoute = pathname === "/auth/update-password";
   const [mode, setMode] = useState(recoveryRoute ? "update" : "login");
   const [identifier, setIdentifier] = useState("");
@@ -132,7 +132,12 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate }) {
     <main className="auth-page">
       <div className="auth-backdrop" aria-hidden="true" />
       <header className="auth-header">
-        <Logo onNavigate={onNavigate} />
+        <Logo
+          onNavigate={onNavigate}
+          siteName={navigationSettings?.siteName}
+          logo={navigationSettings?.logo}
+          fallback="gpu"
+        />
         <div className="auth-header-actions"><Button className="auth-back" variant="ghost" size="sm" onClick={() => onNavigate("home")}><ArrowLeftIcon data-icon="inline-start" />返回首页</Button></div>
       </header>
 

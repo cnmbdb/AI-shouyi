@@ -45,7 +45,7 @@ export function App() {
     retry: false,
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,
-    enabled: !isConsole && !isAuth,
+    enabled: !isConsole,
   });
   const publishedSettings = publicSettings.data?.settings;
   const navigationSettings = useMemo(() => normalizeNavigationSettings(publishedSettings?.navigation), [publishedSettings?.navigation]);
@@ -108,7 +108,7 @@ export function App() {
     return <Suspense fallback={<div className="route-loader">正在加载账户入口...</div>}><AuthPage pathname={pathname} user={session.data?.user} onSuccess={(user) => {
         queryClient.setQueryData(["session"], { user });
         router.navigate({ to: "/" });
-      }} onNavigate={navigate} /></Suspense>;
+      }} onNavigate={navigate} navigationSettings={navigationSettings} /></Suspense>;
   }
 
   if (isConsole) {
