@@ -6,10 +6,17 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 4173",
     "build": "vite build && node scripts/create-spa-fallback.mjs",
+    "android:sync": "npm run build && cap sync android",
+    "android:open": "cap open android",
+    "android:run": "npm run build && cap run android",
+    "android:assemble": "npm run build && cap sync android && cd android && ./gradlew assembleDebug",
     "preview": "vite preview --host 0.0.0.0 --port 4173",
     "start": "vite preview --host 0.0.0.0 --port 4173"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.2",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/core": "^8.4.2",
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource/manrope": "^5.3.0",
     "@gsap/react": "^2.1.2",
@@ -32,6 +39,7 @@
     "vite": "6.4.2"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.4.2",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query-devtools": "^5.101.4",
     "@tanstack/react-router-devtools": "^1.167.0",

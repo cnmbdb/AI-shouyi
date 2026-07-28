@@ -1,0 +1,9 @@
+{
+  "appId": "ai.suxin.aetherlane",
+  "appName": "Aether Lane",
+  "webDir": "dist",
+  "server": {
+    "hostname": "localhost",
+    "androidScheme": "http"
+  }
+}

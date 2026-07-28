@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRootRoute, createRoute, createRouter, RouterProvider } from "@tanstack/react-router";
 import { App } from "./App.jsx";
 import { TooltipProvider } from "./components/ui/tooltip.jsx";
+import { initializeNativeApp } from "./lib/nativeApp.js";
 import "./styles.css";
 
 document.documentElement.classList.remove("dark");
@@ -20,6 +21,8 @@ const rootRoute = createRootRoute({ component: App });
 const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: "/", component: () => null });
 const catchAllRoute = createRoute({ getParentRoute: () => rootRoute, path: "$", component: () => null });
 const router = createRouter({ routeTree: rootRoute.addChildren([indexRoute, catchAllRoute]) });
+
+void initializeNativeApp(router);
 
 const TanStackDevtools = import.meta.env.DEV
   ? lazy(async () => {

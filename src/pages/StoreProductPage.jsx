@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { useQuery } from "@tanstack/react-query";
 import {
   CalendarBlank,
@@ -45,6 +46,7 @@ async function copyText(value) {
 }
 
 export function StoreProductPage({ categoryId, productId, legacySlug, user, onNavigate, onNotice }) {
+  const isNativeApp = Capacitor.isNativePlatform();
   const query = useQuery({
     queryKey: ["store-product", categoryId, productId, legacySlug],
     queryFn: () => getPublicStoreProduct(categoryId, productId, legacySlug),
@@ -97,6 +99,10 @@ export function StoreProductPage({ categoryId, productId, legacySlug, user, onNa
 
   const selectedPlan = plans.find((item) => item.id === billing) ?? plans[0];
   const startOrder = async () => {
+    if (isNativeApp) {
+      onNotice("Android 版本暂未开放支付，请使用网页版完成购买");
+      return;
+    }
     if (!user) {
       onNotice("请先登录后创建订单");
       onNavigate(`/auth?next=${encodeURIComponent(`/estates/${product.categoryId || "uncategorized"}/${product.id}`)}`);
@@ -130,7 +136,7 @@ export function StoreProductPage({ categoryId, productId, legacySlug, user, onNa
             <div className="store-product-key-specs"><span><GraphicsCard weight="duotone" />{product.gpuModel}</span><span><Memory weight="duotone" />{product.vram}</span><span><CalendarBlank weight="duotone" />{product.hostingTerm}</span></div>
             <div className="store-billing-plans">{plans.map((plan) => <button key={plan.id} className={(selectedPlan?.id ?? plans[0]?.id) === plan.id ? "active" : ""} onClick={() => setBilling(plan.id)}><span><strong>{plan.label}</strong><i>{plan.suffix}</i></span><b>{money(plan.price)}</b><small>{plan.note}</small></button>)}</div>
             <div className="store-product-availability"><CheckCircle weight="fill" /><span>现有库存 <strong>{product.inventory}</strong> 台</span></div>
-            <button className="store-product-primary" disabled={ordering} onClick={startOrder}>{ordering ? "正在创建订单..." : selectedPlan?.id === "buyout" ? "立即买断" : "立即租用"}</button>
+            <button className="store-product-primary" disabled={ordering || isNativeApp} onClick={startOrder}>{isNativeApp ? "Android 版暂未开放支付" : ordering ? "正在创建订单..." : selectedPlan?.id === "buyout" ? "立即买断" : "立即租用"}</button>
             <button className="store-product-copy" onClick={copyLink}><Copy />复制商品分享链接</button>
           </div>
         </div>
