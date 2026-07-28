@@ -24,6 +24,7 @@ import {
 } from "@phosphor-icons/react";
 import { defaultHomeSettings } from "../data/homeSettings.js";
 import { assetUrl, preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
+import { resolveManagedLink } from "../lib/managedLink.js";
 
 const iconMap = { Buildings, Mountains, Cube, FlowerLotus, Diamond, UserFocus, ShieldCheck, Leaf, HouseLine, UsersThree, Medal, Heart, Sparkle, Cpu, HardDrives, Wallet };
 const resolveIcon = (name) => iconMap[name] ?? Sparkle;
@@ -38,13 +39,15 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
   const [testimonialPage, setTestimonialPage] = useState(0);
 
   const handleLink = (link) => {
-    if (!link) return;
-    if (link.startsWith("#")) {
-      document.querySelector(link)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const resolved = resolveManagedLink(link);
+    if (resolved.kind === "empty") return;
+    if (resolved.kind === "section") {
+      document.querySelector(resolved.target)?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
-    if (link.startsWith("/")) { onNavigate(link); return; }
-    try { window.location.assign(link); } catch { onNotice("链接格式不正确"); }
+    if (resolved.kind === "internal") { onNavigate(resolved.target); return; }
+    if (resolved.kind === "external") { window.location.assign(resolved.target); return; }
+    onNotice("链接格式不正确，仅支持站内路径或 HTTPS 地址");
   };
   const toggleLike = (title) => setLiked((current) => {
     const next = new Set(current);

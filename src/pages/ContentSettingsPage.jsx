@@ -156,12 +156,13 @@ export function ContentSettingsPage({ section, onNotice }) {
 
   const mutation = useMutation({
     mutationFn: (value) => saveSiteSetting(section, value),
-    onSuccess: (_, value) => {
-      queryClient.setQueryData(["site-settings"], (current) => ({ settings: { ...(current?.settings ?? {}), [section]: value } }));
-      queryClient.setQueryData(["public-settings"], (current) => ({ settings: { ...(current?.settings ?? {}), [section]: value } }));
+    onSuccess: (result) => {
+      const saved = result.value;
+      queryClient.setQueryData(["site-settings"], (current) => ({ settings: { ...(current?.settings ?? {}), [section]: saved } }));
+      queryClient.setQueryData(["public-settings"], (current) => ({ settings: { ...(current?.settings ?? {}), [section]: saved } }));
       queryClient.invalidateQueries({ queryKey: ["site-settings"] });
       queryClient.invalidateQueries({ queryKey: ["public-settings"] });
-      setSettings(clone(value));
+      setSettings(clone(saved));
       setDirty(false);
       onNotice(`${meta.title.replace("内容管理", "")}已保存并发布`);
     },

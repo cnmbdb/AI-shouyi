@@ -1,5 +1,7 @@
 import { requireSupabase } from "./supabase.js";
 import { defaultCommerceSettings, normalizeCommerceProducts, normalizePaymentSettings } from "../data/commerceSettings.js";
+import { siteSettingNormalizers } from "../data/siteSettings.js";
+import { prepareManagedLinkForPublish } from "./managedLink.js";
 
 const currency = (value) => `¥${Number(value || 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const transactionLabel = (value) => value === "托管收益" ? "跑算收益" : value;
@@ -156,9 +158,22 @@ export async function saveSiteSetting(section, value) {
   const { data: { user }, error: userError } = await client.auth.getUser();
   throwIfError(userError);
   if (!user) throw new Error("请先登录");
-  const { error } = await client.from("site_settings").upsert({ user_id: user.id, section_key: section, value }, { onConflict: "section_key" });
+  const normalized = siteSettingNormalizers[section] ? siteSettingNormalizers[section](value) : value;
+  if (section === "products") {
+    normalized.hero.cards = normalized.hero.cards.map((card, index) => ({
+      ...card,
+      link: prepareManagedLinkForPublish(card.link, `Hero 卡片 ${index + 1} 的链接`),
+    }));
+    normalized.items = normalized.items.map((item, index) => ({
+      ...item,
+      link: prepareManagedLinkForPublish(item.link, `产品卡片 ${index + 1} 的链接`),
+    }));
+    normalized.cta.primaryButton.link = prepareManagedLinkForPublish(normalized.cta.primaryButton.link, "主按钮链接");
+    normalized.cta.secondaryButton.link = prepareManagedLinkForPublish(normalized.cta.secondaryButton.link, "次按钮链接");
+  }
+  const { error } = await client.from("site_settings").upsert({ user_id: user.id, section_key: section, value: normalized }, { onConflict: "section_key" });
   throwIfError(error);
-  return { ok: true, section, value };
+  return { ok: true, section, value: normalized };
 }
 
 const categoryFromRow = (row) => ({

@@ -1,5 +1,6 @@
 import { estateCatalog } from "./estateCatalog.js";
 import { normalizeFocalPosition } from "../lib/focalPosition.js";
+import { normalizeManagedLink } from "../lib/managedLink.js";
 
 const withId = (prefix, item, index) => ({ id: item.id || `${prefix}-${index + 1}`, ...item });
 const clone = (value) => structuredClone(value);
@@ -266,7 +267,7 @@ export function normalizeProductSettings(value) {
       id: savedCard.id || fallback.id,
       image: savedCard.image ?? savedCard.lightImage ?? legacySharedImage,
       imagePosition: normalizeFocalPosition(savedCard.imagePosition ?? savedCard.lightImagePosition ?? legacySharedImagePosition),
-      link: savedCard.link ?? fallback.link,
+      link: normalizeManagedLink(savedCard.link ?? fallback.link),
     };
   });
   delete normalizedHero.image;
@@ -312,13 +313,22 @@ export function normalizeProductSettings(value) {
         vram: item.vram ?? fallback.vram ?? String(item.baths ?? "显存"),
         hostingTerm: item.hostingTerm ?? fallback.hostingTerm ?? String(item.area ?? "12 个月"),
         imagePosition: normalizeFocalPosition(item.imagePosition ?? item.position),
+        link: normalizeManagedLink(item.link ?? fallback.link ?? "/estates"),
       }, index);
     }),
     cta: {
       ...clone(defaultProductSettings.cta),
       ...(source.cta ?? {}),
-      primaryButton: { ...clone(defaultProductSettings.cta.primaryButton), ...(source.cta?.primaryButton ?? {}) },
-      secondaryButton: { ...clone(defaultProductSettings.cta.secondaryButton), ...(source.cta?.secondaryButton ?? {}) },
+      primaryButton: {
+        ...clone(defaultProductSettings.cta.primaryButton),
+        ...(source.cta?.primaryButton ?? {}),
+        link: normalizeManagedLink(source.cta?.primaryButton?.link ?? defaultProductSettings.cta.primaryButton.link),
+      },
+      secondaryButton: {
+        ...clone(defaultProductSettings.cta.secondaryButton),
+        ...(source.cta?.secondaryButton ?? {}),
+        link: normalizeManagedLink(source.cta?.secondaryButton?.link ?? defaultProductSettings.cta.secondaryButton.link),
+      },
     },
   };
 }

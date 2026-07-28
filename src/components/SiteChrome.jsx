@@ -14,6 +14,7 @@ import {
 } from "@phosphor-icons/react";
 import { defaultFooterSettings, defaultNavigationSettings } from "../data/siteSettings.js";
 import { assetUrl } from "../lib/assets.js";
+import { resolveManagedLink } from "../lib/managedLink.js";
 import { BrandLogoMark } from "./BrandLogo.jsx";
 
 const socialIcons = {
@@ -27,16 +28,16 @@ const activePageForLink = (link) => link === "/estates" ? "estates" : link === "
 
 function createSiteLinkHandler(onNavigate, onSection) {
   return (link) => {
-    const target = String(link || "/").trim();
-    if (target.startsWith("#")) {
-      onSection(target);
+    const resolved = resolveManagedLink(link || "/");
+    if (resolved.kind === "section") {
+      onSection(resolved.target);
       return;
     }
-    if (/^https?:\/\//i.test(target) || target.startsWith("mailto:") || target.startsWith("tel:")) {
-      window.location.assign(target);
+    if (resolved.kind === "external") {
+      window.location.assign(resolved.target);
       return;
     }
-    onNavigate(target);
+    if (resolved.kind === "internal") onNavigate(resolved.target);
   };
 }
 

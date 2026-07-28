@@ -19,6 +19,7 @@ import {
 } from "@phosphor-icons/react";
 import { defaultProductSettings } from "../data/siteSettings.js";
 import { preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
+import { resolveManagedLink } from "../lib/managedLink.js";
 
 gsap.registerPlugin(useGSAP);
 
@@ -341,18 +342,18 @@ export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSet
   });
 
   const openLink = (link) => {
-    const target = String(link || "").trim();
-    if (!target) return;
-    if (/^https?:\/\//i.test(target)) {
-      window.location.assign(target);
+    const resolved = resolveManagedLink(link);
+    if (resolved.kind === "empty" || resolved.kind === "invalid") return;
+    if (resolved.kind === "external") {
+      window.location.assign(resolved.target);
       return;
     }
-    if (target.startsWith("#")) {
+    if (resolved.kind === "section") {
       onNavigate("home");
-      window.setTimeout(() => document.querySelector(target)?.scrollIntoView({ behavior: "smooth" }), 0);
+      window.setTimeout(() => document.querySelector(resolved.target)?.scrollIntoView({ behavior: "smooth" }), 0);
       return;
     }
-    onNavigate(target);
+    onNavigate(resolved.target);
   };
 
   return (
