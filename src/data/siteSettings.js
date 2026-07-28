@@ -30,6 +30,8 @@ const legacyFooterLabels = {
   "Terms of Service": "服务条款",
 };
 
+const legacySharedChromeLabels = { ...legacyNavigationLabels, ...legacyFooterLabels };
+
 const localizeLegacyLabel = (label, translations) => translations[label] ?? label;
 
 const defaultProductHeroCards = Array.from({ length: 5 }, (_, index) => ({
@@ -233,7 +235,7 @@ export function normalizeFooterSettings(value) {
     columns: (Array.isArray(source.columns) ? source.columns : clone(defaultFooterSettings.columns)).map((column, columnIndex) => withId("footer-column", {
       ...column,
       title: localizeLegacyLabel(column.title, legacyFooterLabels),
-      items: (Array.isArray(column.items) ? column.items : []).map((item, itemIndex) => withId(`footer-${columnIndex}`, { enabled: true, ...item, label: localizeLegacyLabel(item.label, { ...legacyNavigationLabels, ...legacyFooterLabels }) }, itemIndex)),
+      items: (Array.isArray(column.items) ? column.items : []).map((item, itemIndex) => withId(`footer-${columnIndex}`, { enabled: true, ...item, label: localizeLegacyLabel(item.label, legacySharedChromeLabels) }, itemIndex)),
     }, columnIndex)),
     legalLinks: (Array.isArray(source.legalLinks) ? source.legalLinks : clone(defaultFooterSettings.legalLinks)).map((item, index) => withId("legal", { ...item, label: localizeLegacyLabel(item.label, legacyFooterLabels) }, index)),
     imagePosition: normalizeFocalPosition(source.imagePosition ?? defaultFooterSettings.imagePosition),
