@@ -79,7 +79,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .brand-logo-image { width: 25px; height: 25px; flex: 0 0 auto; object-fit: contain; }
 .brand-gpu-logo { width: 25px; height: 25px; flex: 0 0 auto; color: #76b900; }
 .topbar nav { display: flex; align-items: center; gap: 28px; }
-.topbar nav button { color: rgba(31,38,54,.64); background: transparent; font-size: 13px; padding: 8px 0; transition: color .18s ease, opacity .18s ease; }
+.topbar nav button { color: rgba(31,38,54,.64); background: transparent; font-size: 15px; padding: 8px 0; transition: color .18s ease, opacity .18s ease; }
 .topbar nav button:hover { color: #111827; }
 .topbar nav button.active { color: #111827; font-weight: 700; }
 .header-cta { background: rgba(255,255,255,.72); color: #202636; border: 1px solid rgba(255,255,255,.88); border-radius: 22px; padding: 9px 22px; font-weight: 600; font-size: 13px; box-shadow: 0 4px 14px rgba(38,48,69,.08); }
@@ -651,7 +651,7 @@ p, h1, h2, h3 { margin-top: 0; }
 
 @media (max-width: 900px) and (min-width: 721px) {
   .topbar nav { gap: 10px; }
-  .topbar nav button { font-size: 12px; }
+  .topbar nav button { font-size: 14px; }
   .topbar .brand strong { font-size: 14px; }
   .topbar .header-cta { padding-inline: 12px; }
   .managed-page .shell { width: min(88%, 820px); }

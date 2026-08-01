@@ -98,6 +98,8 @@ Prototype branch-boundary rule: `main` is the website project and production web
 
 Prototype typography rule: all public pages, authentication screens, and authenticated console pages must favor readable text over miniature display density. Keep primary body copy and controls around 13-15px, secondary labels and metadata around 10-12px, and avoid restoring 8-10px text except inside intentionally scaled CMS preview canvases.
 
+Prototype public-header typography rule: shared top-navigation labels must stay readable at 15px on desktop and 14px at the intermediate desktop breakpoint; the expanded mobile menu keeps the 15px label size without changing the header's compact geometry.
+
 Prototype mobile user-management rule: on small screens, user-management selection must remain visibly actionable without horizontal discovery. Show a labeled select-all control and the destructive bulk-delete button above the table, keep row checkboxes high-contrast and touch-friendly, and pin the selection column to the table's left edge while horizontally scrolling other columns.
 
 Prototype mobile console-sidebar rule: the console drawer keeps the brand and help area fixed while its navigation is a dedicated touch-scroll region. Every administrator group and site-setting entry, including pages added below the initial viewport, must remain reachable above the device safe area and mobile browser toolbar.
