@@ -11,6 +11,8 @@ export const defaultHomeSettings = {
   version: 2,
   hero: {
     enabled: true,
+    mobileHeight: 760,
+    mobileBackgroundFit: "contain",
     backgroundImage: "/images/hero-galaxy-home.png",
     backgroundPosition: "50% 46%",
     foregroundImage: "/images/hero-foreground.png",
@@ -22,6 +24,8 @@ export const defaultHomeSettings = {
   },
   features: {
     enabled: true,
+    mobileColumns: 2,
+    mobileCardHeight: 250,
     items: [
       { id: "feature-sky", icon: "Buildings", title: "Sky Villas", description: "Architectural masterpieces floating above the clouds with infinite panoramic views.", image: "/images/hero-galaxy-home.png", imagePosition: "42% 66%", link: "/estates" },
       { id: "feature-view", icon: "Mountains", title: "Panoramic Views", description: "Wake up to endless horizons and golden sunsets from every vantage.", image: "/images/hero-galaxy-home.png", imagePosition: "8% 38%", link: "/estates" },
@@ -100,6 +104,10 @@ function mergeSettings(defaults, saved) {
 
 export function normalizeHomeSettings(saved) {
   const normalized = !saved?.version || !saved.hero ? structuredClone(defaultHomeSettings) : mergeSettings(defaultHomeSettings, saved);
+  normalized.hero.mobileHeight = Math.max(480, Math.min(960, Number(normalized.hero.mobileHeight) || 760));
+  normalized.hero.mobileBackgroundFit = ["cover", "contain"].includes(normalized.hero.mobileBackgroundFit) ? normalized.hero.mobileBackgroundFit : "contain";
+  normalized.features.mobileColumns = Math.max(1, Math.min(2, Number(normalized.features.mobileColumns) || 2));
+  normalized.features.mobileCardHeight = Math.max(180, Math.min(420, Number(normalized.features.mobileCardHeight) || 250));
   normalized.hero.backgroundPosition = normalizeFocalPosition(normalized.hero.backgroundPosition);
   normalized.hero.foregroundPosition = normalizeFocalPosition(normalized.hero.foregroundPosition);
   normalized.features.items = normalized.features.items.map((item) => ({ ...item, imagePosition: normalizeFocalPosition(item.imagePosition) }));

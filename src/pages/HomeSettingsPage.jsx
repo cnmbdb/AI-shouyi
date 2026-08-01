@@ -32,12 +32,12 @@ import { getSiteSettings, saveSiteSetting } from "../lib/platformData.js";
 
 const clone = (value) => structuredClone(value);
 
-function TextControl({ id, label, value, onChange, description, textarea = false, placeholder = "" }) {
+function TextControl({ id, label, value, onChange, description, textarea = false, placeholder = "", type = "text" }) {
   const Control = textarea ? Textarea : Input;
   return (
     <Field className="home-control">
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Control id={id} value={value ?? ""} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
+      <Control id={id} type={textarea ? undefined : type} value={value ?? ""} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
       {description ? <FieldDescription>{description}</FieldDescription> : null}
     </Field>
   );
@@ -57,6 +57,19 @@ function IconControl({ id, value, onChange }) {
 
 function LinkControl({ id, value, onChange }) {
   return <TextControl id={id} label="跳转链接" value={value} onChange={onChange} placeholder="/estates、#contact 或 https://..." />;
+}
+
+function SelectControl({ id, label, value, onChange, options, description }) {
+  return (
+    <Field className="home-control">
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Select value={String(value)} onValueChange={onChange}>
+        <SelectTrigger id={id}><SelectValue /></SelectTrigger>
+        <SelectContent><SelectGroup>{options.map(([optionValue, optionLabel]) => <SelectItem value={String(optionValue)} key={optionValue}>{optionLabel}</SelectItem>)}</SelectGroup></SelectContent>
+      </Select>
+      {description ? <FieldDescription>{description}</FieldDescription> : null}
+    </Field>
+  );
 }
 
 function SectionHeading({ title, description, count }) {
@@ -111,7 +124,7 @@ export function HomeSettingsPage({ onNotice }) {
   }, [query.data]);
 
   const mutation = useMutation({
-    mutationFn: (value) => saveSiteSetting("home", value),
+    mutationFn: (value) => saveSiteSetting("home", normalizeHomeSettings(value)),
     onSuccess: () => {
       queryClient.setQueryData(["public-settings"], (current) => ({ settings: { ...(current?.settings ?? {}), home: settings } }));
       queryClient.invalidateQueries({ queryKey: ["site-settings"] });
@@ -144,6 +157,10 @@ export function HomeSettingsPage({ onNotice }) {
             <Card size="sm"><CardContent className="home-section-content">
               <ImageControls prefix="hero-bg" image={settings.hero.backgroundImage} position={settings.hero.backgroundPosition} onImage={(value) => setField("hero", "backgroundImage", value)} onPosition={(value) => setField("hero", "backgroundPosition", value)} previewAspect="16 / 9" />
               <ImageControls prefix="hero-fg" image={settings.hero.foregroundImage} position={settings.hero.foregroundPosition} onImage={(value) => setField("hero", "foregroundImage", value)} onPosition={(value) => setField("hero", "foregroundPosition", value)} previewAspect="16 / 9" />
+              <div className="home-fields-grid">
+                <TextControl id="hero-mobile-height" label="移动端区块高度（px）" type="number" value={settings.hero.mobileHeight} description="范围 480–960，增加高度可让首屏背景在手机上展示得更完整。" onChange={(value) => setField("hero", "mobileHeight", Number(value))} />
+                <SelectControl id="hero-mobile-fit" label="移动端背景图适配" value={settings.hero.mobileBackgroundFit} options={[["contain", "完整显示（不裁剪）"], ["cover", "铺满区块（可能裁剪）"]]} description="完整显示会保留整张背景图；铺满适合不允许留白的图片。" onChange={(value) => setField("hero", "mobileBackgroundFit", value)} />
+              </div>
               <div className="home-fields-grid"><TextControl id="hero-title" label="超大标题" value={settings.hero.title} onChange={(value) => setField("hero", "title", value)} /><TextControl id="hero-heading" label="左侧标题" value={settings.hero.heading} onChange={(value) => setField("hero", "heading", value)} /><TextControl id="hero-tagline" label="右侧文案" value={settings.hero.tagline} onChange={(value) => setField("hero", "tagline", value)} /></div>
               <TextControl id="hero-description" label="左侧介绍" value={settings.hero.description} textarea onChange={(value) => setField("hero", "description", value)} />
             </CardContent></Card>
@@ -152,7 +169,7 @@ export function HomeSettingsPage({ onNotice }) {
 
         <AccordionItem value="features">
           <SectionHeaderRow title="首屏四卡片" description="每张卡片的图片、图标、文案与链接" count={settings.features.items.length} enabled={settings.features.enabled} onEnabled={(value) => setField("features", "enabled", value)} />
-          <AccordionContent><div className="home-item-list">{settings.features.items.map((item, index) => <ItemCard key={item.id} title={item.title} subtitle={`卡片 ${index + 1}`} onDelete={() => removeItem("features", "items", index)}><div className="home-fields-grid"><TextControl id={`feature-title-${item.id}`} label="标题" value={item.title} onChange={(value) => setItem("features", "items", index, "title", value)} /><IconControl id={`feature-icon-${item.id}`} value={item.icon} onChange={(value) => setItem("features", "items", index, "icon", value)} /></div><TextControl id={`feature-copy-${item.id}`} label="文案" textarea value={item.description} onChange={(value) => setItem("features", "items", index, "description", value)} /><ImageControls prefix={`feature-${item.id}`} image={item.image} position={item.imagePosition} onImage={(value) => setItem("features", "items", index, "image", value)} onPosition={(value) => setItem("features", "items", index, "imagePosition", value)} previewAspect="1 / 1" /><LinkControl id={`feature-link-${item.id}`} value={item.link} onChange={(value) => setItem("features", "items", index, "link", value)} /></ItemCard>)}</div><Button variant="outline" size="sm" onClick={() => addItem("features", "items", { icon: "Buildings", title: "新卡片", description: "", image: "/images/hero-galaxy-home.png", imagePosition: "50% 50%", link: "/estates" })}><Plus />添加卡片</Button></AccordionContent>
+          <AccordionContent><Card size="sm"><CardContent className="home-section-content"><div className="home-fields-grid"><SelectControl id="features-mobile-columns" label="移动端每行卡片数" value={settings.features.mobileColumns} options={[[2, "每行 2 张"], [1, "每行 1 张"]]} onChange={(value) => setField("features", "mobileColumns", Number(value))} /><TextControl id="features-mobile-height" label="移动端卡片高度（px）" type="number" value={settings.features.mobileCardHeight} description="范围 180–420；双列时建议 220–280。" onChange={(value) => setField("features", "mobileCardHeight", Number(value))} /></div></CardContent></Card><div className="home-item-list">{settings.features.items.map((item, index) => <ItemCard key={item.id} title={item.title} subtitle={`卡片 ${index + 1}`} onDelete={() => removeItem("features", "items", index)}><div className="home-fields-grid"><TextControl id={`feature-title-${item.id}`} label="标题" value={item.title} onChange={(value) => setItem("features", "items", index, "title", value)} /><IconControl id={`feature-icon-${item.id}`} value={item.icon} onChange={(value) => setItem("features", "items", index, "icon", value)} /></div><TextControl id={`feature-copy-${item.id}`} label="文案" textarea value={item.description} onChange={(value) => setItem("features", "items", index, "description", value)} /><ImageControls prefix={`feature-${item.id}`} image={item.image} position={item.imagePosition} onImage={(value) => setItem("features", "items", index, "image", value)} onPosition={(value) => setItem("features", "items", index, "imagePosition", value)} previewAspect="1 / 1" /><LinkControl id={`feature-link-${item.id}`} value={item.link} onChange={(value) => setItem("features", "items", index, "link", value)} /></ItemCard>)}</div><Button variant="outline" size="sm" onClick={() => addItem("features", "items", { icon: "Buildings", title: "新卡片", description: "", image: "/images/hero-galaxy-home.png", imagePosition: "50% 50%", link: "/estates" })}><Plus />添加卡片</Button></AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="about">

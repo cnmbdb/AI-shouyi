@@ -73,7 +73,7 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
   return (
     <>
       {hero.enabled ? (
-        <section className="hero" aria-label="Galaxy Home luxury estate" style={{ backgroundImage: `url(${assetUrl(hero.backgroundImage, 1280)})`, backgroundPosition: hero.backgroundPosition }}>
+        <section className="hero" aria-label="Galaxy Home luxury estate" style={{ backgroundImage: `url(${assetUrl(hero.backgroundImage, 1280)})`, backgroundPosition: hero.backgroundPosition, "--hero-mobile-height": `${hero.mobileHeight ?? 760}px`, "--hero-mobile-fit": hero.mobileBackgroundFit ?? "contain" }}>
           <div className="hero-inner shell">
             <h1>{hero.title}</h1>
             <div className="hero-copy hero-copy-left">
@@ -87,7 +87,7 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
       ) : null}
 
       {features.enabled ? (
-        <section className="feature-grid shell" id="projects">
+        <section className="feature-grid shell" id="projects" style={{ "--feature-mobile-columns": features.mobileColumns ?? 2, "--feature-mobile-height": `${features.mobileCardHeight ?? 250}px` }}>
           {features.items.map((item) => {
             const Icon = resolveIcon(item.icon);
             return (
