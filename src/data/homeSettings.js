@@ -8,11 +8,11 @@ export const homeIconOptions = [
 ];
 
 export const defaultHomeSettings = {
-  version: 2,
+  version: 3,
   hero: {
     enabled: true,
-    mobileHeight: 760,
-    mobileBackgroundFit: "contain",
+    mobileHeight: 560,
+    mobileBackgroundFit: "cover",
     backgroundImage: "/images/hero-galaxy-home.png",
     backgroundPosition: "50% 46%",
     foregroundImage: "/images/hero-foreground.png",
@@ -104,8 +104,12 @@ function mergeSettings(defaults, saved) {
 
 export function normalizeHomeSettings(saved) {
   const normalized = !saved?.version || !saved.hero ? structuredClone(defaultHomeSettings) : mergeSettings(defaultHomeSettings, saved);
-  normalized.hero.mobileHeight = Math.max(480, Math.min(960, Number(normalized.hero.mobileHeight) || 760));
-  normalized.hero.mobileBackgroundFit = ["cover", "contain"].includes(normalized.hero.mobileBackgroundFit) ? normalized.hero.mobileBackgroundFit : "contain";
+  const hadPreviousMobileHeroDefaults = Number(saved?.hero?.mobileHeight) === 760 && saved?.hero?.mobileBackgroundFit === "contain";
+  if (!saved?.hero?.mobileHeight || hadPreviousMobileHeroDefaults) normalized.hero.mobileHeight = defaultHomeSettings.hero.mobileHeight;
+  if (!saved?.hero?.mobileBackgroundFit || hadPreviousMobileHeroDefaults) normalized.hero.mobileBackgroundFit = defaultHomeSettings.hero.mobileBackgroundFit;
+  normalized.hero.mobileHeight = Math.max(420, Math.min(800, Number(normalized.hero.mobileHeight) || 560));
+  normalized.hero.mobileBackgroundFit = ["cover", "contain"].includes(normalized.hero.mobileBackgroundFit) ? normalized.hero.mobileBackgroundFit : "cover";
+  normalized.version = defaultHomeSettings.version;
   normalized.features.mobileColumns = Math.max(1, Math.min(2, Number(normalized.features.mobileColumns) || 2));
   normalized.features.mobileCardHeight = Math.max(180, Math.min(420, Number(normalized.features.mobileCardHeight) || 250));
   normalized.hero.backgroundPosition = normalizeFocalPosition(normalized.hero.backgroundPosition);

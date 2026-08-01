@@ -129,3 +129,5 @@ Prototype auth-email freshness rule: each Supabase confirmation email template m
 Prototype homepage mobile-layout rule: Home Hero mobile height and background fit are administrator-configurable so the complete background can be shown without forced desktop cropping. The immediately following feature-card section is administrator-configurable for one or two mobile columns and mobile card height, defaulting to two cards per row.
 
 Prototype mobile-footer layout rule: on small screens, the footer brand spans the full row, the website-navigation and platform columns render side by side, and contact, media, and legal content span the full row. Do not collapse all footer content into one narrow column with unused space.
+
+Prototype homepage mobile-hero proportion rule: horizontal Home Hero artwork defaults to a compact 560px mobile section with cover fitting. Avoid contain fitting inside a tall mobile section because it creates large empty bands above and below the artwork; keep the following feature cards visible near the first viewport boundary.

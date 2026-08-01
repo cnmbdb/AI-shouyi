@@ -73,7 +73,7 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
   return (
     <>
       {hero.enabled ? (
-        <section className="hero" aria-label="Galaxy Home luxury estate" style={{ backgroundImage: `url(${assetUrl(hero.backgroundImage, 1280)})`, backgroundPosition: hero.backgroundPosition, "--hero-mobile-height": `${hero.mobileHeight ?? 760}px`, "--hero-mobile-fit": hero.mobileBackgroundFit ?? "contain" }}>
+        <section className="hero" aria-label="Galaxy Home luxury estate" style={{ backgroundImage: `url(${assetUrl(hero.backgroundImage, 1280)})`, backgroundPosition: hero.backgroundPosition, "--hero-mobile-height": `${hero.mobileHeight ?? 560}px`, "--hero-mobile-fit": hero.mobileBackgroundFit ?? "cover" }}>
           <div className="hero-inner shell">
             <h1>{hero.title}</h1>
             <div className="hero-copy hero-copy-left">

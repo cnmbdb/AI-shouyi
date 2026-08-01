@@ -405,9 +405,9 @@ p, h1, h2, h3 { margin-top: 0; }
   .header-cta-mobile { display: inline; }
   .menu-toggle { width: 36px; height: 36px; padding: 0; display: grid; place-items: center; flex: 0 0 auto; }
   .hero {
-    height: var(--hero-mobile-height, 760px);
+    height: var(--hero-mobile-height, 560px);
     background-position: center;
-    background-size: var(--hero-mobile-fit, contain);
+    background-size: var(--hero-mobile-fit, cover);
     background-repeat: no-repeat;
     background-color: #080d2b;
   }
@@ -469,7 +469,7 @@ p, h1, h2, h3 { margin-top: 0; }
 }
 
 @media (max-width: 470px) {
-  .hero { height: var(--hero-mobile-height, 760px); }
+  .hero { height: var(--hero-mobile-height, 560px); }
   .feature-grid { grid-template-columns: repeat(var(--feature-mobile-columns, 2), minmax(0, 1fr)); margin-top: -80px; gap: 8px; }
   .feature-card { min-height: var(--feature-mobile-height, 250px); }
   .benefit-grid { grid-template-columns: 1fr; }
