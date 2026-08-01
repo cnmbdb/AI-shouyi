@@ -55,7 +55,11 @@ export function ImageControls({ prefix, image, position, onImage, onPosition, va
     setLibraryError("");
     try {
       const items = await listSiteImages(prefix);
-      if (image && !items.some((item) => item.url === image || item.path === image)) {
+      const currentIndex = items.findIndex((item) => item.url === image || item.path === image);
+      if (image && currentIndex >= 0) {
+        const [currentItem] = items.splice(currentIndex, 1);
+        items.unshift({ ...currentItem, current: true });
+      } else if (image) {
         items.unshift({ id: `current-${prefix}`, name: "当前已使用图片", path: image, url: assetUrl(image, 768), current: true });
       }
       setLibraryItems(items);
@@ -147,7 +151,7 @@ export function ImageControls({ prefix, image, position, onImage, onPosition, va
             {!libraryLoading && !libraryError && libraryItems.length ? <div className="site-media-grid">
               {libraryItems.map((item) => { const selected = item.url === image || item.path === image; return <button type="button" className={`site-media-item${selected ? " selected" : ""}`} key={item.id} onClick={() => chooseLibraryImage(item)}>
                 <img src={item.url} loading="lazy" alt={item.name} />
-                <span>{item.current ? "当前已使用 · 图片" : item.bundled ? `项目内置 · ${item.name}` : item.name}</span>
+                <span>{item.current ? `当前使用 · ${item.name}` : item.bundled ? `项目内置 · ${item.name}` : `已上传 · ${item.name}`}</span>
                 {selected ? <Check /> : null}
               </button>; })}
             </div> : null}

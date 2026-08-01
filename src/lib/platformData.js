@@ -448,7 +448,7 @@ export async function listSiteImages(scope = "content") {
     url: assetUrl(item.path, 768),
     bundled: true,
   }));
-  return [...bundled, ...uploaded];
+  return [...uploaded, ...bundled];
 }
 
 export async function getBlogPosts() {
