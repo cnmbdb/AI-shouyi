@@ -146,7 +146,7 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
         await sendPasswordReset(email);
       }
       setEmailToken("");
-      setMessage("邮件已重新发送，请使用最新验证码");
+      setMessage("邮件已重新发送，旧验证码已作废，请只使用最新一封邮件中的验证码");
     } catch (requestError) {
       setError(typeof requestError?.message === "string" && requestError.message.trim()
         ? requestError.message

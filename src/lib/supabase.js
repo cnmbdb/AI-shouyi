@@ -1,13 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
+import { Capacitor } from "@capacitor/core";
 
 export const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
 export const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
 export const supabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
+export const supabaseAuthFlowType = Capacitor.isNativePlatform() ? "pkce" : "implicit";
 
 export const supabase = supabaseConfigured
   ? createClient(supabaseUrl, supabasePublishableKey, {
       auth: {
-        flowType: "pkce",
+        flowType: supabaseAuthFlowType,
         autoRefreshToken: true,
         detectSessionInUrl: true,
         persistSession: true,
