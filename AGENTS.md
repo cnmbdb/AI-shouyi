@@ -100,4 +100,6 @@ Prototype typography rule: all public pages, authentication screens, and authent
 
 Prototype mobile user-management rule: on small screens, user-management selection must remain visibly actionable without horizontal discovery. Show a labeled select-all control and the destructive bulk-delete button above the table, keep row checkboxes high-contrast and touch-friendly, and pin the selection column to the table's left edge while horizontally scrolling other columns.
 
+Prototype mobile console-sidebar rule: the console drawer keeps the brand and help area fixed while its navigation is a dedicated touch-scroll region. Every administrator group and site-setting entry, including pages added below the initial viewport, must remain reachable above the device safe area and mobile browser toolbar.
+
 Prototype user-selection state rule: user-management checkboxes must expose an unmistakable selected state on desktop and mobile: neutral black fill with a white check, a distinct mixed-state bar for partial selection, selected-row highlighting, an immediately updated selected count, and an enabled destructive action only when at least one non-current user is selected.

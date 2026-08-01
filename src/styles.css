@@ -1262,15 +1262,28 @@ p, h1, h2, h3 { margin-top: 0; }
 .console-sidebar {
   height: 100dvh;
   padding: 18px 12px 14px;
+  overflow: hidden;
   color: var(--sidebar-foreground);
   background: var(--sidebar);
   border-right: 1px solid var(--sidebar-border);
 }
-.console-brand { width: 100%; height: 32px; padding: 0 8px; color: var(--sidebar-foreground); background: transparent; border: 0; text-align: left; }
+.console-brand { width: 100%; height: 32px; flex: 0 0 auto; padding: 0 8px; color: var(--sidebar-foreground); background: transparent; border: 0; text-align: left; }
 .console-brand-gpu { width: 27px; height: 27px; flex: 0 0 auto; color: #76b900; }
 .console-brand-logo { width: 27px; height: 27px; flex: 0 0 auto; object-fit: contain; }
 .console-brand strong { font-size: 15px; font-weight: 600; }
-.console-sidebar nav { margin-top: 24px; }
+.console-sidebar nav {
+  min-height: 0;
+  flex: 1 1 auto;
+  margin: 24px -4px 0;
+  padding: 0 4px max(12px, env(safe-area-inset-bottom));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 32%, transparent) transparent;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
 .console-sidebar nav section + section { margin-top: 22px; }
 .console-sidebar nav h2 {
   margin: 0 8px 6px;
@@ -1295,6 +1308,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .console-sidebar nav button.active { color: var(--sidebar-accent-foreground); background: var(--sidebar-accent); font-weight: 500; }
 .console-sidebar nav button svg { width: 15px; height: 15px; }
 .console-help {
+  flex: 0 0 auto;
   padding: 12px 8px 0;
   grid-template-columns: 24px 1fr;
   gap: 7px;
