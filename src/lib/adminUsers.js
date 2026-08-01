@@ -19,3 +19,7 @@ export function getAdminUsers() {
 export function updateAdminUserRole({ userId, role }) {
   return invokeAdminUsers({ action: "update-role", userId, role });
 }
+
+export function deleteAdminUsers({ userIds }) {
+  return invokeAdminUsers({ action: "delete-users", userIds });
+}

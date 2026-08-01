@@ -8,13 +8,16 @@ const authErrorMessages = {
   "email rate limit exceeded": "验证邮件发送频率已达上限，请稍后再试",
   "Email address not authorized": "当前测试邮件服务仅允许项目成员邮箱，请配置自定义 SMTP 后再开放注册",
   "Email address invalid": "请输入可接收邮件的有效邮箱地址",
+  "Token has expired or is invalid": "验证码无效或已过期，请重新获取",
+  "Email link is invalid or has expired": "邮件链接无效或已过期，请重新获取验证码",
+  "Auth session missing": "重置登录状态已失效，请重新获取验证码",
 };
 
 function readableAuthError(error, fallback = "认证操作失败") {
   if (!error) return fallback;
-  const message = error.message ?? "";
+  const message = typeof error.message === "string" ? error.message.trim() : "";
   const translated = Object.entries(authErrorMessages).find(([source]) => message.toLowerCase().includes(source.toLowerCase()))?.[1];
-  return translated ?? message ?? fallback;
+  return translated || message || fallback;
 }
 
 function avatarColumnUnavailable(error) {
@@ -122,6 +125,34 @@ export async function sendPasswordReset(email) {
   if (error) throw new Error(readableAuthError(error, "无法发送重置邮件"));
 }
 
+export async function verifySignupCode({ email, token }) {
+  const { error } = await requireSupabase().auth.verifyOtp({
+    email: email.trim().toLowerCase(),
+    token: token.trim(),
+    type: "signup",
+  });
+  if (error) throw new Error(readableAuthError(error, "邮箱验证码无效"));
+  return loadCurrentUser();
+}
+
+export async function resendSignupConfirmation(email) {
+  const { error } = await requireSupabase().auth.resend({
+    type: "signup",
+    email: email.trim().toLowerCase(),
+    options: { emailRedirectTo: authRedirect("/auth?verified=1") },
+  });
+  if (error) throw new Error(readableAuthError(error, "无法重新发送验证邮件"));
+}
+
+export async function verifyPasswordRecoveryCode({ email, token }) {
+  const { error } = await requireSupabase().auth.verifyOtp({
+    email: email.trim().toLowerCase(),
+    token: token.trim(),
+    type: "recovery",
+  });
+  if (error) throw new Error(readableAuthError(error, "密码重置验证码无效"));
+}
+
 export async function updatePassword(password) {
   const { error } = await requireSupabase().auth.updateUser({ password });
   if (error) throw new Error(readableAuthError(error, "密码更新失败"));
@@ -193,10 +224,13 @@ export async function updateAccountProfile({ displayName, avatarUrl, avatarColor
 }
 
 export async function changeAccountPassword({ email, currentPassword, newPassword }) {
-  const { error } = await requireSupabase().auth.updateUser({
-    email,
-    current_password: currentPassword,
-    password: newPassword,
+  const client = requireSupabase();
+  const { error: verifyError } = await client.auth.signInWithPassword({
+    email: email.trim().toLowerCase(),
+    password: currentPassword,
   });
+  if (verifyError) throw new Error("当前密码不正确");
+
+  const { error } = await client.auth.updateUser({ password: newPassword });
   if (error) throw new Error(readableAuthError(error, "密码更新失败"));
 }

@@ -6,6 +6,7 @@ import {
   CpuIcon,
   EyeIcon,
   EyeOffIcon,
+  KeyRoundIcon,
   LockKeyholeIcon,
   MailIcon,
   ServerIcon,
@@ -18,8 +19,11 @@ import {
   loginAccount,
   logoutAccount,
   registerAccount,
+  resendSignupConfirmation,
   sendPasswordReset,
   updatePassword,
+  verifyPasswordRecoveryCode,
+  verifySignupCode,
 } from "../lib/auth.js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,9 +34,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const modeCopy = {
   login: ["欢迎回来", "使用用户名或邮箱管理你的算力资产"],
   register: ["创建账号", "验证邮箱后即可登录并使用控制台"],
-  forgot: ["找回密码", "输入注册邮箱，我们会发送重置链接"],
+  forgot: ["找回密码", "输入注册邮箱，我们会发送重置验证码和链接"],
   update: ["设置新密码", "请输入新的登录密码"],
-  verify: ["检查你的邮箱", "验证链接已发送，完成验证后即可登录"],
+  verify: ["验证注册邮箱", "输入邮件中的 6 位验证码，或点击邮件验证链接"],
+  recoveryCode: ["验证重置请求", "输入重置邮件中的 6 位验证码"],
   resetSent: ["邮件已发送", "请打开邮件中的链接设置新密码"],
 };
 
@@ -44,9 +49,11 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [emailToken, setEmailToken] = useState("");
   const [visible, setVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (recoveryRoute) setMode("update");
@@ -55,13 +62,16 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
   const changeMode = (value) => {
     setMode(value);
     setError("");
+    setMessage("");
     setPassword("");
     setConfirmPassword("");
+    setEmailToken("");
   };
 
   const submit = async (event) => {
     event.preventDefault();
     setError("");
+    setMessage("");
     setSubmitting(true);
 
     try {
@@ -90,7 +100,21 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
       if (mode === "forgot") {
         if (!/^\S+@\S+\.\S+$/.test(email.trim())) throw new Error("请输入注册时使用的邮箱");
         await sendPasswordReset(email);
-        changeMode("resetSent");
+        changeMode("recoveryCode");
+      }
+
+      if (mode === "verify") {
+        if (!/^\S+@\S+\.\S+$/.test(email.trim())) throw new Error("注册邮箱无效，请重新注册");
+        if (!/^\d{6}$/.test(emailToken.trim())) throw new Error("请输入邮件中的 6 位验证码");
+        const result = await verifySignupCode({ email, token: emailToken });
+        onSuccess(result.user);
+      }
+
+      if (mode === "recoveryCode") {
+        if (!/^\S+@\S+\.\S+$/.test(email.trim())) throw new Error("请输入注册时使用的邮箱");
+        if (!/^\d{6}$/.test(emailToken.trim())) throw new Error("请输入邮件中的 6 位验证码");
+        await verifyPasswordRecoveryCode({ email, token: emailToken });
+        changeMode("update");
       }
 
       if (mode === "update") {
@@ -105,6 +129,27 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
       setError(typeof requestError?.message === "string" && requestError.message.trim()
         ? requestError.message
         : "操作失败，请稍后重试");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const resendEmail = async () => {
+    setError("");
+    setMessage("");
+    setSubmitting(true);
+    try {
+      if (mode === "verify") {
+        await resendSignupConfirmation(email);
+      } else {
+        await sendPasswordReset(email);
+      }
+      setEmailToken("");
+      setMessage("邮件已重新发送，请使用最新验证码");
+    } catch (requestError) {
+      setError(typeof requestError?.message === "string" && requestError.message.trim()
+        ? requestError.message
+        : "邮件发送失败，请稍后重试");
     } finally {
       setSubmitting(false);
     }
@@ -126,7 +171,7 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
 
   const [title, description] = modeCopy[mode] ?? modeCopy.login;
   const showTabs = mode === "login" || mode === "register";
-  const showForm = ["login", "register", "forgot", "update"].includes(mode);
+  const showForm = ["login", "register", "forgot", "verify", "recoveryCode", "update"].includes(mode);
 
   return (
     <main className="auth-page">
@@ -180,10 +225,17 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
                   </Field>
                 ) : null}
 
-                {mode === "register" || mode === "forgot" ? (
+                {mode === "register" || mode === "forgot" || mode === "verify" || mode === "recoveryCode" ? (
                   <Field>
                     <FieldLabel htmlFor="auth-email">邮箱</FieldLabel>
-                    <InputGroup><InputGroupAddon><MailIcon /></InputGroupAddon><InputGroupInput id="auth-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" /></InputGroup>
+                    <InputGroup><InputGroupAddon><MailIcon /></InputGroupAddon><InputGroupInput id="auth-email" type="email" autoComplete="email" value={email} disabled={mode === "verify" || mode === "recoveryCode"} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" /></InputGroup>
+                  </Field>
+                ) : null}
+
+                {mode === "verify" || mode === "recoveryCode" ? (
+                  <Field data-invalid={Boolean(error)}>
+                    <FieldLabel htmlFor="auth-email-token">邮件验证码</FieldLabel>
+                    <InputGroup><InputGroupAddon><KeyRoundIcon /></InputGroupAddon><InputGroupInput id="auth-email-token" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={emailToken} onChange={(event) => setEmailToken(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="6 位验证码" aria-invalid={Boolean(error)} /></InputGroup>
                   </Field>
                 ) : null}
 
@@ -202,8 +254,9 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
                 ) : null}
 
                 {error ? <FieldError>{error}</FieldError> : null}
+                {message ? <p className="text-xs text-muted-foreground" role="status">{message}</p> : null}
                 <Button className="auth-submit" type="submit" disabled={submitting}>
-                  {submitting ? "正在处理..." : mode === "login" ? "登录" : mode === "register" ? "注册并发送验证邮件" : mode === "forgot" ? "发送重置邮件" : "更新密码"}
+                  {submitting ? "正在处理..." : mode === "login" ? "登录" : mode === "register" ? "注册并发送验证邮件" : mode === "forgot" ? "发送重置邮件" : mode === "verify" ? "验证并登录" : mode === "recoveryCode" ? "验证重置码" : "更新密码"}
                   <ArrowRightIcon data-icon="inline-end" />
                 </Button>
               </FieldGroup>
@@ -216,7 +269,8 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
         <CardFooter className="auth-footer">
           {mode === "login" ? <><Button variant="link" size="xs" type="button" onClick={() => changeMode("forgot")}>忘记密码？</Button><span>还没有账号？</span><Button variant="link" size="xs" type="button" onClick={() => changeMode("register")}>立即注册</Button></> : null}
           {mode === "register" ? <><span>已有账号？</span><Button variant="link" size="xs" type="button" onClick={() => changeMode("login")}>直接登录</Button></> : null}
-          {mode === "forgot" || mode === "verify" || mode === "resetSent" ? <Button variant="link" size="xs" type="button" onClick={() => changeMode("login")}>返回登录</Button> : null}
+          {mode === "forgot" || mode === "resetSent" ? <Button variant="link" size="xs" type="button" onClick={() => changeMode("login")}>返回登录</Button> : null}
+          {mode === "verify" || mode === "recoveryCode" ? <><Button variant="link" size="xs" type="button" disabled={submitting} onClick={resendEmail}>重新发送</Button><span>没有收到？请检查垃圾邮件</span><Button variant="link" size="xs" type="button" onClick={() => changeMode("login")}>返回登录</Button></> : null}
         </CardFooter>
       </Card>
     </main>

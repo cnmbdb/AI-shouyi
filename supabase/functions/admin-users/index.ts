@@ -79,14 +79,15 @@ Deno.serve(async (request: Request) => {
       const { data: usersData, error: usersError } = await admin.auth.admin.listUsers({ page, perPage });
       if (usersError) return json(origin, 500, { error: "无法读取用户列表" });
 
-      const ids = usersData.users.map((user) => user.id);
+      const activeUsers = usersData.users.filter((user) => !user.deleted_at);
+      const ids = activeUsers.map((user) => user.id);
       const profilesResult = ids.length
         ? await admin.from("profiles").select("id, username, display_name, role, created_at").in("id", ids)
         : { data: [], error: null };
       if (profilesResult.error) return json(origin, 500, { error: "无法读取用户资料" });
 
       const profiles = new Map((profilesResult.data ?? []).map((profile) => [profile.id, profile]));
-      const users = usersData.users.map((user) => {
+      const users = activeUsers.map((user) => {
         const profile = profiles.get(user.id);
         return {
           id: user.id,
@@ -104,7 +105,7 @@ Deno.serve(async (request: Request) => {
         users,
         page,
         perPage,
-        total: usersData.total ?? users.length,
+        total: users.length,
       });
     }
 
@@ -128,6 +129,32 @@ Deno.serve(async (request: Request) => {
       if (updateError) return json(origin, 500, { error: "角色更新失败" });
       if (!profile) return json(origin, 404, { error: "用户不存在" });
       return json(origin, 200, { user: profile });
+    }
+
+    if (action === "delete-users") {
+      const rawIds = Array.isArray(body.userIds) ? body.userIds : [];
+      const userIds = [...new Set(rawIds.map((value: unknown) => String(value)))];
+      if (!userIds.length || userIds.length > 50 || userIds.some((userId) => !/^[0-9a-f-]{36}$/i.test(userId))) {
+        return json(origin, 400, { error: "请选择 1 至 50 个有效用户" });
+      }
+      if (userIds.includes(authData.user.id)) {
+        return json(origin, 400, { error: "不能删除当前登录的管理员账号" });
+      }
+
+      const deletedIds: string[] = [];
+      const failedIds: string[] = [];
+      for (const userId of userIds) {
+        // Soft deletion removes the login identity while preserving rental,
+        // payment and settlement records required for business reconciliation.
+        const { error: deleteError } = await admin.auth.admin.deleteUser(userId, true);
+        if (deleteError) {
+          failedIds.push(userId);
+        } else {
+          deletedIds.push(userId);
+        }
+      }
+
+      return json(origin, 200, { deletedIds, failedIds });
     }
 
     return json(origin, 400, { error: "不支持的管理操作" });
