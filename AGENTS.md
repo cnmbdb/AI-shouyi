@@ -93,3 +93,5 @@ Prototype product filter CMS rule: the public product-browsing sidebar uses comp
 Prototype Android release rule: the first Android APK packages the web app with Capacitor and uses the production Supabase backend, but does not enable native payment checkout yet. Authentication deep links and Android App Links use the `ai.suxin.ai` domain.
 
 Prototype branch-boundary rule: `main` is the website project and production website deployment source. `Android` contains the website plus Capacitor/Android native development and APK build support. Website and Supabase changes originate on `main` and are synchronized into `Android`; Android-only native files, SDK configuration, signing, emulator work, and APK changes must remain on `Android` and must not be merged back into `main`.
+
+Prototype typography rule: all public pages, authentication screens, and authenticated console pages must favor readable text over miniature display density. Keep primary body copy and controls around 13-15px, secondary labels and metadata around 10-12px, and avoid restoring 8-10px text except inside intentionally scaled CMS preview canvases.
