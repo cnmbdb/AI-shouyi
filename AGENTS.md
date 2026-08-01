@@ -78,6 +78,8 @@ Prototype product hero carousel rule: the public product-browsing Hero renders f
 
 Prototype console scrolling rule: the console uses one viewport-height shell with the main column as the dedicated vertical scroll container. The sticky top bar and settings publish bar must remain usable while every accordion section and the final page content can scroll fully into view on desktop and mobile.
 
+Prototype settings-accordion scrolling rule: expanded backend settings accordions must size to their live content after images load or repeatable items change. Never lock an accordion's inner content to a stale measured height that clips controls, overlaps the following section, or makes wheel and touch scrolling appear stuck.
+
 Prototype CMS focal-preview rule: every cropped content image in Home, product browsing, Blog Home, footer, and commerce settings uses explicit horizontal and vertical percentage focal controls from 0 to 100. Its preview must update immediately and display the normalized `x% y%` crop state. Legacy keyword or single-axis values remain readable and normalize to two percentages; contain-fit logos and payment icons do not expose meaningless crop controls.
 
 Prototype CMS image-preview rule: every cropped CMS image editor shows the complete uncropped source image without stretching, plus a separate crop-result thumbnail using the public component's intended aspect ratio and current focal percentages. The form height must never stretch the source preview into a misleading narrow frame.
