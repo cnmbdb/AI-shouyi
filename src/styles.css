@@ -465,8 +465,46 @@ p, h1, h2, h3 { margin-top: 0; }
   .feature-grid { grid-template-columns: 1fr; margin-top: -80px; }
   .feature-card { min-height: 230px; }
   .benefit-grid { grid-template-columns: 1fr; }
-  .stats { grid-template-columns: 1fr; padding: 8px; }
-  .stats article { border-right: 0; }
+  .stats {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 7px 12px;
+    margin-left: 12px;
+    margin-right: 12px;
+    border-radius: 14px;
+  }
+  .stats article {
+    min-width: 0;
+    min-height: 66px;
+    justify-content: flex-start;
+    gap: 13px;
+    padding: 9px 7px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(65,66,166,.13);
+  }
+  .stats article:last-child { border-bottom: 0; }
+  .stats article > span {
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+  }
+  .stats article > span svg { width: 27px; height: 27px; }
+  .stats article > div { min-width: 0; }
+  .stats strong {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    color: #6553c8;
+    font-size: clamp(22px, 7vw, 29px);
+    line-height: 1.05;
+    letter-spacing: 0;
+  }
+  .stats p {
+    margin-top: 4px;
+    font-size: 13px;
+    line-height: 1.25;
+    color: #596084;
+  }
   .section-heading > button { display: none; }
   .cta { grid-template-columns: 1fr; text-align: center; justify-items: center; }
   .cta > svg { display: none; }
