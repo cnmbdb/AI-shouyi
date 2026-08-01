@@ -1,17 +1,22 @@
 import { useRef, useState } from "react";
-import { Image as ImageIcon, LoaderCircle, Upload } from "lucide-react";
+import { Check, Image as ImageIcon, Images, LoaderCircle, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { assetUrl } from "@/lib/assets.js";
 import { parseFocalPosition } from "@/lib/focalPosition.js";
-import { uploadSiteImage } from "@/lib/platformData.js";
+import { listSiteImages, uploadSiteImage } from "@/lib/platformData.js";
 
 export function ImageControls({ prefix, image, position, onImage, onPosition, variant = "content", placeholder = null, label = "", previewAspect = "" }) {
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [uploadError, setUploadError] = useState(false);
+  const [chooserOpen, setChooserOpen] = useState(false);
+  const [libraryLoading, setLibraryLoading] = useState(false);
+  const [libraryError, setLibraryError] = useState("");
+  const [libraryItems, setLibraryItems] = useState([]);
   const focalPosition = parseFocalPosition(position);
   const previewPosition = focalPosition.value;
 
@@ -42,6 +47,32 @@ export function ImageControls({ prefix, image, position, onImage, onPosition, va
       setUploading(false);
       event.target.value = "";
     }
+  };
+
+  const openChooser = async () => {
+    setChooserOpen(true);
+    setLibraryLoading(true);
+    setLibraryError("");
+    try {
+      setLibraryItems(await listSiteImages(prefix));
+    } catch (error) {
+      setLibraryItems([]);
+      setLibraryError(error.message || "媒体库暂时无法读取");
+    } finally {
+      setLibraryLoading(false);
+    }
+  };
+
+  const chooseLibraryImage = (item) => {
+    onImage(item.url);
+    setUploadError(false);
+    setUploadStatus("已选择媒体库图片，请保存发布");
+    setChooserOpen(false);
+  };
+
+  const chooseLocalUpload = () => {
+    setChooserOpen(false);
+    inputRef.current?.click();
   };
 
   return (
@@ -78,15 +109,48 @@ export function ImageControls({ prefix, image, position, onImage, onPosition, va
         </div> : null}
         <Field className="home-control home-image-upload-control">
           <input ref={inputRef} id={`${prefix}-upload`} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" hidden onChange={handleUpload} />
-          <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => inputRef.current?.click()}>
+          <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={openChooser}>
             {uploading ? <LoaderCircle className="home-upload-spinner" /> : <Upload />}
-            {uploading ? "上传中..." : "上传并替换"}
+            {uploading ? "上传中..." : "选择图片"}
           </Button>
           <FieldDescription className={uploadError ? "home-image-upload-error" : undefined} aria-live="polite">
             {uploadStatus || "JPG、PNG、WebP、GIF 或 AVIF，最大 6 MB"}
           </FieldDescription>
         </Field>
       </FieldGroup>
+      <Dialog open={chooserOpen} onOpenChange={setChooserOpen}>
+        <DialogContent className="site-media-dialog">
+          <DialogHeader>
+            <DialogTitle>选择图片</DialogTitle>
+            <DialogDescription>从项目媒体库选择，或从本地上传一张新图片。</DialogDescription>
+          </DialogHeader>
+          <div className="site-media-choice-grid">
+            <button type="button" className="site-media-choice" onClick={chooseLocalUpload}>
+              <Upload />
+              <strong>本地上传</strong>
+              <span>JPG、PNG、WebP、GIF 或 AVIF，最大 6 MB</span>
+            </button>
+            <button type="button" className="site-media-choice" onClick={openChooser}>
+              <Images />
+              <strong>项目媒体库</strong>
+              <span>查看当前设置范围已上传的图片</span>
+            </button>
+          </div>
+          <div className="site-media-library" aria-live="polite">
+            {libraryLoading ? <div className="site-media-empty"><LoaderCircle className="home-upload-spinner" />正在读取媒体库...</div> : null}
+            {!libraryLoading && libraryError ? <div className="site-media-empty site-media-error">{libraryError}</div> : null}
+            {!libraryLoading && !libraryError && !libraryItems.length ? <div className="site-media-empty"><Images />当前范围还没有上传图片</div> : null}
+            {!libraryLoading && !libraryError && libraryItems.length ? <div className="site-media-grid">
+              {libraryItems.map((item) => <button type="button" className={`site-media-item${item.url === image ? " selected" : ""}`} key={item.id} onClick={() => chooseLibraryImage(item)}>
+                <img src={item.url} loading="lazy" alt={item.name} />
+                <span>{item.name}</span>
+                {item.url === image ? <Check /> : null}
+              </button>)}
+            </div> : null}
+          </div>
+          <DialogFooter><Button type="button" variant="outline" onClick={() => setChooserOpen(false)}>取消</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

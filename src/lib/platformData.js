@@ -425,6 +425,23 @@ export async function uploadSiteImage(file, scope = "content") {
   return data;
 }
 
+export async function listSiteImages(scope = "content") {
+  const client = requireSupabase();
+  const safeScope = String(scope).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "") || "content";
+  const { data, error } = await client.storage.from("site-media").list(`site-content/${safeScope}`, {
+    limit: 100,
+    sortBy: { column: "created_at", order: "desc" },
+  });
+  throwIfError(error);
+  return (data ?? [])
+    .filter((item) => item.name && item.id)
+    .map((item) => {
+      const path = `site-content/${safeScope}/${item.name}`;
+      const { data: publicData } = client.storage.from("site-media").getPublicUrl(path);
+      return { ...item, path, url: publicData.publicUrl };
+    });
+}
+
 export async function getBlogPosts() {
   const { data, error } = await requireSupabase()
     .from("blog_posts")

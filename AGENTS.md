@@ -34,6 +34,8 @@ Prototype homepage CMS rule: the admin Home settings page must map one-to-one to
 
 Prototype CMS media rule: image controls in site settings, including every product browsing hero and product card image, must support selecting a local image to upload and replace the current image. Keep direct image URL editing backward-compatible; uploaded public media writes remain admin-only.
 
+Prototype CMS media-picker rule: every site-settings image replacement entry opens a compact chooser with both the project media library and local upload options; library selections write back the public image URL without requiring a new upload.
+
 Prototype compute-spec rule: public product cards must use GPU-compute specifications and matching hardware icons. Show GPU model, VRAM, and hosting term rather than bedroom, bathroom, or floor-area semantics; expose the same three fields in product settings.
 
 Prototype product-results copy rule: the public product results heading must have a prominent dedicated input in product browsing settings. The input supports a `{count}` token that renders the current visible product count after filtering.
