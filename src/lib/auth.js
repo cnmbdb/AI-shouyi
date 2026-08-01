@@ -15,7 +15,8 @@ const authErrorMessages = {
 
 function readableAuthError(error, fallback = "认证操作失败") {
   if (!error) return fallback;
-  const message = typeof error.message === "string" ? error.message.trim() : "";
+  const rawMessage = typeof error.message === "string" ? error.message.trim() : "";
+  const message = ["{}", "[]", "null", "undefined"].includes(rawMessage.toLowerCase()) ? "" : rawMessage;
   const translated = Object.entries(authErrorMessages).find(([source]) => message.toLowerCase().includes(source.toLowerCase()))?.[1];
   return translated || message || fallback;
 }
@@ -85,7 +86,7 @@ export async function registerAccount({ username, email, password }) {
   if (error) {
     const message = error.message === "Database error saving new user"
       ? "用户名或邮箱已被使用"
-      : readableAuthError(error, "注册失败");
+      : readableAuthError(error, "注册服务暂时异常，请稍后再试");
     throw new Error(message);
   }
   return data;

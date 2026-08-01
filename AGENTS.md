@@ -103,3 +103,5 @@ Prototype mobile user-management rule: on small screens, user-management selecti
 Prototype mobile console-sidebar rule: the console drawer keeps the brand and help area fixed while its navigation is a dedicated touch-scroll region. Every administrator group and site-setting entry, including pages added below the initial viewport, must remain reachable above the device safe area and mobile browser toolbar.
 
 Prototype user-selection state rule: user-management checkboxes must expose an unmistakable selected state on desktop and mobile: neutral black fill with a white check, a distinct mixed-state bar for partial selection, selected-row highlighting, an immediately updated selected count, and an enabled destructive action only when at least one non-current user is selected.
+
+Prototype account-deletion reuse rule: administrator soft deletion preserves rental and financial history, but must immediately release the deleted account's profile, username alias, and email alias so those credentials can register again. Authentication errors must render a useful Chinese message and never expose opaque values such as `{}`.
