@@ -44,7 +44,9 @@ const defaultProductHeroCards = Array.from({ length: 5 }, (_, index) => ({
 }));
 
 export const defaultNavigationSettings = {
-  siteName: "Aether Lane",
+  siteName: "速芯算力suxin.ai",
+  browserTitle: "速芯算力suxin.ai",
+  favicon: "/images/gpu-logo.svg",
   logo: "/images/gpu-logo.svg",
   sticky: true,
   loginLabel: "登录 / 注册",
@@ -247,6 +249,8 @@ export function normalizeNavigationSettings(value) {
   return {
     ...clone(defaultNavigationSettings),
     ...source,
+    browserTitle: source.browserTitle === "Aether Lane — Galaxy Home" ? defaultNavigationSettings.browserTitle : (source.browserTitle ?? source.siteName ?? defaultNavigationSettings.browserTitle),
+    favicon: source.favicon ?? defaultNavigationSettings.favicon,
     loginLabel: source.loginLabel === "Login / Register" ? defaultNavigationSettings.loginLabel : (source.loginLabel ?? defaultNavigationSettings.loginLabel),
     items: items.map((item, index) => withId("nav", { enabled: true, ...item, label: localizeLegacyLabel(item.label, legacyNavigationLabels) }, index)),
   };

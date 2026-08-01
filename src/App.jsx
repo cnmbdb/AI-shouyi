@@ -79,6 +79,19 @@ export function App() {
   const contactSettings = useMemo(() => marketingPageNormalizers.contact(publishedSettings?.contact), [publishedSettings?.contact]);
 
   useEffect(() => {
+    const title = String(navigationSettings.browserTitle || navigationSettings.siteName || "速芯算力suxin.ai").trim();
+    if (title) document.title = title;
+    const favicon = String(navigationSettings.favicon || "/images/gpu-logo.svg").trim();
+    let link = document.querySelector('link[rel="icon"]');
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+    link.href = favicon;
+  }, [navigationSettings.browserTitle, navigationSettings.favicon, navigationSettings.siteName]);
+
+  useEffect(() => {
     setMenuOpen(false);
     window.scrollTo({ top: 0 });
   }, [pathname]);
