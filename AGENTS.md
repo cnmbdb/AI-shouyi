@@ -105,3 +105,5 @@ Prototype mobile console-sidebar rule: the console drawer keeps the brand and he
 Prototype user-selection state rule: user-management checkboxes must expose an unmistakable selected state on desktop and mobile: neutral black fill with a white check, a distinct mixed-state bar for partial selection, selected-row highlighting, an immediately updated selected count, and an enabled destructive action only when at least one non-current user is selected.
 
 Prototype account-deletion reuse rule: administrator soft deletion preserves rental and financial history, but must immediately release the deleted account's profile, username alias, and email alias so those credentials can register again. Authentication errors must render a useful Chinese message and never expose opaque values such as `{}`.
+
+Prototype signup-OTP rule: registration confirmation emails may expose both a link and a six-digit code. Verify the manually entered email code with Supabase `verifyOtp` type `email`; reserve `signup` for sending or resending the signup confirmation message. A fresh code must not be reported as expired because of a mismatched verification type.

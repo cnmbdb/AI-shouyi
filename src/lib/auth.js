@@ -130,7 +130,7 @@ export async function verifySignupCode({ email, token }) {
   const { error } = await requireSupabase().auth.verifyOtp({
     email: email.trim().toLowerCase(),
     token: token.trim(),
-    type: "signup",
+    type: "email",
   });
   if (error) throw new Error(readableAuthError(error, "邮箱验证码无效"));
   return loadCurrentUser();
