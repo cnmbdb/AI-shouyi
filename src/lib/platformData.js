@@ -2,6 +2,7 @@ import { requireSupabase } from "./supabase.js";
 import { defaultCommerceSettings, normalizeCommerceProducts, normalizePaymentSettings } from "../data/commerceSettings.js";
 import { siteSettingNormalizers } from "../data/siteSettings.js";
 import { prepareManagedLinkForPublish } from "./managedLink.js";
+import { bundledImageAssets, assetUrl } from "./assets.js";
 
 const currency = (value) => `¥${Number(value || 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const transactionLabel = (value) => value === "托管收益" ? "跑算收益" : value;
@@ -433,13 +434,21 @@ export async function listSiteImages(scope = "content") {
     sortBy: { column: "created_at", order: "desc" },
   });
   throwIfError(error);
-  return (data ?? [])
+  const uploaded = (data ?? [])
     .filter((item) => item.name && item.id)
     .map((item) => {
       const path = `site-content/${safeScope}/${item.name}`;
       const { data: publicData } = client.storage.from("site-media").getPublicUrl(path);
       return { ...item, path, url: publicData.publicUrl };
     });
+  const bundled = bundledImageAssets.map((item) => ({
+    id: `bundled-${item.name}`,
+    name: item.name,
+    path: item.path,
+    url: assetUrl(item.path, 768),
+    bundled: true,
+  }));
+  return [...bundled, ...uploaded];
 }
 
 export async function getBlogPosts() {

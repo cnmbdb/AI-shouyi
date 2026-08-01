@@ -16,6 +16,11 @@ const localImages = {
   "yield-calculator-gpu": 1672,
 };
 
+export const bundledImageAssets = [
+  ...Object.keys(localImages).map((name) => ({ name, path: `/images/${name}.png`, bundled: true })),
+  { name: "gpu-logo", path: "/images/gpu-logo.svg", bundled: true },
+];
+
 const isRemoteAsset = (path) => /^(?:https?:|data:|blob:)/i.test(path);
 
 const localImage = (path) => {

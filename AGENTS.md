@@ -36,6 +36,8 @@ Prototype CMS media rule: image controls in site settings, including every produ
 
 Prototype CMS media-picker rule: every site-settings image replacement entry opens a compact chooser with both the project media library and local upload options; library selections write back the public image URL without requiring a new upload.
 
+Prototype media-library source rule: the project media library combines bundled `public/images` assets, Supabase `site-media` uploads, and the current field image, so existing project artwork remains selectable even when it was not uploaded through the current field or scope.
+
 Prototype compute-spec rule: public product cards must use GPU-compute specifications and matching hardware icons. Show GPU model, VRAM, and hosting term rather than bedroom, bathroom, or floor-area semantics; expose the same three fields in product settings.
 
 Prototype product-results copy rule: the public product results heading must have a prominent dedicated input in product browsing settings. The input supports a `{count}` token that renders the current visible product count after filtering.

@@ -54,7 +54,11 @@ export function ImageControls({ prefix, image, position, onImage, onPosition, va
     setLibraryLoading(true);
     setLibraryError("");
     try {
-      setLibraryItems(await listSiteImages(prefix));
+      const items = await listSiteImages(prefix);
+      if (image && !items.some((item) => item.url === image || item.path === image)) {
+        items.unshift({ id: `current-${prefix}`, name: "当前已使用图片", path: image, url: assetUrl(image, 768), current: true });
+      }
+      setLibraryItems(items);
     } catch (error) {
       setLibraryItems([]);
       setLibraryError(error.message || "媒体库暂时无法读取");
@@ -141,11 +145,11 @@ export function ImageControls({ prefix, image, position, onImage, onPosition, va
             {!libraryLoading && libraryError ? <div className="site-media-empty site-media-error">{libraryError}</div> : null}
             {!libraryLoading && !libraryError && !libraryItems.length ? <div className="site-media-empty"><Images />当前范围还没有上传图片</div> : null}
             {!libraryLoading && !libraryError && libraryItems.length ? <div className="site-media-grid">
-              {libraryItems.map((item) => <button type="button" className={`site-media-item${item.url === image ? " selected" : ""}`} key={item.id} onClick={() => chooseLibraryImage(item)}>
+              {libraryItems.map((item) => { const selected = item.url === image || item.path === image; return <button type="button" className={`site-media-item${selected ? " selected" : ""}`} key={item.id} onClick={() => chooseLibraryImage(item)}>
                 <img src={item.url} loading="lazy" alt={item.name} />
-                <span>{item.name}</span>
-                {item.url === image ? <Check /> : null}
-              </button>)}
+                <span>{item.current ? "当前已使用 · 图片" : item.bundled ? `项目内置 · ${item.name}` : item.name}</span>
+                {selected ? <Check /> : null}
+              </button>; })}
             </div> : null}
           </div>
           <DialogFooter><Button type="button" variant="outline" onClick={() => setChooserOpen(false)}>取消</Button></DialogFooter>
