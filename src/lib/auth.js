@@ -8,7 +8,7 @@ const authErrorMessages = {
   "email rate limit exceeded": "验证邮件发送频率已达上限，请稍后再试",
   "Email address not authorized": "当前测试邮件服务仅允许项目成员邮箱，请配置自定义 SMTP 后再开放注册",
   "Email address invalid": "请输入可接收邮件的有效邮箱地址",
-  "Token has expired or is invalid": "验证码无效或已过期，请重新获取",
+  "Token has expired or is invalid": "验证码无效、已过期或来自旧邮件，请只使用最新邮件主题中的 6 位验证码",
   "Email link is invalid or has expired": "邮件链接无效或已过期，请重新获取验证码",
   "Auth session missing": "重置登录状态已失效，请重新获取验证码",
 };

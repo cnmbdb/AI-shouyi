@@ -95,6 +95,7 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
           onSuccess(result.user);
         } else {
           changeMode("verify");
+          setMessage("验证邮件已发送，请使用最新邮件主题中的 6 位验证码；旧邮件验证码均已作废");
         }
       }
 
@@ -146,7 +147,7 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
         await sendPasswordReset(email);
       }
       setEmailToken("");
-      setMessage("邮件已重新发送，旧验证码已作废，请只使用最新一封邮件中的验证码");
+      setMessage("邮件已重新发送，旧验证码已作废，请只使用最新邮件主题中的 6 位验证码");
     } catch (requestError) {
       setError(typeof requestError?.message === "string" && requestError.message.trim()
         ? requestError.message

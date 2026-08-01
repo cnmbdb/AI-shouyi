@@ -111,3 +111,5 @@ Prototype signup-OTP rule: registration confirmation emails may expose both a li
 Prototype GitHub Pages route rule: every stable public, authentication, and console route that users may open or refresh directly must be emitted as a real static directory entry during production builds so GitHub Pages returns a successful document instead of relying only on a 404 SPA fallback. The application must normalize trailing slashes before route matching.
 
 Prototype web-auth flow rule: the client-only GitHub Pages website uses Supabase implicit auth flow so manually entered six-digit signup and recovery OTPs remain directly verifiable. Capacitor Android keeps PKCE for native authentication and App Link code exchange.
+
+Prototype auth-email freshness rule: each Supabase confirmation email template must contain exactly one rendered document, and its subject must include `{{ .Token }}` so mailbox threading cannot make an older six-digit code look current. Authentication UI copy must tell users that only the newest subject code remains valid.
