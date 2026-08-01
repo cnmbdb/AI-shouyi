@@ -117,6 +117,7 @@ export function UserManagementPage({ currentUser, onNotice }) {
       id: "select",
       header: () => (
         <Checkbox
+          className="admin-user-checkbox"
           aria-label="全选当前列表中的用户"
           checked={allVisibleSelected ? true : someVisibleSelected ? "indeterminate" : false}
           disabled={!selectableVisibleIds.length || deleteMutation.isPending}
@@ -125,6 +126,7 @@ export function UserManagementPage({ currentUser, onNotice }) {
       ),
       cell: ({ row }) => (
         <Checkbox
+          className="admin-user-checkbox"
           aria-label={`选择 ${row.original.username}`}
           checked={selectedIds.has(row.original.id)}
           disabled={row.original.id === currentUser.id || deleteMutation.isPending}
@@ -189,18 +191,34 @@ export function UserManagementPage({ currentUser, onNotice }) {
             <InputGroup className="admin-user-search"><InputGroupAddon><SearchIcon /></InputGroupAddon><InputGroupInput aria-label="搜索用户" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="搜索用户名或邮箱" /></InputGroup>
           </CardAction>
         </CardHeader>
-        <CardContent className="admin-users-table-wrap">
-          <Table>
-            <TableHeader>{table.getHeaderGroups().map((group) => <TableRow key={group.id}>{group.headers.map((header) => <TableHead key={header.id}>{flexRender(header.column.columnDef.header, header.getContext())}</TableHead>)}</TableRow>)}</TableHeader>
-            <TableBody>
-              {usersQuery.isLoading ? Array.from({ length: 3 }, (_, index) => <TableRow key={index}>{columns.map((column, cellIndex) => <TableCell key={`${column.id ?? column.accessorKey}-${cellIndex}`}><Skeleton className="h-6 w-full" /></TableCell>)}</TableRow>) : null}
-              {usersQuery.isError ? <TableRow><TableCell colSpan={columns.length}><p className="admin-users-message" role="alert">{usersQuery.error.message}</p></TableCell></TableRow> : null}
-              {!usersQuery.isLoading && !usersQuery.isError ? table.getRowModel().rows.map((row) => <TableRow key={row.id} data-state={selectedIds.has(row.original.id) ? "selected" : undefined}>{row.getVisibleCells().map((cell) => <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)}</TableRow>) : null}
-              {!usersQuery.isLoading && !usersQuery.isError && !table.getRowModel().rows.length ? <TableRow><TableCell colSpan={columns.length}><p className="admin-users-message">没有匹配的用户</p></TableCell></TableRow> : null}
-            </TableBody>
-          </Table>
+        <CardContent className="admin-users-content">
+          <div className="admin-users-bulkbar">
+            <label className="admin-users-select-all">
+              <Checkbox
+                className="admin-user-checkbox"
+                aria-label="全选当前搜索结果"
+                checked={allVisibleSelected ? true : someVisibleSelected ? "indeterminate" : false}
+                disabled={!selectableVisibleIds.length || deleteMutation.isPending}
+                onCheckedChange={(checked) => toggleVisibleUsers(checked === true)}
+              />
+              <span>全选当前结果（{selectableVisibleIds.length}）</span>
+            </label>
+            <span className="admin-users-bulk-status">{selectedIds.size ? `已选择 ${selectedIds.size} 个用户` : "勾选用户后可批量删除"}</span>
+            <Button className="admin-users-delete-button" variant="destructive" size="sm" disabled={!selectedIds.size || deleteMutation.isPending} onClick={() => setDeleteDialogOpen(true)}><Trash2Icon />删除所选用户{selectedIds.size ? `（${selectedIds.size}）` : ""}</Button>
+          </div>
+          <div className="admin-users-table-wrap">
+            <Table>
+              <TableHeader>{table.getHeaderGroups().map((group) => <TableRow key={group.id}>{group.headers.map((header) => <TableHead className={header.column.id === "select" ? "admin-users-select-cell" : undefined} key={header.id}>{flexRender(header.column.columnDef.header, header.getContext())}</TableHead>)}</TableRow>)}</TableHeader>
+              <TableBody>
+                {usersQuery.isLoading ? Array.from({ length: 3 }, (_, index) => <TableRow key={index}>{columns.map((column, cellIndex) => <TableCell className={column.id === "select" ? "admin-users-select-cell" : undefined} key={`${column.id ?? column.accessorKey}-${cellIndex}`}><Skeleton className="h-6 w-full" /></TableCell>)}</TableRow>) : null}
+                {usersQuery.isError ? <TableRow><TableCell colSpan={columns.length}><p className="admin-users-message" role="alert">{usersQuery.error.message}</p></TableCell></TableRow> : null}
+                {!usersQuery.isLoading && !usersQuery.isError ? table.getRowModel().rows.map((row) => <TableRow key={row.id} data-state={selectedIds.has(row.original.id) ? "selected" : undefined}>{row.getVisibleCells().map((cell) => <TableCell className={cell.column.id === "select" ? "admin-users-select-cell" : undefined} key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)}</TableRow>) : null}
+                {!usersQuery.isLoading && !usersQuery.isError && !table.getRowModel().rows.length ? <TableRow><TableCell colSpan={columns.length}><p className="admin-users-message">没有匹配的用户</p></TableCell></TableRow> : null}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
-        <CardFooter><span>共 {users.length} 个账号，当前显示 {filteredUsers.length} 个，已选 {selectedIds.size} 个</span><div className="flex items-center gap-3"><span>当前管理员账号不能被选择或删除</span><Button variant="destructive" size="sm" disabled={!selectedIds.size || deleteMutation.isPending} onClick={() => setDeleteDialogOpen(true)}><Trash2Icon />删除已选{selectedIds.size ? `（${selectedIds.size}）` : ""}</Button></div></CardFooter>
+        <CardFooter><span>共 {users.length} 个账号，当前显示 {filteredUsers.length} 个，已选 {selectedIds.size} 个</span><span>当前管理员账号不能被选择或删除</span></CardFooter>
       </Card>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
