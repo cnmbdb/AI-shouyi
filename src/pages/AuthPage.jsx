@@ -43,7 +43,8 @@ const modeCopy = {
 
 export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navigationSettings }) {
   const recoveryRoute = pathname === "/auth/update-password";
-  const [mode, setMode] = useState(recoveryRoute ? "update" : "login");
+  const requestedMode = new URLSearchParams(window.location.search).get("mode");
+  const [mode, setMode] = useState(recoveryRoute ? "update" : requestedMode === "verify" ? "verify" : "login");
   const [identifier, setIdentifier] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -228,7 +229,7 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
                 {mode === "register" || mode === "forgot" || mode === "verify" || mode === "recoveryCode" ? (
                   <Field>
                     <FieldLabel htmlFor="auth-email">邮箱</FieldLabel>
-                    <InputGroup><InputGroupAddon><MailIcon /></InputGroupAddon><InputGroupInput id="auth-email" type="email" autoComplete="email" value={email} disabled={mode === "verify" || mode === "recoveryCode"} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" /></InputGroup>
+                    <InputGroup><InputGroupAddon><MailIcon /></InputGroupAddon><InputGroupInput id="auth-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" /></InputGroup>
                   </Field>
                 ) : null}
 
@@ -267,7 +268,7 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
         </CardContent>
 
         <CardFooter className="auth-footer">
-          {mode === "login" ? <><Button variant="link" size="xs" type="button" onClick={() => changeMode("forgot")}>忘记密码？</Button><span>还没有账号？</span><Button variant="link" size="xs" type="button" onClick={() => changeMode("register")}>立即注册</Button></> : null}
+          {mode === "login" ? <><Button variant="link" size="xs" type="button" onClick={() => changeMode("forgot")}>忘记密码？</Button><Button variant="link" size="xs" type="button" onClick={() => changeMode("verify")}>验证邮箱</Button><span>还没有账号？</span><Button variant="link" size="xs" type="button" onClick={() => changeMode("register")}>立即注册</Button></> : null}
           {mode === "register" ? <><span>已有账号？</span><Button variant="link" size="xs" type="button" onClick={() => changeMode("login")}>直接登录</Button></> : null}
           {mode === "forgot" || mode === "resetSent" ? <Button variant="link" size="xs" type="button" onClick={() => changeMode("login")}>返回登录</Button> : null}
           {mode === "verify" || mode === "recoveryCode" ? <><Button variant="link" size="xs" type="button" disabled={submitting} onClick={resendEmail}>重新发送</Button><span>没有收到？请检查垃圾邮件</span><Button variant="link" size="xs" type="button" onClick={() => changeMode("login")}>返回登录</Button></> : null}
