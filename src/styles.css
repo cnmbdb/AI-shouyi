@@ -1482,7 +1482,12 @@ p, h1, h2, h3 { margin-top: 0; }
 .admin-users-select-all { display: inline-flex; align-items: center; gap: 9px; color: var(--foreground); font-size: 13px; font-weight: 600; cursor: pointer; }
 .admin-users-select-all:has([data-disabled]) { cursor: not-allowed; opacity: .65; }
 .admin-users-bulk-status { margin-right: auto; color: var(--muted-foreground); font-size: 12px; }
-.admin-user-checkbox { width: 20px; height: 20px; border-color: color-mix(in oklab, var(--foreground) 46%, transparent); background: var(--background); box-shadow: 0 1px 2px color-mix(in oklab, var(--foreground) 10%, transparent); }
+.admin-user-checkbox { width: 20px; height: 20px; border-color: color-mix(in oklab, var(--foreground) 46%, transparent); background: var(--background); box-shadow: 0 1px 2px color-mix(in oklab, var(--foreground) 10%, transparent); transition: background-color .12s ease, border-color .12s ease, color .12s ease, transform .12s ease; }
+.admin-user-checkbox[data-state="checked"],
+.admin-user-checkbox[data-state="indeterminate"] { color: var(--background); background: var(--foreground); border-color: var(--foreground); box-shadow: 0 0 0 2px color-mix(in oklab, var(--foreground) 12%, transparent); }
+.admin-user-checkbox[data-state="indeterminate"] [data-slot="checkbox-indicator"] svg { display: none; }
+.admin-user-checkbox[data-state="indeterminate"] [data-slot="checkbox-indicator"]::after { width: 10px; height: 2px; content: ""; border-radius: 999px; background: currentColor; }
+.admin-user-checkbox:not(:disabled):active { transform: scale(.92); }
 .admin-users-table-wrap { width: 100%; overflow-x: auto; }
 .admin-users-table-wrap table { min-width: 760px; white-space: nowrap; }
 .admin-users-table-wrap th { height: 34px; color: var(--muted-foreground); font-size: 13px; }
