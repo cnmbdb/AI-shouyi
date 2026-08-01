@@ -48,6 +48,7 @@ export const defaultNavigationSettings = {
   browserTitle: "速芯算力suxin.ai",
   favicon: "/images/gpu-logo.svg",
   logo: "/images/gpu-logo.svg",
+  logoSize: 25,
   sticky: true,
   loginLabel: "登录 / 注册",
   items: [
@@ -251,6 +252,7 @@ export function normalizeNavigationSettings(value) {
     ...source,
     browserTitle: source.browserTitle === "Aether Lane — Galaxy Home" ? defaultNavigationSettings.browserTitle : (source.browserTitle ?? source.siteName ?? defaultNavigationSettings.browserTitle),
     favicon: source.favicon ?? defaultNavigationSettings.favicon,
+    logoSize: numberWithin(source.logoSize, defaultNavigationSettings.logoSize, 18, 40),
     loginLabel: source.loginLabel === "Login / Register" ? defaultNavigationSettings.loginLabel : (source.loginLabel ?? defaultNavigationSettings.loginLabel),
     items: items.map((item, index) => withId("nav", { enabled: true, ...item, label: localizeLegacyLabel(item.label, legacyNavigationLabels) }, index)),
   };

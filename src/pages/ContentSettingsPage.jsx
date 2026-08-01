@@ -77,6 +77,24 @@ function ToggleControl({ id, label, description, checked, onChange }) {
   );
 }
 
+function LogoSizeControl({ logo, value, onChange }) {
+  const size = Math.min(40, Math.max(18, Number(value) || defaultNavigationSettings.logoSize));
+  return (
+    <Field className="home-control navigation-logo-size-control">
+      <FieldLabel htmlFor="nav-logo-size">Logo 显示大小</FieldLabel>
+      <div className="navigation-logo-size-row">
+        <div className="navigation-logo-size-preview" style={{ "--navigation-logo-preview-size": `${size}px` }} aria-hidden="true">
+          <BrandLogoMark logo={logo} imageClassName="navigation-logo-size-image" fallbackClassName="navigation-logo-size-fallback" />
+        </div>
+        <input id="nav-logo-size" type="range" min="18" max="40" step="1" value={size} onChange={(event) => onChange(Number(event.target.value))} />
+        <Input aria-label="Logo 显示大小（像素）" type="number" min="18" max="40" step="1" value={size} onChange={(event) => onChange(Math.min(40, Math.max(18, Number(event.target.value) || 18)))} />
+        <span>px</span>
+      </div>
+      <FieldDescription>18–40 px，发布后同步到公共导航、登录页和控制台品牌栏。</FieldDescription>
+    </Field>
+  );
+}
+
 function SelectControl({ id, label, value, onChange, options }) {
   return (
     <Field className="home-control">
@@ -193,7 +211,7 @@ function NavigationEditor({ settings, edit }) {
     <Accordion className="home-settings-accordion" type="multiple" defaultValue={["brand", "items"]}>
       <AccordionItem value="brand">
         <SectionHeader title="品牌与行为" description="站点名称、登录入口与导航吸顶方式" />
-        <AccordionContent><Card size="sm"><CardContent className="home-section-content"><ImageControls prefix="navigation-logo" image={settings.logo} onImage={(value) => edit((next) => { next.logo = value; })} variant="logo" placeholder={<BrandLogoMark fallbackClassName="navigation-logo-fallback-preview" />} /><div className="home-fields-grid"><TextControl id="nav-site-name" label="站点名称" value={settings.siteName} onChange={(value) => edit((next) => { next.siteName = value; })} /><TextControl id="nav-login-label" label="未登录入口文案" value={settings.loginLabel} onChange={(value) => edit((next) => { next.loginLabel = value; })} /></div><ToggleControl id="nav-sticky" label="吸顶导航" description="页面滚动时保持顶部导航可见" checked={settings.sticky} onChange={(value) => edit((next) => { next.sticky = value; })} /></CardContent></Card></AccordionContent>
+        <AccordionContent><Card size="sm"><CardContent className="home-section-content"><ImageControls prefix="navigation-logo" image={settings.logo} onImage={(value) => edit((next) => { next.logo = value; })} variant="logo" placeholder={<BrandLogoMark fallbackClassName="navigation-logo-fallback-preview" />} /><LogoSizeControl logo={settings.logo} value={settings.logoSize} onChange={(value) => edit((next) => { next.logoSize = value; })} /><div className="home-fields-grid"><TextControl id="nav-site-name" label="站点名称" value={settings.siteName} onChange={(value) => edit((next) => { next.siteName = value; })} /><TextControl id="nav-login-label" label="未登录入口文案" value={settings.loginLabel} onChange={(value) => edit((next) => { next.loginLabel = value; })} /></div><ToggleControl id="nav-sticky" label="吸顶导航" description="页面滚动时保持顶部导航可见" checked={settings.sticky} onChange={(value) => edit((next) => { next.sticky = value; })} /></CardContent></Card></AccordionContent>
       </AccordionItem>
       <AccordionItem value="browser-meta">
         <SectionHeader title="浏览器页面信息" description="浏览器标签页显示的图标和标题，发布后对真实页面生效" />

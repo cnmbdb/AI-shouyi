@@ -49,9 +49,9 @@ function createSiteLinkHandler(onNavigate, onSection) {
   };
 }
 
-export function Logo({ onNavigate, siteName = "Aether Lane", logo = "", fallback = "tiles" }) {
+export function Logo({ onNavigate, siteName = "Aether Lane", logo = "", logoSize = 25, fallback = "tiles" }) {
   return (
-    <button className="brand" type="button" onClick={() => onNavigate("home")} aria-label={`${siteName} 返回首页`}>
+    <button className="brand" type="button" style={{ "--shared-logo-size": `${logoSize}px` }} onClick={() => onNavigate("home")} aria-label={`${siteName} 返回首页`}>
       {logo || fallback === "gpu" ? <BrandLogoMark logo={logo} imageClassName="brand-logo-image" fallbackClassName="brand-gpu-logo" /> : <span className="brand-mark"><span /><span /><span /><span /></span>}
       <strong>{siteName}</strong>
     </button>
@@ -92,7 +92,7 @@ export function SiteHeader({ page, menuOpen, onMenuToggle, onNavigate, onSection
 
   return (
     <header className={`topbar shell ${settings.sticky ? "topbar-sticky" : ""}`}>
-      <Logo onNavigate={onNavigate} siteName={settings.siteName} logo={settings.logo} fallback="gpu" />
+      <Logo onNavigate={onNavigate} siteName={settings.siteName} logo={settings.logo} logoSize={settings.logoSize} fallback="gpu" />
       <nav className={menuOpen ? "open" : ""} aria-label="主导航">
         {items.map((item) => {
           const itemPage = activePageForLink(item.link);

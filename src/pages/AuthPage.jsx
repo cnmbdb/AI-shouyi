@@ -183,6 +183,7 @@ export function AuthPage({ pathname = "/auth", user, onSuccess, onNavigate, navi
           onNavigate={onNavigate}
           siteName={navigationSettings?.siteName}
           logo={navigationSettings?.logo}
+          logoSize={navigationSettings?.logoSize}
           fallback="gpu"
         />
         <div className="auth-header-actions"><Button className="auth-back" variant="ghost" size="sm" onClick={() => onNavigate("home")}><ArrowLeftIcon data-icon="inline-start" />返回首页</Button></div>

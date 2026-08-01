@@ -281,7 +281,7 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
   return (
     <div className="console-shell">
       <aside className={cn("console-sidebar", sidebarOpen && "open")}>
-        <button className="console-brand" type="button" onClick={() => onNavigate("/")} aria-label={`${navigationSettings.siteName} 返回首页`}><BrandLogoMark logo={navigationSettings.logo} imageClassName="console-brand-logo" fallbackClassName="console-brand-gpu" /><strong>{navigationSettings.siteName}</strong></button>
+        <button className="console-brand" type="button" style={{ "--shared-logo-size": `${navigationSettings.logoSize}px` }} onClick={() => onNavigate("/")} aria-label={`${navigationSettings.siteName} 返回首页`}><BrandLogoMark logo={navigationSettings.logo} imageClassName="console-brand-logo" fallbackClassName="console-brand-gpu" /><strong>{navigationSettings.siteName}</strong></button>
         <Button className="console-sidebar-close" variant="ghost" size="icon-sm" onClick={() => setSidebarOpen(false)} aria-label="关闭菜单"><X /></Button>
         <nav>{navGroups.map((group) => <section key={group.label}><h2>{group.label}</h2>{group.items.map(({ path, label, icon: Icon }) => <Button variant="ghost" size="sm" className={cn(pathname === path && "active")} key={path} onClick={() => { onNavigate(path); setSidebarOpen(false); }}><Icon data-icon="inline-start" /><span>{label}</span></Button>)}</section>)}</nav>
       </aside>
