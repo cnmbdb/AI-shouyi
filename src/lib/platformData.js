@@ -171,6 +171,20 @@ export async function saveSiteSetting(section, value) {
     normalized.cta.primaryButton.link = prepareManagedLinkForPublish(normalized.cta.primaryButton.link, "主按钮链接");
     normalized.cta.secondaryButton.link = prepareManagedLinkForPublish(normalized.cta.secondaryButton.link, "次按钮链接");
   }
+  if (["about", "calculator", "agency", "contact"].includes(section)) {
+    normalized.hero.button.link = prepareManagedLinkForPublish(normalized.hero.button.link, "首屏按钮链接");
+    normalized.sections = normalized.sections.map((pageSection, sectionIndex) => ({
+      ...pageSection,
+      button: {
+        ...pageSection.button,
+        link: prepareManagedLinkForPublish(pageSection.button?.link ?? "", `区块 ${sectionIndex + 1} 按钮链接`),
+      },
+      items: pageSection.items.map((entry, itemIndex) => ({
+        ...entry,
+        link: prepareManagedLinkForPublish(entry.link ?? "", `区块 ${sectionIndex + 1} 项目 ${itemIndex + 1} 链接`),
+      })),
+    }));
+  }
   const { error } = await client.from("site_settings").upsert({ user_id: user.id, section_key: section, value: normalized }, { onConflict: "section_key" });
   throwIfError(error);
   return { ok: true, section, value: normalized };

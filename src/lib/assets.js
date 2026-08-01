@@ -1,4 +1,7 @@
 const localImages = {
+  "about-compute-team": 1672,
+  "agency-partners": 1672,
+  "contact-advisor": 1672,
   "estate-coast": 1536,
   "estate-luna-ridge": 1536,
   "estate-palm-serenity": 1536,
@@ -10,6 +13,7 @@ const localImages = {
   "hero-foreground": 1672,
   "hero-galaxy-home": 1672,
   "retreat-pool": 1672,
+  "yield-calculator-gpu": 1672,
 };
 
 const isRemoteAsset = (path) => /^(?:https?:|data:|blob:)/i.test(path);

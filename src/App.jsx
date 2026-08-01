@@ -7,6 +7,7 @@ import { loadCurrentUser, logoutAccount, subscribeToAuthChanges } from "./lib/au
 import { getCachedSiteSettings, getSiteSettings, subscribeToPublishedContent } from "./lib/platformData.js";
 import { normalizeHomeSettings } from "./data/homeSettings.js";
 import { normalizeBlogSettings, normalizeFooterSettings, normalizeNavigationSettings, normalizeProductSettings } from "./data/siteSettings.js";
+import { marketingPageNormalizers } from "./data/marketingPages.js";
 
 const AuthPage = lazy(() => import("./pages/AuthPage.jsx").then((module) => ({ default: module.AuthPage })));
 const DashboardPage = lazy(() => import("./pages/DashboardPage.jsx").then((module) => ({ default: module.DashboardPage })));
@@ -15,11 +16,19 @@ const EstatesPage = lazy(() => import("./pages/EstatesPage.jsx").then((module) =
 const BlogPage = lazy(() => import("./pages/BlogPage.jsx").then((module) => ({ default: module.BlogPage })));
 const BlogArticlePage = lazy(() => import("./pages/BlogArticlePage.jsx").then((module) => ({ default: module.BlogArticlePage })));
 const StoreProductPage = lazy(() => import("./pages/StoreProductPage.jsx").then((module) => ({ default: module.StoreProductPage })));
+const AboutPage = lazy(() => import("./pages/AboutPage.jsx").then((module) => ({ default: module.AboutPage })));
+const YieldCalculatorPage = lazy(() => import("./pages/YieldCalculatorPage.jsx").then((module) => ({ default: module.YieldCalculatorPage })));
+const AgencyPage = lazy(() => import("./pages/AgencyPage.jsx").then((module) => ({ default: module.AgencyPage })));
+const ContactPage = lazy(() => import("./pages/ContactPage.jsx").then((module) => ({ default: module.ContactPage })));
 
 const sitePath = {
   home: "/",
   estates: "/estates",
   blog: "/blog",
+  about: "/about",
+  calculator: "/calculator",
+  agency: "/agency",
+  contact: "/contact",
 };
 
 export function App() {
@@ -42,7 +51,8 @@ export function App() {
   const productCategoryId = productSegments.length >= 2 ? productSegments[0] : "";
   const productId = productSegments.length >= 2 ? productSegments[1] : "";
   const legacyProductSlug = productSegments.length === 1 ? productSegments[0] : "";
-  const page = pathname === "/estates" ? "estates" : pathname === "/blog" || isBlogArticle ? "blog" : isStoreProduct ? "product" : "home";
+  const publicPageByPath = { "/": "home", "/estates": "estates", "/blog": "blog", "/about": "about", "/calculator": "calculator", "/agency": "agency", "/contact": "contact" };
+  const page = isBlogArticle ? "blog" : isStoreProduct ? "product" : publicPageByPath[pathname] ?? "home";
   const publicSettings = useQuery({
     queryKey: ["public-settings"],
     queryFn: getSiteSettings,
@@ -62,6 +72,10 @@ export function App() {
   const homeSettings = useMemo(() => normalizeHomeSettings(publishedSettings?.home), [publishedSettings?.home]);
   const productSettings = useMemo(() => normalizeProductSettings(publishedSettings?.products), [publishedSettings?.products]);
   const blogSettings = useMemo(() => normalizeBlogSettings(publishedSettings?.blog), [publishedSettings?.blog]);
+  const aboutSettings = useMemo(() => marketingPageNormalizers.about(publishedSettings?.about), [publishedSettings?.about]);
+  const calculatorSettings = useMemo(() => marketingPageNormalizers.calculator(publishedSettings?.calculator), [publishedSettings?.calculator]);
+  const agencySettings = useMemo(() => marketingPageNormalizers.agency(publishedSettings?.agency), [publishedSettings?.agency]);
+  const contactSettings = useMemo(() => marketingPageNormalizers.contact(publishedSettings?.contact), [publishedSettings?.contact]);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -178,6 +192,10 @@ export function App() {
           {page === "home" ? <HomePage settings={homeSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
           {page === "estates" ? <EstatesPage settings={productSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
           {page === "blog" && !isBlogArticle ? <BlogPage settings={blogSettings} onNotice={setNotice} onNavigate={navigate} /> : null}
+          {page === "about" ? <AboutPage settings={aboutSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
+          {page === "calculator" ? <YieldCalculatorPage settings={calculatorSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
+          {page === "agency" ? <AgencyPage settings={agencySettings} onNavigate={navigate} onNotice={setNotice} /> : null}
+          {page === "contact" ? <ContactPage settings={contactSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
           {isBlogArticle ? <BlogArticlePage slug={blogSlug} onNavigate={navigate} /> : null}
           {page === "product" ? <StoreProductPage categoryId={productCategoryId} productId={productId} legacySlug={legacyProductSlug} user={session.data?.user} onNavigate={navigate} onNotice={setNotice} /> : null}
         </Suspense>

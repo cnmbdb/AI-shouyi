@@ -1,6 +1,7 @@
 import { estateCatalog } from "./estateCatalog.js";
 import { normalizeFocalPosition } from "../lib/focalPosition.js";
 import { normalizeManagedLink } from "../lib/managedLink.js";
+import { defaultMarketingPageSettings, marketingPageNormalizers } from "./marketingPages.js";
 
 const withId = (prefix, item, index) => ({ id: item.id || `${prefix}-${index + 1}`, ...item });
 const clone = (value) => structuredClone(value);
@@ -49,11 +50,12 @@ export const defaultNavigationSettings = {
   loginLabel: "登录 / 注册",
   items: [
     { id: "nav-home", label: "首页", link: "/", enabled: true },
-    { id: "nav-about", label: "关于我们", link: "#about", enabled: true },
-    { id: "nav-estates", label: "算力产品", link: "/estates", enabled: true },
-    { id: "nav-projects", label: "精选项目", link: "#projects", enabled: true },
+    { id: "nav-about", label: "关于我们", link: "/about", enabled: true },
+    { id: "nav-estates", label: "投资 GPU", link: "/estates", enabled: true },
+    { id: "nav-calculator", label: "收益计算", link: "/calculator", enabled: true },
+    { id: "nav-agency", label: "我要代理", link: "/agency", enabled: true },
     { id: "nav-blog", label: "博客", link: "/blog", enabled: true },
-    { id: "nav-inquire", label: "联系我们", link: "#contact", enabled: true },
+    { id: "nav-inquire", label: "联系我们", link: "/contact", enabled: true },
   ],
 };
 
@@ -78,11 +80,11 @@ export const defaultFooterSettings = {
       id: "footer-company",
       title: "关于平台",
       items: [
-        { id: "company-story", label: "品牌故事", link: "#about", enabled: true },
-        { id: "company-careers", label: "加入我们", link: "#contact", enabled: true },
-        { id: "company-media", label: "媒体中心", link: "#projects", enabled: true },
+        { id: "company-story", label: "品牌故事", link: "/about", enabled: true },
+        { id: "company-calculator", label: "收益计算", link: "/calculator", enabled: true },
+        { id: "company-agency", label: "我要代理", link: "/agency", enabled: true },
         { id: "company-blog", label: "博客", link: "/blog", enabled: true },
-        { id: "company-contact", label: "联系我们", link: "#contact", enabled: true },
+        { id: "company-contact", label: "联系我们", link: "/contact", enabled: true },
       ],
     },
   ],
@@ -205,6 +207,42 @@ export function normalizeNavigationSettings(value) {
   let items = Array.isArray(source.items) ? source.items : clone(defaultNavigationSettings.items);
   if (!Array.isArray(source.items) && source.showBlog === false) {
     items = items.map((item) => item.id === "nav-blog" ? { ...item, enabled: false } : item);
+  }
+  const coreLinkByLabel = {
+    "首页": "/",
+    "关于我们": "/about",
+    "投资GPU": "/estates",
+    "投资 GPU": "/estates",
+    "收益计算": "/calculator",
+    "我要代理": "/agency",
+    "博客": "/blog",
+    "联系我们": "/contact",
+  };
+  items = items.map((item) => {
+    if (item.id === "nav-about" && item.link === "#about") return { ...item, link: "/about" };
+    if (item.id === "nav-inquire" && item.link === "#contact") return { ...item, link: "/contact" };
+    if (item.id === "nav-estates" && item.label === "算力产品") return { ...item, label: "投资 GPU" };
+    if (coreLinkByLabel[item.label]) return { ...item, link: coreLinkByLabel[item.label] };
+    return item;
+  });
+  const coreLinks = new Set(defaultNavigationSettings.items.map((item) => item.link));
+  const coreLabels = new Set(defaultNavigationSettings.items.map((item) => item.label));
+  const seenCoreLinks = new Set();
+  const seenCoreLabels = new Set();
+  items = items.filter((item) => {
+    const matchesCoreLink = coreLinks.has(item.link);
+    const matchesCoreLabel = coreLabels.has(item.label);
+    if (!matchesCoreLink && !matchesCoreLabel) return true;
+    if ((matchesCoreLink && seenCoreLinks.has(item.link)) || (matchesCoreLabel && seenCoreLabels.has(item.label))) return false;
+    if (matchesCoreLink) seenCoreLinks.add(item.link);
+    if (matchesCoreLabel) seenCoreLabels.add(item.label);
+    return true;
+  });
+  const existingIds = new Set(items.map((item) => item.id));
+  const existingLinks = new Set(items.map((item) => item.link));
+  const existingLabels = new Set(items.map((item) => item.label));
+  for (const required of defaultNavigationSettings.items) {
+    if (!existingIds.has(required.id) && !existingLinks.has(required.link) && !existingLabels.has(required.label)) items.push(clone(required));
   }
   return {
     ...clone(defaultNavigationSettings),
@@ -356,6 +394,7 @@ export const defaultSiteSettings = {
   footer: defaultFooterSettings,
   products: defaultProductSettings,
   blog: defaultBlogSettings,
+  ...defaultMarketingPageSettings,
 };
 
 export const siteSettingNormalizers = {
@@ -363,4 +402,5 @@ export const siteSettingNormalizers = {
   footer: normalizeFooterSettings,
   products: normalizeProductSettings,
   blog: normalizeBlogSettings,
+  ...marketingPageNormalizers,
 };

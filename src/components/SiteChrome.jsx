@@ -24,7 +24,15 @@ const socialIcons = {
   Linkedin: LinkedinLogo,
 };
 
-const activePageForLink = (link) => link === "/estates" ? "estates" : link === "/blog" ? "blog" : link === "/" ? "home" : "";
+const activePageForLink = (link) => ({
+  "/": "home",
+  "/estates": "estates",
+  "/blog": "blog",
+  "/about": "about",
+  "/calculator": "calculator",
+  "/agency": "agency",
+  "/contact": "contact",
+})[link] ?? "";
 
 function createSiteLinkHandler(onNavigate, onSection) {
   return (link) => {

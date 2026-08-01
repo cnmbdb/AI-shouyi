@@ -35,6 +35,7 @@ import {
   defaultProductSettings,
   siteSettingNormalizers,
 } from "../data/siteSettings.js";
+import { defaultMarketingPageSettings, marketingPageIconOptions, marketingPageMeta } from "../data/marketingPages.js";
 import { getSiteSettings, saveSiteSetting } from "../lib/platformData.js";
 
 const clone = (value) => structuredClone(value);
@@ -45,6 +46,7 @@ const sectionMeta = {
   footer: { title: "页脚内容管理" },
   products: { title: "产品浏览页内容管理" },
   blog: { title: "博客首页内容管理" },
+  ...Object.fromEntries(Object.entries(marketingPageMeta).map(([key, value]) => [key, { title: value.title }])),
 };
 
 const defaults = {
@@ -52,6 +54,7 @@ const defaults = {
   footer: defaultFooterSettings,
   products: defaultProductSettings,
   blog: defaultBlogSettings,
+  ...defaultMarketingPageSettings,
 };
 
 function TextControl({ id, label, value, onChange, description, textarea = false, placeholder = "", type = "text" }) {
@@ -178,6 +181,7 @@ export function ContentSettingsPage({ section, onNotice }) {
       {section === "footer" ? <FooterEditor settings={settings} edit={edit} /> : null}
       {section === "products" ? <ProductEditor settings={settings} edit={edit} /> : null}
       {section === "blog" ? <BlogEditor settings={settings} edit={edit} /> : null}
+      {defaultMarketingPageSettings[section] ? <MarketingPageEditor pageKey={section} settings={settings} edit={edit} /> : null}
 
       <PublishBar dirty={dirty} pending={mutation.isPending} label="保存并发布" onReset={() => { setSettings(clone(defaults[section])); setDirty(true); }} onPublish={() => mutation.mutate(normalize ? normalize(settings) : settings)} />
     </div>
@@ -207,6 +211,103 @@ function FooterEditor({ settings, edit }) {
       <AccordionItem value="columns"><SectionHeader title="链接栏目" description="栏目标题及内部链接，可添加或删除" count={settings.columns.length} /><AccordionContent><div className="home-item-list">{settings.columns.map((column, columnIndex) => <ItemCard key={column.id} title={column.title} subtitle={`栏目 ${columnIndex + 1}`} onDelete={() => edit((next) => { next.columns.splice(columnIndex, 1); })}><TextControl id={`column-title-${column.id}`} label="栏目标题" value={column.title} onChange={(value) => edit((next) => { next.columns[columnIndex].title = value; })} />{column.items.map((item, itemIndex) => <div className="content-inline-item" key={item.id}><div className="home-fields-grid"><TextControl id={`column-label-${item.id}`} label="链接名称" value={item.label} onChange={(value) => edit((next) => { next.columns[columnIndex].items[itemIndex].label = value; })} /><TextControl id={`column-link-${item.id}`} label="跳转链接" value={item.link} onChange={(value) => edit((next) => { next.columns[columnIndex].items[itemIndex].link = value; })} /></div><div className="content-inline-actions"><ToggleControl id={`column-enabled-${item.id}`} label="显示" checked={item.enabled} onChange={(value) => edit((next) => { next.columns[columnIndex].items[itemIndex].enabled = value; })} /><DeleteItem label={item.label} onConfirm={() => edit((next) => { next.columns[columnIndex].items.splice(itemIndex, 1); })} /></div></div>)}<Button variant="outline" size="xs" onClick={() => edit((next) => { next.columns[columnIndex].items.push({ id: uid("footer-link"), label: "新链接", link: "/", enabled: true }); })}><Plus />添加链接</Button></ItemCard>)}</div><Button variant="outline" size="sm" onClick={() => edit((next) => { next.columns.push({ id: uid("footer-column"), title: "新栏目", items: [] }); })}><Plus />添加栏目</Button></AccordionContent></AccordionItem>
       <AccordionItem value="contact"><SectionHeader title="联系信息与配图" description="电话、邮箱、地址和页脚图片" /><AccordionContent><Card size="sm"><CardContent className="home-section-content"><div className="home-fields-grid"><TextControl id="footer-contact-title" label="栏目标题" value={settings.contact.title} onChange={(value) => edit((next) => { next.contact.title = value; })} /><TextControl id="footer-phone" label="联系电话" value={settings.contact.phone} onChange={(value) => edit((next) => { next.contact.phone = value; })} /><TextControl id="footer-email" label="联系邮箱" value={settings.contact.email} onChange={(value) => edit((next) => { next.contact.email = value; })} /><TextControl id="footer-address" label="联系地址" textarea value={settings.contact.address} onChange={(value) => edit((next) => { next.contact.address = value; })} /></div><ImageControls prefix="footer" image={settings.image} position={settings.imagePosition} onImage={(value) => edit((next) => { next.image = value; })} onPosition={(value) => edit((next) => { next.imagePosition = value; })} previewAspect="16 / 9" /></CardContent></Card></AccordionContent></AccordionItem>
       <AccordionItem value="bottom"><SectionHeader title="底部版权" description="版权文案与政策链接" count={settings.legalLinks.length} /><AccordionContent><Card size="sm"><CardContent className="home-section-content"><TextControl id="footer-copyright" label="版权文案" value={settings.copyright} onChange={(value) => edit((next) => { next.copyright = value; })} /><div className="home-item-list compact">{settings.legalLinks.map((item, index) => <ItemCard key={item.id} title={item.label} subtitle={`政策链接 ${index + 1}`} onDelete={() => edit((next) => { next.legalLinks.splice(index, 1); })}><div className="home-fields-grid"><TextControl id={`legal-label-${item.id}`} label="名称" value={item.label} onChange={(value) => edit((next) => { next.legalLinks[index].label = value; })} /><TextControl id={`legal-link-${item.id}`} label="链接" value={item.link} onChange={(value) => edit((next) => { next.legalLinks[index].link = value; })} /></div></ItemCard>)}</div><Button variant="outline" size="sm" onClick={() => edit((next) => { next.legalLinks.push({ id: uid("legal"), label: "新政策", link: "#" }); })}><Plus />添加政策链接</Button></CardContent></Card></AccordionContent></AccordionItem>
+    </Accordion>
+  );
+}
+
+const marketingBlockLabels = {
+  story: "平台故事",
+  principles: "服务原则",
+  operations: "运维能力",
+  calculator: "收益测算器",
+  assumptions: "测算前提",
+  method: "测算方法",
+  benefits: "代理价值",
+  process: "合作流程",
+  standards: "合作标准",
+  "agency-apply": "代理申请行动区",
+  channels: "联系渠道",
+  service: "服务流程",
+  faq: "常见问题",
+  "contact-form": "联系表单",
+  cta: "底部行动区",
+};
+
+const marketingBlockDescriptions = {
+  story: "图片、故事文案、图标、要点与跳转",
+  features: "区块配图、文案、图标卡片与链接",
+  operations: "流程配图、步骤图标、文案与跳转",
+  calculator: "示例测算参数、单位、说明与结果区配图",
+  faq: "常见问题、回答、图标和继续了解链接",
+  form: "表单配图、字段名称、提示文案和发送目标",
+  cta: "背景图片、行动文案、图标与按钮链接",
+};
+
+function MarketingPageEditor({ pageKey, settings, edit }) {
+  const meta = marketingPageMeta[pageKey];
+  const hero = settings.hero;
+  const openSections = ["hero", settings.sections[0]?.id].filter(Boolean);
+
+  return (
+    <Accordion className="home-settings-accordion" type="multiple" defaultValue={openSections}>
+      <AccordionItem value="hero">
+        <SectionHeader title={`${meta.navTitle}首屏`} description="首屏图片、焦点、图标、标题、文案与按钮链接" enabled={hero.enabled} onEnabled={(value) => edit((next) => { next.hero.enabled = value; })} />
+        <AccordionContent>
+          <Card size="sm"><CardContent className="home-section-content">
+            <ImageControls prefix={`${pageKey}-hero`} image={hero.image} position={hero.imagePosition} onImage={(value) => edit((next) => { next.hero.image = value; })} onPosition={(value) => edit((next) => { next.hero.imagePosition = value; })} previewAspect="16 / 9" />
+            <div className="home-fields-grid">
+              <SelectControl id={`${pageKey}-hero-icon`} label="首屏图标" value={hero.icon} options={marketingPageIconOptions} onChange={(value) => edit((next) => { next.hero.icon = value; })} />
+              <TextControl id={`${pageKey}-hero-title`} label="主标题" textarea value={hero.title} onChange={(value) => edit((next) => { next.hero.title = value; })} />
+            </div>
+            <TextControl id={`${pageKey}-hero-description`} label="介绍文案" textarea value={hero.description} onChange={(value) => edit((next) => { next.hero.description = value; })} />
+            <div className="home-button-grid">
+              <TextControl id={`${pageKey}-hero-button-label`} label="按钮文案" value={hero.button.label} onChange={(value) => edit((next) => { next.hero.button.label = value; })} />
+              <TextControl id={`${pageKey}-hero-button-link`} label="点击跳转链接" value={hero.button.link} placeholder="/estates、mailto:... 或 https://..." onChange={(value) => edit((next) => { next.hero.button.link = value; })} />
+            </div>
+          </CardContent></Card>
+        </AccordionContent>
+      </AccordionItem>
+
+      {settings.sections.map((block, blockIndex) => (
+        <AccordionItem value={block.id} key={block.id}>
+          <SectionHeader title={marketingBlockLabels[block.id] ?? (block.title || `页面区块 ${blockIndex + 1}`)} description={marketingBlockDescriptions[block.kind] ?? "区块图片、文案、图标与跳转链接"} count={block.items.length} enabled={block.enabled} onEnabled={(value) => edit((next) => { next.sections[blockIndex].enabled = value; })} />
+          <AccordionContent>
+            <Card size="sm"><CardContent className="home-section-content">
+              <ImageControls prefix={`${pageKey}-${block.id}`} image={block.image} position={block.imagePosition} onImage={(value) => edit((next) => { next.sections[blockIndex].image = value; })} onPosition={(value) => edit((next) => { next.sections[blockIndex].imagePosition = value; })} previewAspect="16 / 9" />
+              <div className="home-fields-grid">
+                <SelectControl id={`${pageKey}-${block.id}-icon`} label="区块图标" value={block.icon} options={marketingPageIconOptions} onChange={(value) => edit((next) => { next.sections[blockIndex].icon = value; })} />
+                <TextControl id={`${pageKey}-${block.id}-title`} label="区块标题" value={block.title} onChange={(value) => edit((next) => { next.sections[blockIndex].title = value; })} />
+              </div>
+              <TextControl id={`${pageKey}-${block.id}-description`} label="区块文案" textarea value={block.description} onChange={(value) => edit((next) => { next.sections[blockIndex].description = value; })} />
+              <div className="home-button-grid">
+                <TextControl id={`${pageKey}-${block.id}-button-label`} label="区块按钮文案" value={block.button.label} onChange={(value) => edit((next) => { next.sections[blockIndex].button.label = value; })} />
+                <TextControl id={`${pageKey}-${block.id}-button-link`} label="区块点击跳转链接" value={block.button.link} placeholder="站内路径、mailto:、tel: 或完整 HTTPS 地址" onChange={(value) => edit((next) => { next.sections[blockIndex].button.link = value; })} />
+              </div>
+            </CardContent></Card>
+
+            {block.items.length ? <div className="home-item-list compact">{block.items.map((entry, itemIndex) => (
+              <ItemCard key={entry.id} title={entry.title} subtitle={`区块项目 ${itemIndex + 1}`} onDelete={() => edit((next) => { next.sections[blockIndex].items.splice(itemIndex, 1); })}>
+                <div className="home-fields-grid">
+                  <TextControl id={`${pageKey}-${block.id}-${entry.id}-title`} label={block.kind === "faq" ? "问题" : block.kind === "form" ? "字段名称" : "项目标题"} value={entry.title} onChange={(value) => edit((next) => { next.sections[blockIndex].items[itemIndex].title = value; })} />
+                  <SelectControl id={`${pageKey}-${block.id}-${entry.id}-icon`} label="项目图标" value={entry.icon} options={marketingPageIconOptions} onChange={(value) => edit((next) => { next.sections[blockIndex].items[itemIndex].icon = value; })} />
+                  {Object.hasOwn(entry, "value") ? <TextControl id={`${pageKey}-${block.id}-${entry.id}-value`} label="默认数值" type="number" value={entry.value} onChange={(value) => edit((next) => { next.sections[blockIndex].items[itemIndex].value = Number(value); })} /> : null}
+                  {Object.hasOwn(entry, "suffix") ? <TextControl id={`${pageKey}-${block.id}-${entry.id}-suffix`} label="单位" value={entry.suffix} onChange={(value) => edit((next) => { next.sections[blockIndex].items[itemIndex].suffix = value; })} /> : null}
+                  {block.kind === "form" ? <SelectControl id={`${pageKey}-${block.id}-${entry.id}-type`} label="字段类型" value={entry.fieldType ?? "text"} options={[["text", "单行输入"], ["textarea", "多行输入"]]} onChange={(value) => edit((next) => { next.sections[blockIndex].items[itemIndex].fieldType = value; })} /> : null}
+                </div>
+                <TextControl id={`${pageKey}-${block.id}-${entry.id}-description`} label={block.kind === "faq" ? "回答" : block.kind === "form" ? "输入提示" : "项目文案"} textarea value={entry.description} onChange={(value) => edit((next) => { next.sections[blockIndex].items[itemIndex].description = value; })} />
+                {block.kind !== "form" ? <TextControl id={`${pageKey}-${block.id}-${entry.id}-link`} label="点击跳转链接" value={entry.link} placeholder="可留空，或填写站内路径、邮件、电话、HTTPS 地址" onChange={(value) => edit((next) => { next.sections[blockIndex].items[itemIndex].link = value; })} /> : null}
+                <ToggleControl id={`${pageKey}-${block.id}-${entry.id}-enabled`} label="显示该项目" checked={entry.enabled} onChange={(value) => edit((next) => { next.sections[blockIndex].items[itemIndex].enabled = value; })} />
+              </ItemCard>
+            ))}</div> : null}
+            {block.kind !== "cta" ? <Button variant="outline" size="sm" onClick={() => edit((next) => {
+              const nextItem = { id: uid(`${pageKey}-${block.id}`), title: block.kind === "faq" ? "新问题" : block.kind === "form" ? "新字段" : "新项目", description: "", icon: "Cpu", link: "", enabled: true };
+              if (block.kind === "calculator") Object.assign(nextItem, { value: 0, suffix: "元" });
+              if (block.kind === "form") Object.assign(nextItem, { fieldType: "text" });
+              next.sections[blockIndex].items.push(nextItem);
+            })}><Plus />添加项目</Button> : null}
+          </AccordionContent>
+        </AccordionItem>
+      ))}
     </Accordion>
   );
 }

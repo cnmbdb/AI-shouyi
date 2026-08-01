@@ -11,10 +11,13 @@ import {
   LayoutDashboardIcon as CirclesFour,
   CoinsIcon as Coins,
   CpuIcon as Cpu,
+  CalculatorIcon as Calculator,
   CreditCardIcon as CreditCard,
   CircleDollarSignIcon as CurrencyCircleDollar,
   LifeBuoyIcon as Gear,
   HouseIcon as House,
+  HandshakeIcon as Handshake,
+  HeadsetIcon as Headset,
   MenuIcon as List,
   NewspaperIcon as Newspaper,
   PackageIcon as Package,
@@ -76,6 +79,10 @@ const adminNavGroups = [
       { path: "/console/settings/home", label: "首页设置", icon: House },
       { path: "/console/settings/products", label: "产品浏览页", icon: Package },
       { path: "/console/settings/blog", label: "博客首页", icon: Newspaper },
+      { path: "/console/settings/about", label: "关于我们", icon: Users },
+      { path: "/console/settings/calculator", label: "收益计算", icon: Calculator },
+      { path: "/console/settings/agency", label: "我要代理", icon: Handshake },
+      { path: "/console/settings/contact", label: "联系我们", icon: Headset },
     ],
   },
 ];
@@ -99,6 +106,10 @@ const settingMeta = {
   home: { title: "首页设置", description: "管理首页全部区块、图片、文案、图标与跳转链接", icon: House },
   products: { title: "产品浏览页", description: "设置算力产品列表的文案、筛选与默认排序", icon: Package },
   blog: { title: "博客首页", description: "管理博客首屏、精选文章与订阅模块", icon: Newspaper },
+  about: { title: "关于我们", description: "管理平台故事、服务原则、运维能力与行动区", icon: Users },
+  calculator: { title: "收益计算", description: "管理测算参数、计算说明、方法与行动区", icon: Calculator },
+  agency: { title: "我要代理", description: "管理代理价值、合作流程、支持标准与申请入口", icon: Handshake },
+  contact: { title: "联系我们", description: "管理联系渠道、服务说明、常见问题与联系表单", icon: Headset },
 };
 
 const fallbackOverview = {
