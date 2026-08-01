@@ -901,12 +901,6 @@ p, h1, h2, h3 { margin-top: 0; }
 .console-sidebar nav button:hover { color: white; background: rgba(255,255,255,.06); }
 .console-sidebar nav button.active { color: white; background: #5b51c6; }
 .console-sidebar nav button svg { width: 18px; height: 18px; }
-.console-help { margin-top: auto; padding: 13px; display: grid; grid-template-columns: 28px 1fr; gap: 8px; border-top: 1px solid rgba(255,255,255,.1); }
-.console-help > svg { width: 22px; height: 22px; color: #a69cf5; }
-.console-help strong, .console-help span { display: block; }
-.console-help strong { color: white; font-size: 13px; }
-.console-help span { margin-top: 4px; color: #8890b7; font-size: 11px; line-height: 1.4; }
-.console-help button { grid-column: 1 / -1; height: 30px; margin-top: 6px; color: #d8d7f9; background: rgba(255,255,255,.08); border-radius: 5px; font-size: 12px; }
 .console-main { min-width: 0; }
 .console-topbar { height: 86px; padding: 0 32px; display: flex; align-items: center; border-bottom: 1px solid var(--console-border); background: white; }
 .console-topbar h1 { margin: 0 0 5px; color: #202746; font-size: 20px; line-height: 1.2; letter-spacing: 0; }
@@ -1345,17 +1339,6 @@ p, h1, h2, h3 { margin-top: 0; }
 .console-sidebar nav button:hover { color: var(--sidebar-accent-foreground); background: var(--sidebar-accent); }
 .console-sidebar nav button.active { color: var(--sidebar-accent-foreground); background: var(--sidebar-accent); font-weight: 500; }
 .console-sidebar nav button svg { width: 15px; height: 15px; }
-.console-help {
-  flex: 0 0 auto;
-  padding: 12px 8px 0;
-  grid-template-columns: 24px 1fr;
-  gap: 7px;
-  border-top-color: var(--sidebar-border);
-}
-.console-help > svg { width: 17px; height: 17px; color: var(--sidebar-foreground); }
-.console-help strong { color: var(--sidebar-foreground); font-size: 13px; }
-.console-help span { color: var(--muted-foreground); font-size: 12px; }
-.console-help button { grid-column: 1 / -1; width: 100%; margin-top: 5px; color: var(--sidebar-foreground); background: transparent; }
 .console-main {
   min-width: 0;
   min-height: 0;

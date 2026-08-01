@@ -14,7 +14,6 @@ import {
   CalculatorIcon as Calculator,
   CreditCardIcon as CreditCard,
   CircleDollarSignIcon as CurrencyCircleDollar,
-  LifeBuoyIcon as Gear,
   HouseIcon as House,
   HandshakeIcon as Handshake,
   HeadsetIcon as Headset,
@@ -285,7 +284,6 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
         <button className="console-brand" type="button" onClick={() => onNavigate("/")} aria-label={`${navigationSettings.siteName} 返回首页`}><BrandLogoMark logo={navigationSettings.logo} imageClassName="console-brand-logo" fallbackClassName="console-brand-gpu" /><strong>{navigationSettings.siteName}</strong></button>
         <Button className="console-sidebar-close" variant="ghost" size="icon-sm" onClick={() => setSidebarOpen(false)} aria-label="关闭菜单"><X /></Button>
         <nav>{navGroups.map((group) => <section key={group.label}><h2>{group.label}</h2>{group.items.map(({ path, label, icon: Icon }) => <Button variant="ghost" size="sm" className={cn(pathname === path && "active")} key={path} onClick={() => { onNavigate(path); setSidebarOpen(false); }}><Icon data-icon="inline-start" /><span>{label}</span></Button>)}</section>)}</nav>
-        <div className="console-help"><Gear /><div><strong>需要帮助？</strong><span>工单平均 10 分钟响应</span></div><Button variant="outline" size="xs" onClick={() => onNotice("已为你打开在线支持工单")}>联系支持</Button></div>
       </aside>
 
       <main ref={mainRef} className="console-main">
