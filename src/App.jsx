@@ -34,7 +34,8 @@ const sitePath = {
 export function App() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const rawPathname = useRouterState({ select: (state) => state.location.pathname });
+  const pathname = rawPathname.length > 1 ? rawPathname.replace(/\/+$/, "") : rawPathname;
   const [menuOpen, setMenuOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const [cachedPublicSettings] = useState(() => getCachedSiteSettings());
