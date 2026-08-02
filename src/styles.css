@@ -1609,6 +1609,10 @@ p, h1, h2, h3 { margin-top: 0; }
 .admin-user-product-card dl div { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; }
 .admin-user-product-card dt { color: var(--muted-foreground); }
 .admin-user-product-card dd { overflow: hidden; margin: 0; text-overflow: ellipsis; white-space: nowrap; }
+.admin-product-actions,
+.admin-row-actions,
+.admin-finance-actions { display: flex; align-items: center; gap: 6px; }
+.admin-row-actions { justify-content: flex-end; }
 .admin-user-device-card { margin-top: 14px; }
 .admin-user-finance-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .admin-user-finance-summary [data-slot="card-title"] { font-size: 20px; font-variant-numeric: tabular-nums; }
@@ -1619,6 +1623,19 @@ p, h1, h2, h3 { margin-top: 0; }
 .admin-user-verification-grid [data-slot="card-content"] { display: grid; gap: 5px; }
 .admin-user-verification-grid [data-slot="card-content"] strong { overflow-wrap: anywhere; font-size: 13px; }
 .admin-user-verification-grid [data-slot="card-content"] small { color: var(--muted-foreground); font-size: 12px; }
+.admin-verification-toolbar { min-height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); }
+.admin-verification-toolbar > div:first-child { display: grid; gap: 3px; }
+.admin-verification-toolbar strong { font-size: 14px; }
+.admin-verification-toolbar span { color: var(--muted-foreground); font-size: 12px; }
+.admin-verification-toolbar > div:last-child { display: flex; gap: 6px; }
+.admin-audit-reason { max-width: 360px; overflow-wrap: anywhere; white-space: normal !important; }
+.admin-record-dialog { max-width: 640px; max-height: min(760px, calc(100dvh - 32px)); overflow-y: auto; }
+.admin-record-dialog form { display: grid; gap: 18px; }
+.admin-record-form { display: grid; gap: 13px; }
+.admin-record-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.admin-record-field { min-width: 0; display: grid; gap: 6px; color: var(--foreground); font-size: 13px; font-weight: 600; }
+.admin-record-field > small { color: var(--muted-foreground); font-size: 11px; font-weight: 400; line-height: 1.4; }
+.admin-record-field [data-slot="select-trigger"] { width: 100%; }
 .admin-user-detail-error { max-width: 620px; }
 .account-settings-page { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 14px; align-items: start; }
 .account-card [data-slot="card-title"] { display: flex; align-items: center; gap: 8px; font-size: 15px; }
@@ -1686,6 +1703,8 @@ p, h1, h2, h3 { margin-top: 0; }
   .admin-user-search { width: 100%; }
   .admin-user-detail-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-user-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-user-detail-tabs [data-slot="card-header"]:has([data-slot="card-action"]) { grid-template-columns: 1fr; }
+  .admin-user-detail-tabs [data-slot="card-header"] > [data-slot="card-action"] { grid-column: 1; grid-row: auto; justify-self: start; margin-top: 8px; }
   .account-settings-page { grid-template-columns: 1fr; }
 }
 
@@ -1723,6 +1742,13 @@ p, h1, h2, h3 { margin-top: 0; }
   .admin-user-product-grid,
   .admin-user-finance-summary,
   .admin-user-verification-grid { grid-template-columns: 1fr; gap: 10px; }
+  .admin-verification-toolbar { align-items: flex-start; flex-direction: column; }
+  .admin-verification-toolbar > div:last-child,
+  .admin-finance-actions { width: 100%; }
+  .admin-verification-toolbar button,
+  .admin-finance-actions button { flex: 1; }
+  .admin-record-grid { grid-template-columns: 1fr; }
+  .admin-record-dialog { max-height: calc(100dvh - 16px); }
 }
 
 @theme inline {

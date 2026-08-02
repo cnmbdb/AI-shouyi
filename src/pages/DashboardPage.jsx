@@ -309,7 +309,7 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
           {pathname === "/console/transactions" ? <FinancePage kind="transactions" /> : null}
           {pathname === "/console/account" ? <AccountSettingsPage user={user} onUserUpdated={onUserUpdated} onNotice={onNotice} /> : null}
           {pathname === "/console/users" && isAdmin ? <UserManagementPage currentUser={user} onNotice={onNotice} onNavigate={onNavigate} /> : null}
-          {userDetailId ? <UserDetailPage userId={userDetailId} currentUser={user} onNavigate={onNavigate} /> : null}
+          {userDetailId ? <UserDetailPage userId={userDetailId} currentUser={user} onNavigate={onNavigate} onNotice={onNotice} /> : null}
           {pathname === "/console/content/articles" && isAdmin ? <BlogPostsPage onNotice={onNotice} /> : null}
           {pathname === "/console/store/products" && isAdmin ? <CommerceSettingsPage section="products" onNotice={onNotice} /> : null}
           {pathname === "/console/store/payment" && isAdmin ? <CommerceSettingsPage section="payment" onNotice={onNotice} /> : null}

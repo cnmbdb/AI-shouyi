@@ -20,6 +20,10 @@ export function getAdminUserDetail(userId) {
   return invokeAdminUsers({ action: "detail", userId });
 }
 
+export function manageAdminUserRecord(payload) {
+  return invokeAdminUsers({ action: "manage-record", ...payload });
+}
+
 export function updateAdminUserRole({ userId, role }) {
   return invokeAdminUsers({ action: "update-role", userId, role });
 }
