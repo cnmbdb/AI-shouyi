@@ -120,6 +120,8 @@ Prototype console-help rule: do not render a help-ticket or contact-support card
 
 Prototype user-selection state rule: user-management checkboxes must expose an unmistakable selected state on desktop and mobile: neutral black fill with a white check, a distinct mixed-state bar for partial selection, selected-row highlighting, an immediately updated selected count, and an enabled destructive action only when at least one non-current user is selected.
 
+Prototype user-commerce detail rule: administrators can open any user from user management and inspect that user's商城订单、已购产品与算力设备、资金流水、账户认证和可信支付认证。商城订单必须通过 `user_id` 归属用户并通过 `product_id` 连接当前商品，同时保留不可变商品快照；详情中的可用商品入口跳转到对应公共商品页。
+
 Prototype account-deletion reuse rule: administrator soft deletion preserves rental and financial history, but must immediately release the deleted account's profile, username alias, and email alias so those credentials can register again. Authentication errors must render a useful Chinese message and never expose opaque values such as `{}`.
 
 Prototype signup-OTP rule: registration confirmation emails may expose both a link and a six-digit code. Verify the manually entered email code with Supabase `verifyOtp` type `email`; reserve `signup` for sending or resending the signup confirmation message. A fresh code must not be reported as expired because of a mismatched verification type. The login screen must keep a direct verification entry so users can reopen the form after refreshing, edit the pending email address, and complete verification without registering again.
