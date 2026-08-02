@@ -109,6 +109,73 @@ Deno.serve(async (request: Request) => {
       });
     }
 
+    if (action === "detail") {
+      const userId = String(body.userId ?? "");
+      if (!/^[0-9a-f-]{36}$/i.test(userId)) {
+        return json(origin, 400, { error: "用户参数无效" });
+      }
+
+      const { data: authUserResult, error: authUserError } = await admin.auth.admin.getUserById(userId);
+      const authUser = authUserResult?.user;
+      if (authUserError || !authUser || authUser.deleted_at) {
+        return json(origin, 404, { error: "用户不存在或已删除" });
+      }
+
+      const [profileResult, ordersResult, devicesResult, earningsResult, transactionsResult, legacyOrdersResult] = await Promise.all([
+        admin.from("profiles").select("id, username, display_name, avatar_url, avatar_color, role, created_at, updated_at").eq("id", userId).maybeSingle(),
+        admin.from("store_orders").select("id, order_no, product_id, parent_order_id, order_type, product_snapshot, quantity, period_unit, period_count, unit_price, subtotal, fee_amount, total_amount, currency, status, service_starts_at, service_expires_at, expires_at, paid_at, created_at, updated_at").eq("user_id", userId).order("created_at", { ascending: false }),
+        admin.from("compute_devices").select("id, device_code, name, compute, status, daily_yield, expires_at, created_at").eq("user_id", userId).order("created_at", { ascending: false }),
+        admin.from("earnings").select("id, device_id, amount, earned_on, status, created_at").eq("user_id", userId).order("earned_on", { ascending: false }),
+        admin.from("transactions").select("id, transaction_type, reference, amount, status, occurred_at").eq("user_id", userId).order("occurred_at", { ascending: false }),
+        admin.from("rental_orders").select("id, order_no, product, period_months, amount, status, created_at").eq("user_id", userId).order("created_at", { ascending: false }),
+      ]);
+
+      const failed = [profileResult, ordersResult, devicesResult, earningsResult, transactionsResult, legacyOrdersResult].find((result) => result.error);
+      if (failed?.error) return json(origin, 500, { error: "无法读取用户业务资料" });
+
+      const orders = ordersResult.data ?? [];
+      const orderIds = orders.map((order) => order.id);
+      const productIds = [...new Set(orders.map((order) => order.product_id).filter(Boolean))];
+      const [paymentsResult, productsResult] = await Promise.all([
+        orderIds.length
+          ? admin.from("store_payments").select("id, payment_no, order_id, channel_id, provider_trade_no, amount, currency, status, interaction_mode, paid_at, expires_at, created_at").in("order_id", orderIds).order("created_at", { ascending: false })
+          : Promise.resolve({ data: [], error: null }),
+        productIds.length
+          ? admin.from("store_products").select("id, category_id, slug, sku, name, image_url, gpu_model, vram, hosting_term, billing_type, enabled").in("id", productIds)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+      if (paymentsResult.error || productsResult.error) {
+        return json(origin, 500, { error: "无法读取用户商城关联资料" });
+      }
+
+      const profile = profileResult.data;
+      return json(origin, 200, {
+        user: {
+          id: authUser.id,
+          email: authUser.email ?? "",
+          phone: authUser.phone ?? "",
+          username: profile?.username ?? authUser.email?.split("@")[0] ?? "user",
+          displayName: profile?.display_name ?? profile?.username ?? "",
+          avatarUrl: profile?.avatar_url ?? "",
+          avatarColor: profile?.avatar_color ?? "#525252",
+          role: profile?.role === "admin" ? "admin" : "user",
+          emailConfirmedAt: authUser.email_confirmed_at ?? null,
+          phoneConfirmedAt: authUser.phone_confirmed_at ?? null,
+          providers: [...new Set((authUser.identities ?? []).map((identity) => identity.provider).filter(Boolean))],
+          createdAt: authUser.created_at,
+          updatedAt: profile?.updated_at ?? authUser.updated_at ?? null,
+          lastSignInAt: authUser.last_sign_in_at ?? null,
+        },
+        orders,
+        products: productsResult.data ?? [],
+        payments: paymentsResult.data ?? [],
+        devices: devicesResult.data ?? [],
+        earnings: earningsResult.data ?? [],
+        transactions: transactionsResult.data ?? [],
+        legacyOrders: legacyOrdersResult.data ?? [],
+      });
+    }
+
     if (action === "update-role") {
       const userId = String(body.userId ?? "");
       const role = String(body.role ?? "");

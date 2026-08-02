@@ -367,7 +367,7 @@ export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSet
         <GpuHeroCarousel cards={heroCards} intervalSeconds={settings.hero.intervalSeconds} aspectRatio={heroAspectRatio} onCardOpen={openLink} />
       </section> : null}
 
-      {settings.browser.enabled ? <section className={`estate-browser shell ${settings.browser.showFilters ? "" : "no-filters"}`} aria-label="GPU compute catalog">
+      {settings.browser.enabled ? <section className={`estate-browser shell ${settings.browser.showFilters ? "" : "no-filters"} ${settings.hero.enabled ? "" : "hero-hidden"}`} aria-label="GPU compute catalog">
         {settings.browser.showFilters ? <aside className="filter-panel">
           <div className="filter-title">
             <span className="filter-title-icon"><SlidersHorizontal weight="bold" aria-hidden="true" /></span>

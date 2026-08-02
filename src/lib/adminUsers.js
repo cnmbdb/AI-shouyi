@@ -16,6 +16,10 @@ export function getAdminUsers() {
   return invokeAdminUsers({ action: "list", page: 1, perPage: 200 });
 }
 
+export function getAdminUserDetail(userId) {
+  return invokeAdminUsers({ action: "detail", userId });
+}
+
 export function updateAdminUserRole({ userId, role }) {
   return invokeAdminUsers({ action: "update-role", userId, role });
 }

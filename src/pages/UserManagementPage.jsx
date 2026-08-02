@@ -1,7 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { SearchIcon, ShieldCheckIcon, Trash2Icon, UserRoundCheckIcon, UsersIcon } from "lucide-react";
+import { ArrowRightIcon, SearchIcon, ShieldCheckIcon, Trash2Icon, UserRoundCheckIcon, UsersIcon } from "lucide-react";
 import { deleteAdminUsers, getAdminUsers, updateAdminUserRole } from "../lib/adminUsers.js";
 import {
   AlertDialog,
@@ -29,7 +29,7 @@ const formatDate = (value) => value
   ? new Date(value).toLocaleString("zh-CN", { dateStyle: "short", timeStyle: "short", hour12: false })
   : "—";
 
-export function UserManagementPage({ currentUser, onNotice }) {
+export function UserManagementPage({ currentUser, onNotice, onNavigate }) {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -140,7 +140,7 @@ export function UserManagementPage({ currentUser, onNotice }) {
       cell: ({ row }) => (
         <div className="admin-user-identity">
           <Avatar size="sm"><AvatarFallback>{row.original.username.slice(0, 1).toUpperCase()}</AvatarFallback></Avatar>
-          <div><strong>{row.original.displayName || row.original.username}</strong><small>{row.original.email}</small></div>
+          <button className="admin-user-open" type="button" onClick={() => onNavigate(`/console/users/${row.original.id}`)}><strong>{row.original.displayName || row.original.username}</strong><small>{row.original.email}</small></button>
           {row.original.id === currentUser.id ? <Badge variant="outline">当前账号</Badge> : null}
         </div>
       ),
@@ -169,7 +169,8 @@ export function UserManagementPage({ currentUser, onNotice }) {
     },
     { accessorKey: "createdAt", header: "注册时间", cell: ({ getValue }) => formatDate(getValue()) },
     { accessorKey: "lastSignInAt", header: "最近登录", cell: ({ getValue }) => formatDate(getValue()) },
-  ], [allVisibleSelected, currentUser.id, deleteMutation.isPending, pendingUserId, roleMutation.mutate, selectableVisibleIds, selectedIds, someVisibleSelected]);
+    { id: "detail", header: "", cell: ({ row }) => <Button variant="ghost" size="xs" onClick={() => onNavigate(`/console/users/${row.original.id}`)}>详情 <ArrowRightIcon /></Button> },
+  ], [allVisibleSelected, currentUser.id, deleteMutation.isPending, onNavigate, pendingUserId, roleMutation.mutate, selectableVisibleIds, selectedIds, someVisibleSelected]);
 
   const table = useReactTable({ data: filteredUsers, columns, getCoreRowModel: getCoreRowModel() });
   const adminCount = users.filter((user) => user.role === "admin").length;

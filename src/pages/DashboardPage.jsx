@@ -35,6 +35,7 @@ import { BrandLogoMark } from "../components/BrandLogo.jsx";
 import { getCachedSiteSettings, getPlatformOverview, getSiteSettings } from "../lib/platformData.js";
 import { normalizeNavigationSettings } from "../data/siteSettings.js";
 import { UserManagementPage } from "./UserManagementPage.jsx";
+import { UserDetailPage } from "./UserDetailPage.jsx";
 import { HomeSettingsPage } from "./HomeSettingsPage.jsx";
 import { ContentSettingsPage } from "./ContentSettingsPage.jsx";
 import { AccountSettingsPage } from "./AccountSettingsPage.jsx";
@@ -272,7 +273,8 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
     activity: overview.data.activity?.length ? overview.data.activity : fallbackOverview.activity,
   } : fallbackOverview;
   const settingSection = isAdmin && pathname.startsWith("/console/settings/") ? pathname.split("/").pop() : null;
-  const [title, description] = pageMeta[pathname] ?? (settingSection ? [settingMeta[settingSection]?.title, settingMeta[settingSection]?.description] : ["控制台", ""]);
+  const userDetailId = isAdmin && pathname.startsWith("/console/users/") ? decodeURIComponent(pathname.slice("/console/users/".length)) : "";
+  const [title, description] = userDetailId ? ["用户详情", "核对用户的商城订单、持有产品、资金流水与认证状态"] : pageMeta[pathname] ?? (settingSection ? [settingMeta[settingSection]?.title, settingMeta[settingSection]?.description] : ["控制台", ""]);
 
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0 });
@@ -283,7 +285,7 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
       <aside className={cn("console-sidebar", sidebarOpen && "open")}>
         <button className="console-brand" type="button" style={{ "--shared-logo-size": `${navigationSettings.logoSize}px` }} onClick={() => onNavigate("/")} aria-label={`${navigationSettings.siteName} 返回首页`}><BrandLogoMark logo={navigationSettings.logo} imageClassName="console-brand-logo" fallbackClassName="console-brand-gpu" /><strong>{navigationSettings.siteName}</strong></button>
         <Button className="console-sidebar-close" variant="ghost" size="icon-sm" onClick={() => setSidebarOpen(false)} aria-label="关闭菜单"><X /></Button>
-        <nav>{navGroups.map((group) => <section key={group.label}><h2>{group.label}</h2>{group.items.map(({ path, label, icon: Icon }) => <Button variant="ghost" size="sm" className={cn(pathname === path && "active")} key={path} onClick={() => { onNavigate(path); setSidebarOpen(false); }}><Icon data-icon="inline-start" /><span>{label}</span></Button>)}</section>)}</nav>
+        <nav>{navGroups.map((group) => <section key={group.label}><h2>{group.label}</h2>{group.items.map(({ path, label, icon: Icon }) => <Button variant="ghost" size="sm" className={cn((pathname === path || (path === "/console/users" && pathname.startsWith("/console/users/"))) && "active")} key={path} onClick={() => { onNavigate(path); setSidebarOpen(false); }}><Icon data-icon="inline-start" /><span>{label}</span></Button>)}</section>)}</nav>
       </aside>
 
       <main ref={mainRef} className="console-main">
@@ -306,7 +308,8 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
           {pathname === "/console/earnings" ? <FinancePage kind="earnings" /> : null}
           {pathname === "/console/transactions" ? <FinancePage kind="transactions" /> : null}
           {pathname === "/console/account" ? <AccountSettingsPage user={user} onUserUpdated={onUserUpdated} onNotice={onNotice} /> : null}
-          {pathname === "/console/users" && isAdmin ? <UserManagementPage currentUser={user} onNotice={onNotice} /> : null}
+          {pathname === "/console/users" && isAdmin ? <UserManagementPage currentUser={user} onNotice={onNotice} onNavigate={onNavigate} /> : null}
+          {userDetailId ? <UserDetailPage userId={userDetailId} currentUser={user} onNavigate={onNavigate} /> : null}
           {pathname === "/console/content/articles" && isAdmin ? <BlogPostsPage onNotice={onNotice} /> : null}
           {pathname === "/console/store/products" && isAdmin ? <CommerceSettingsPage section="products" onNotice={onNotice} /> : null}
           {pathname === "/console/store/payment" && isAdmin ? <CommerceSettingsPage section="payment" onNotice={onNotice} /> : null}

@@ -43,7 +43,7 @@ export function App() {
 
   const isConsole = pathname.startsWith("/console");
   const isAuth = pathname.startsWith("/auth");
-  const isAdminPath = pathname === "/console/users" || pathname.startsWith("/console/settings/") || pathname.startsWith("/console/store/") || pathname.startsWith("/console/content/");
+  const isAdminPath = pathname === "/console/users" || pathname.startsWith("/console/users/") || pathname.startsWith("/console/settings/") || pathname.startsWith("/console/store/") || pathname.startsWith("/console/content/");
   const isBlogArticle = pathname.startsWith("/blog/");
   const blogSlug = isBlogArticle ? decodeURIComponent(pathname.slice("/blog/".length)) : "";
   const isStoreProduct = pathname.startsWith("/estates/") || pathname.startsWith("/products/");
