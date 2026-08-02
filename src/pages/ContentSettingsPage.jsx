@@ -57,12 +57,12 @@ const defaults = {
   ...defaultMarketingPageSettings,
 };
 
-function TextControl({ id, label, value, onChange, description, textarea = false, placeholder = "", type = "text" }) {
+function TextControl({ id, label, value, onChange, description, textarea = false, placeholder = "", type = "text", min, max, step }) {
   const Control = textarea ? Textarea : Input;
   return (
     <Field className="home-control">
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Control id={id} type={textarea ? undefined : type} value={value ?? ""} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
+      <Control id={id} type={textarea ? undefined : type} min={min} max={max} step={step} value={value ?? ""} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
       {description ? <FieldDescription>{description}</FieldDescription> : null}
     </Field>
   );
@@ -292,7 +292,7 @@ function MarketingPageEditor({ pageKey, settings, edit }) {
 
       {settings.sections.map((block, blockIndex) => (
         <AccordionItem value={block.id} key={block.id}>
-          <SectionHeader title={marketingBlockLabels[block.id] ?? (block.title || `页面区块 ${blockIndex + 1}`)} description={marketingBlockDescriptions[block.kind] ?? "区块图片、文案、图标与跳转链接"} count={block.items.length} enabled={block.enabled} onEnabled={(value) => edit((next) => { next.sections[blockIndex].enabled = value; })} />
+          <SectionHeader title={marketingBlockLabels[block.id] ?? (block.title || `页面区块 ${blockIndex + 1}`)} description={marketingBlockDescriptions[block.kind] ?? "区块图片、文案、图标与跳转链接"} count={block.kind === "calculator" ? undefined : block.items.length} enabled={block.enabled} onEnabled={(value) => edit((next) => { next.sections[blockIndex].enabled = value; })} />
           <AccordionContent>
             <Card size="sm"><CardContent className="home-section-content">
               <ImageControls prefix={`${pageKey}-${block.id}`} image={block.image} position={block.imagePosition} onImage={(value) => edit((next) => { next.sections[blockIndex].image = value; })} onPosition={(value) => edit((next) => { next.sections[blockIndex].imagePosition = value; })} previewAspect="16 / 9" />
@@ -305,9 +305,24 @@ function MarketingPageEditor({ pageKey, settings, edit }) {
                 <TextControl id={`${pageKey}-${block.id}-button-label`} label="区块按钮文案" value={block.button.label} onChange={(value) => edit((next) => { next.sections[blockIndex].button.label = value; })} />
                 <TextControl id={`${pageKey}-${block.id}-button-link`} label="区块点击跳转链接" value={block.button.link} placeholder="站内路径、mailto:、tel: 或完整 HTTPS 地址" onChange={(value) => edit((next) => { next.sections[blockIndex].button.link = value; })} />
               </div>
+              {block.kind === "calculator" ? <TextControl id="calculator-monthly-label" label="月度公式标题" value={block.calculatorConfig.monthlyLeaseLabel} onChange={(value) => edit((next) => { next.sections[blockIndex].calculatorConfig.monthlyLeaseLabel = value; })} /> : null}
             </CardContent></Card>
 
-            {block.items.length ? <div className="home-item-list compact">{block.items.map((entry, itemIndex) => (
+            {block.kind === "calculator" ? <div className="calculator-config-editor">
+              {block.calculatorConfig.plans.map((plan, planIndex) => <ItemCard key={plan.id} title={plan.gpuModel} subtitle={`计算方案 ${planIndex + 1} · 5 项参数`} onDelete={block.calculatorConfig.plans.length > 1 ? () => edit((next) => { next.sections[blockIndex].calculatorConfig.plans.splice(planIndex, 1); }) : undefined}>
+                <div className="calculator-plan-fields">
+                  <TextControl id={`calculator-${plan.id}-gpu-model`} label="GPU 型号" value={plan.gpuModel} onChange={(value) => edit((next) => { next.sections[blockIndex].calculatorConfig.plans[planIndex].gpuModel = value; })} />
+                  <TextControl id={`calculator-${plan.id}-unit-price`} label="售价（元）" type="number" min="0" max="100000000" step="100" value={plan.unitPrice} onChange={(value) => edit((next) => { next.sections[blockIndex].calculatorConfig.plans[planIndex].unitPrice = Number(value); })} />
+                  <TextControl id={`calculator-${plan.id}-monthly-rate`} label="回报率（% / 月）" type="number" min="0" max="100" step="0.1" value={plan.monthlyReturnRate} onChange={(value) => edit((next) => { next.sections[blockIndex].calculatorConfig.plans[planIndex].monthlyReturnRate = Number(value); })} />
+                  <TextControl id={`calculator-${plan.id}-contract-months`} label="期限（月）" type="number" min="1" max="120" step="1" value={plan.contractMonths} onChange={(value) => edit((next) => { next.sections[blockIndex].calculatorConfig.plans[planIndex].contractMonths = Number(value); })} />
+                  <TextControl id={`calculator-${plan.id}-device-count`} label="默认数量（台）" type="number" min="1" max="1000" step="1" value={plan.defaultDeviceCount} onChange={(value) => edit((next) => { next.sections[blockIndex].calculatorConfig.plans[planIndex].defaultDeviceCount = Number(value); })} />
+                </div>
+                <div className="calculator-config-preview"><span>{block.calculatorConfig.monthlyLeaseLabel}</span><strong>¥{Number(plan.unitPrice || 0).toLocaleString("zh-CN")} × {Number(plan.monthlyReturnRate || 0)}% = ¥{Math.round(Number(plan.unitPrice || 0) * Number(plan.monthlyReturnRate || 0) / 100).toLocaleString("zh-CN")} / 台</strong></div>
+              </ItemCard>)}
+              <Button variant="outline" size="sm" onClick={() => edit((next) => { next.sections[blockIndex].calculatorConfig.plans.push({ id: uid("calculator-plan"), gpuModel: "新 GPU 方案", unitPrice: 50000, monthlyReturnRate: 8, contractMonths: 24, defaultDeviceCount: 1 }); })}><Plus />添加计算方案</Button>
+            </div> : null}
+
+            {block.kind !== "calculator" && block.items.length ? <div className="home-item-list compact">{block.items.map((entry, itemIndex) => (
               <ItemCard key={entry.id} title={entry.title} subtitle={`区块项目 ${itemIndex + 1}`} onDelete={() => edit((next) => { next.sections[blockIndex].items.splice(itemIndex, 1); })}>
                 <div className="home-fields-grid">
                   <TextControl id={`${pageKey}-${block.id}-${entry.id}-title`} label={block.kind === "faq" ? "问题" : block.kind === "form" ? "字段名称" : "项目标题"} value={entry.title} onChange={(value) => edit((next) => { next.sections[blockIndex].items[itemIndex].title = value; })} />
@@ -321,7 +336,7 @@ function MarketingPageEditor({ pageKey, settings, edit }) {
                 <ToggleControl id={`${pageKey}-${block.id}-${entry.id}-enabled`} label="显示该项目" checked={entry.enabled} onChange={(value) => edit((next) => { next.sections[blockIndex].items[itemIndex].enabled = value; })} />
               </ItemCard>
             ))}</div> : null}
-            {block.kind !== "cta" ? <Button variant="outline" size="sm" onClick={() => edit((next) => {
+            {block.kind !== "cta" && block.kind !== "calculator" ? <Button variant="outline" size="sm" onClick={() => edit((next) => {
               const nextItem = { id: uid(`${pageKey}-${block.id}`), title: block.kind === "faq" ? "新问题" : block.kind === "form" ? "新字段" : "新项目", description: "", icon: "Cpu", link: "", enabled: true };
               if (block.kind === "calculator") Object.assign(nextItem, { value: 0, suffix: "元" });
               if (block.kind === "form") Object.assign(nextItem, { fieldType: "text" });

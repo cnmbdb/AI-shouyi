@@ -114,6 +114,8 @@ Prototype product-browser readability rule: the public product-browsing page mus
 
 Prototype product-browser color rule: the public product-browsing page uses NVIDIA Green `#76B900` as its single interaction and selection accent. Purple catalog controls, focus rings, sliders, selected layout states, tags, empty states, and CTA accents must normalize to the green system while surfaces stay white and primary text stays neutral and highly readable.
 
+Prototype calculator lease-model rule: the public yield calculator uses administrator-configurable commissioned-rental plans and lets visitors switch the complete plan before calculating. Every plan exposes exactly five calculation inputs in the matching Calculator CMS section: GPU model, unit sale price, monthly return rate, closed-contract term, and default device count. Switching plans resets the visitor quantity to that plan's default, while the unit monthly lease remains price times monthly return rate and monthly and contract totals scale by quantity and contract months; monthly formula wording is a shared section-level setting rather than a sixth per-plan input.
+
 Prototype public-header typography rule: shared top-navigation labels must stay readable at 15px on desktop and 14px at the intermediate desktop breakpoint; the expanded mobile menu keeps the 15px label size without changing the header's compact geometry.
 
 Prototype mobile user-management rule: on small screens, user-management selection must remain visibly actionable without horizontal discovery. Show a labeled select-all control and the destructive bulk-delete button above the table, keep row checkboxes high-contrast and touch-friendly, and pin the selection column to the table's left edge while horizontally scrolling other columns.
