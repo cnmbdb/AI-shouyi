@@ -110,6 +110,10 @@ Prototype branch-boundary rule: `main` is the website project and production web
 
 Prototype typography rule: all public pages, authentication screens, and authenticated console pages must favor readable text over miniature display density. Keep primary body copy and controls around 13-15px, secondary labels and metadata around 10-12px, and avoid restoring 8-10px text except inside intentionally scaled CMS preview canvases.
 
+Prototype product-browser readability rule: the public product-browsing page must not resemble a scaled-down CMS preview on desktop. Its catalog shell, filter panel, toolbar, product cards, controls, specifications, and footer should use comfortably readable 13-15px body text, visibly larger headings, and proportionally larger control and card surfaces while preserving the existing compact white daytime layout.
+
+Prototype product-browser color rule: the public product-browsing page uses NVIDIA Green `#76B900` as its single interaction and selection accent. Purple catalog controls, focus rings, sliders, selected layout states, tags, empty states, and CTA accents must normalize to the green system while surfaces stay white and primary text stays neutral and highly readable.
+
 Prototype public-header typography rule: shared top-navigation labels must stay readable at 15px on desktop and 14px at the intermediate desktop breakpoint; the expanded mobile menu keeps the 15px label size without changing the header's compact geometry.
 
 Prototype mobile user-management rule: on small screens, user-management selection must remain visibly actionable without horizontal discovery. Show a labeled select-all control and the destructive bulk-delete button above the table, keep row checkboxes high-contrast and touch-friendly, and pin the selection column to the table's left edge while horizontally scrolling other columns.
