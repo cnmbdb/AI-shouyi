@@ -7,6 +7,20 @@ const json = (origin: string, status: number, payload: unknown) => new Response(
 const roundMoney = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 const orderNumber = (prefix: string) => `${prefix}${new Date().toISOString().replace(/\D/g, "").slice(0, 14)}${crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase()}`;
 const readKeys = () => { const pub = JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") ?? "{}"); const sec = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}"); return { url: Deno.env.get("SUPABASE_URL") ?? "", publishableKey: pub.default ?? Deno.env.get("SUPABASE_ANON_KEY") ?? "", secretKey: sec.default ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "" }; };
+const epayTypes: Record<string, string> = { wechat: "wxpay", alipay: "alipay", qqpay: "qqpay" };
+const epayType = (value: unknown) => epayTypes[String(value)] ?? String(value);
+const absoluteHttpUrl = (value: unknown, fallback: string) => {
+  try {
+    const parsed = new URL(String(value ?? ""));
+    return ["http:", "https:"].includes(parsed.protocol) ? parsed.toString() : fallback;
+  } catch {
+    return fallback;
+  }
+};
+const publicReturnUrl = (value: unknown, fallback: string) => {
+  const raw = String(value ?? "").trim();
+  return absoluteHttpUrl(raw && !/^https?:\/\//i.test(raw) ? `https://${raw}` : raw, fallback);
+};
 
 const epayCheckout = (channel: Record<string, any>, paymentNo: string, amount: number, productName: string, fallbackNotifyUrl: string) => {
   const publicConfig = channel.public_config ?? {};
@@ -17,10 +31,10 @@ const epayCheckout = (channel: Record<string, any>, paymentNo: string, amount: n
   if (!gateway || !pid || !merchantKey) throw new Error("易支付渠道缺少网关、商户 ID 或商户密钥");
   const params: Record<string, string> = {
     pid,
-    type: String(channel.channel_type),
+    type: epayType(channel.channel_type),
     out_trade_no: paymentNo,
-    notify_url: String(publicConfig.notify_url || fallbackNotifyUrl),
-    return_url: String(publicConfig.return_url || fallbackNotifyUrl),
+    notify_url: absoluteHttpUrl(publicConfig.notify_url, fallbackNotifyUrl),
+    return_url: publicReturnUrl(publicConfig.return_url, fallbackNotifyUrl),
     name: productName.slice(0, 120),
     money: amount.toFixed(2),
     device: "pc",
