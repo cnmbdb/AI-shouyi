@@ -12,12 +12,20 @@ const readKeys = () => {
   return { url: Deno.env.get("SUPABASE_URL") ?? "", publishableKey: publishable.default ?? Deno.env.get("SUPABASE_ANON_KEY") ?? "", secretKey: secrets.default ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "" };
 };
 
-const responseChannel = (row: Record<string, unknown>) => ({
+const hasRequiredSecret = (row: Record<string, any>) => {
+  const secret = row.secret_config ?? {};
+  if (row.provider_type === "epay" && String(row.public_config?.epay_version ?? "v1") === "v1") {
+    return Boolean(String(secret.merchant_key ?? "").trim());
+  }
+  return Object.values(secret).some((value) => Boolean(String(value ?? "").trim()));
+};
+
+const responseChannel = (row: Record<string, any>) => ({
   id: row.id, name: row.name, icon: row.icon, providerType: row.provider_type, channelType: row.channel_type,
   interactionMode: row.interaction_mode, feeRate: String(row.fee_rate), fixedFee: String(row.fixed_fee),
   minAmount: String(row.min_amount), maxAmount: String(row.max_amount), hideAmountOutRange: row.hide_amount_out_range,
   paymentRoles: row.payment_roles, paymentTypes: row.payment_types, memberLevels: row.member_levels, publicConfig: row.public_config,
-  secretConfig: {}, secretConfigured: Object.values((row.secret_config as Record<string, unknown>) ?? {}).some((value) => Boolean(value)),
+  secretConfig: {}, secretConfigured: hasRequiredSecret(row),
   isActive: row.is_active, sortOrder: String(row.sort_order),
 });
 

@@ -12,7 +12,7 @@ const epayCheckout = (channel: Record<string, any>, paymentNo: string, amount: n
   const publicConfig = channel.public_config ?? {};
   const secret = channel.secret_config ?? {};
   const gateway = String(publicConfig.gateway_url ?? "").replace(/\/$/, "");
-  const pid = String(secret.merchant_id ?? "").trim();
+  const pid = String(publicConfig.merchant_id ?? secret.merchant_id ?? "").trim();
   const merchantKey = String(secret.merchant_key ?? "").trim();
   if (!gateway || !pid || !merchantKey) throw new Error("易支付渠道缺少网关、商户 ID 或商户密钥");
   const params: Record<string, string> = {

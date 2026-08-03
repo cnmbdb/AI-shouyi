@@ -277,6 +277,11 @@ function PaymentChannelDialog({ open, channel, order, onOpenChange, onSave }) {
     if (!next.name.trim()) { setError("请输入渠道名称"); return; }
     if (Number(next.feeRate) < 0 || Number(next.feeRate) > 100) { setError("手续费率必须在 0–100% 之间"); return; }
     if (Number(next.maxAmount) > 0 && Number(next.maxAmount) < Number(next.minAmount)) { setError("最高金额不能低于最低金额"); return; }
+    if (next.providerType === "epay" && (next.publicConfig?.epay_version || "v2") === "v1") {
+      if (!String(next.publicConfig?.gateway_url ?? "").trim()) { setError("请输入易支付网关地址"); return; }
+      if (!String(next.publicConfig?.merchant_id ?? "").trim()) { setError("请输入易支付商户 ID"); return; }
+      if (!next.secretConfigured && !String(next.secretConfig?.merchant_key ?? "").trim()) { setError("请输入易支付商户密钥"); return; }
+    }
     if (showAdvanced) {
       try {
         const parsedPublic = JSON.parse(publicJson || "{}");
