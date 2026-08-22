@@ -21,15 +21,24 @@ const legacyHomeIconAliases = {
 };
 
 const normalizeHomeIcon = (icon, fallback = "Cpu") => legacyHomeIconAliases[icon] ?? icon ?? fallback;
+const computeHero2k = "/images/home-compute-hero-2k.png";
+const legacyComputeHeroUpload = "/site-content/hero-bg/1787422956900-b75ad73a-419e-4860-b5ba-079153679abd.png";
+const normalizeComputeHeroAsset = (value) => String(value || "").includes(legacyComputeHeroUpload) ? computeHero2k : value;
 
 export const defaultHomeSettings = {
-  version: 3,
+  version: 4,
   hero: {
     enabled: true,
+    desktopHeight: 690,
+    desktopBackgroundFit: "cover",
+    desktopBackgroundZoom: 100,
     mobileHeight: 560,
     mobileBackgroundFit: "cover",
-    backgroundImage: "/images/hero-galaxy-home.png",
+    mobileBackgroundZoom: 100,
+    backgroundImage: computeHero2k,
     backgroundPosition: "50% 46%",
+    mobileBackgroundImage: "",
+    mobileBackgroundPosition: "50% 46%",
     foregroundImage: "/images/hero-foreground.png",
     foregroundPosition: "50% 46%",
     title: "Galaxy Home",
@@ -122,12 +131,21 @@ export function normalizeHomeSettings(saved) {
   const hadPreviousMobileHeroDefaults = Number(saved?.hero?.mobileHeight) === 760 && saved?.hero?.mobileBackgroundFit === "contain";
   if (!saved?.hero?.mobileHeight || hadPreviousMobileHeroDefaults) normalized.hero.mobileHeight = defaultHomeSettings.hero.mobileHeight;
   if (!saved?.hero?.mobileBackgroundFit || hadPreviousMobileHeroDefaults) normalized.hero.mobileBackgroundFit = defaultHomeSettings.hero.mobileBackgroundFit;
-  normalized.hero.mobileHeight = Math.max(420, Math.min(800, Number(normalized.hero.mobileHeight) || 560));
+  if (!saved?.hero?.mobileBackgroundPosition) normalized.hero.mobileBackgroundPosition = normalized.hero.backgroundPosition;
+  normalized.hero.backgroundImage = normalizeComputeHeroAsset(normalized.hero.backgroundImage);
+  normalized.hero.mobileBackgroundImage = normalizeComputeHeroAsset(normalized.hero.mobileBackgroundImage);
+  normalized.hero.desktopHeight = Math.max(480, Math.min(960, Number(normalized.hero.desktopHeight) || 690));
+  normalized.hero.mobileHeight = Math.max(320, Math.min(900, Number(normalized.hero.mobileHeight) || 560));
+  normalized.hero.desktopBackgroundFit = ["cover", "contain"].includes(normalized.hero.desktopBackgroundFit) ? normalized.hero.desktopBackgroundFit : "cover";
   normalized.hero.mobileBackgroundFit = ["cover", "contain"].includes(normalized.hero.mobileBackgroundFit) ? normalized.hero.mobileBackgroundFit : "cover";
+  normalized.hero.desktopBackgroundZoom = Math.max(100, Math.min(250, Number(normalized.hero.desktopBackgroundZoom) || 100));
+  normalized.hero.mobileBackgroundZoom = Math.max(100, Math.min(250, Number(normalized.hero.mobileBackgroundZoom) || 100));
+  normalized.hero.mobileBackgroundImage = String(normalized.hero.mobileBackgroundImage || "").trim();
   normalized.version = defaultHomeSettings.version;
   normalized.features.mobileColumns = Math.max(1, Math.min(2, Number(normalized.features.mobileColumns) || 2));
   normalized.features.mobileCardHeight = Math.max(180, Math.min(420, Number(normalized.features.mobileCardHeight) || 250));
   normalized.hero.backgroundPosition = normalizeFocalPosition(normalized.hero.backgroundPosition);
+  normalized.hero.mobileBackgroundPosition = normalizeFocalPosition(normalized.hero.mobileBackgroundPosition);
   normalized.hero.foregroundPosition = normalizeFocalPosition(normalized.hero.foregroundPosition);
   normalized.features.items = normalized.features.items.map((item) => ({ ...item, icon: normalizeHomeIcon(item.icon, "GraphicsCard"), imagePosition: normalizeFocalPosition(item.imagePosition) }));
   normalized.about.imagePosition = normalizeFocalPosition(normalized.about.imagePosition);

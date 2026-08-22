@@ -155,12 +155,46 @@ export function HomeSettingsPage({ onNotice }) {
           <SectionHeaderRow title="首屏 Hero" description="背景图、主标题与左右文案" enabled={settings.hero.enabled} onEnabled={(value) => setField("hero", "enabled", value)} />
           <AccordionContent>
             <Card size="sm"><CardContent className="home-section-content">
-              <ImageControls prefix="hero-bg" image={settings.hero.backgroundImage} position={settings.hero.backgroundPosition} onImage={(value) => setField("hero", "backgroundImage", value)} onPosition={(value) => setField("hero", "backgroundPosition", value)} previewAspect="16 / 9" />
-              <ImageControls prefix="hero-fg" image={settings.hero.foregroundImage} position={settings.hero.foregroundPosition} onImage={(value) => setField("hero", "foregroundImage", value)} onPosition={(value) => setField("hero", "foregroundPosition", value)} previewAspect="16 / 9" />
-              <div className="home-fields-grid">
-                <TextControl id="hero-mobile-height" label="移动端区块高度（px）" type="number" value={settings.hero.mobileHeight} description="范围 420–800，横向背景图建议 520–600，避免上下出现大块空白。" onChange={(value) => setField("hero", "mobileHeight", Number(value))} />
-                <SelectControl id="hero-mobile-fit" label="移动端背景图适配" value={settings.hero.mobileBackgroundFit} options={[["cover", "铺满区块（推荐）"], ["contain", "完整显示（可能留白）"]]} description="横向图片建议铺满；只有必须看到整张图时才使用完整显示。" onChange={(value) => setField("hero", "mobileBackgroundFit", value)} />
+              <div className="home-hero-device-grid">
+                <section className="home-hero-device-panel">
+                  <div className="home-hero-device-heading"><strong>电脑端</strong><span>独立图片、尺寸与裁剪</span></div>
+                  <ImageControls
+                    prefix="hero-bg-desktop"
+                    label="电脑端背景图"
+                    image={settings.hero.backgroundImage}
+                    position={settings.hero.backgroundPosition}
+                    zoom={settings.hero.desktopBackgroundZoom}
+                    onImage={(value) => setField("hero", "backgroundImage", value)}
+                    onPosition={(value) => setField("hero", "backgroundPosition", value)}
+                    onZoom={(value) => setField("hero", "desktopBackgroundZoom", value)}
+                    previewAspect="16 / 9"
+                  />
+                  <div className="home-fields-grid">
+                    <TextControl id="hero-desktop-height" label="电脑端区块高度（px）" type="number" value={settings.hero.desktopHeight} description="范围 480–960。" onChange={(value) => setField("hero", "desktopHeight", Number(value))} />
+                    <SelectControl id="hero-desktop-fit" label="电脑端图片适配" value={settings.hero.desktopBackgroundFit} options={[["cover", "铺满并裁剪（推荐）"], ["contain", "完整显示（可能留白）"]]} onChange={(value) => setField("hero", "desktopBackgroundFit", value)} />
+                  </div>
+                </section>
+                <section className="home-hero-device-panel">
+                  <div className="home-hero-device-heading"><strong>移动端</strong><span>留空图片时自动沿用电脑端</span></div>
+                  <ImageControls
+                    prefix="hero-bg-mobile"
+                    label="移动端背景图"
+                    image={settings.hero.mobileBackgroundImage}
+                    fallbackImage={settings.hero.backgroundImage}
+                    position={settings.hero.mobileBackgroundPosition}
+                    zoom={settings.hero.mobileBackgroundZoom}
+                    onImage={(value) => setField("hero", "mobileBackgroundImage", value)}
+                    onPosition={(value) => setField("hero", "mobileBackgroundPosition", value)}
+                    onZoom={(value) => setField("hero", "mobileBackgroundZoom", value)}
+                    previewAspect="9 / 16"
+                  />
+                  <div className="home-fields-grid">
+                    <TextControl id="hero-mobile-height" label="移动端区块高度（px）" type="number" value={settings.hero.mobileHeight} description="范围 320–900。" onChange={(value) => setField("hero", "mobileHeight", Number(value))} />
+                    <SelectControl id="hero-mobile-fit" label="移动端图片适配" value={settings.hero.mobileBackgroundFit} options={[["cover", "铺满并裁剪（推荐）"], ["contain", "完整显示（可能留白）"]]} onChange={(value) => setField("hero", "mobileBackgroundFit", value)} />
+                  </div>
+                </section>
               </div>
+              <ImageControls prefix="hero-fg" label="电脑端前景图层" image={settings.hero.foregroundImage} position={settings.hero.foregroundPosition} onImage={(value) => setField("hero", "foregroundImage", value)} onPosition={(value) => setField("hero", "foregroundPosition", value)} previewAspect="16 / 9" />
               <div className="home-fields-grid"><TextControl id="hero-title" label="超大标题" value={settings.hero.title} onChange={(value) => setField("hero", "title", value)} /><TextControl id="hero-heading" label="左侧标题" value={settings.hero.heading} onChange={(value) => setField("hero", "heading", value)} /><TextControl id="hero-tagline" label="右侧文案" value={settings.hero.tagline} onChange={(value) => setField("hero", "tagline", value)} /></div>
               <TextControl id="hero-description" label="左侧介绍" value={settings.hero.description} textarea onChange={(value) => setField("hero", "description", value)} />
             </CardContent></Card>

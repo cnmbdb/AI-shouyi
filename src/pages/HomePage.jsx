@@ -23,7 +23,7 @@ import {
   Wallet,
 } from "@phosphor-icons/react";
 import { defaultHomeSettings } from "../data/homeSettings.js";
-import { assetUrl, preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
+import { assetUrl, responsiveImageProps } from "../lib/assets.js";
 import { resolveManagedLink } from "../lib/managedLink.js";
 
 const iconMap = {
@@ -92,15 +92,37 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
   const testimonialCount = Math.max(testimonials.items.length, 1);
   const visibleTestimonialPage = Math.min(testimonialPage, testimonialCount - 1);
   const CtaIcon = resolveIcon(cta.icon);
+  const mobileHeroImage = hero.mobileBackgroundImage || hero.backgroundImage;
+  const desktopHeroProps = responsiveImageProps(hero.backgroundImage, "(max-width: 720px) 100vw, 100vw");
+  const mobileHeroProps = responsiveImageProps(mobileHeroImage, "100vw");
 
   if (hero.enabled && hero.backgroundImage) {
-    preload(preloadImageUrl(hero.backgroundImage), { as: "image", fetchPriority: "high" });
+    const visibleHeroImage = window.matchMedia("(max-width: 720px)").matches ? mobileHeroImage : hero.backgroundImage;
+    const visibleHeroProps = responsiveImageProps(visibleHeroImage, "100vw");
+    preload(visibleHeroProps.src, {
+      as: "image",
+      fetchPriority: "high",
+      ...(visibleHeroProps.srcSet ? { imageSrcSet: visibleHeroProps.srcSet, imageSizes: visibleHeroProps.sizes } : {}),
+    });
   }
 
   return (
     <>
       {hero.enabled ? (
-        <section className="hero" aria-label="速芯算力首页" style={{ backgroundImage: `url(${assetUrl(hero.backgroundImage, 1280)})`, backgroundPosition: hero.backgroundPosition, "--hero-mobile-height": `${hero.mobileHeight ?? 560}px`, "--hero-mobile-fit": hero.mobileBackgroundFit ?? "cover" }}>
+        <section className="hero" aria-label="速芯算力首页" style={{
+          "--hero-desktop-height": `${hero.desktopHeight ?? 690}px`,
+          "--hero-desktop-fit": hero.desktopBackgroundFit ?? "cover",
+          "--hero-desktop-position": hero.backgroundPosition,
+          "--hero-desktop-zoom": (hero.desktopBackgroundZoom ?? 100) / 100,
+          "--hero-mobile-height": `${hero.mobileHeight ?? 560}px`,
+          "--hero-mobile-fit": hero.mobileBackgroundFit ?? "cover",
+          "--hero-mobile-position": hero.mobileBackgroundPosition ?? hero.backgroundPosition,
+          "--hero-mobile-zoom": (hero.mobileBackgroundZoom ?? 100) / 100,
+        }}>
+          <picture className="hero-background" aria-hidden="true">
+            <source media="(max-width: 720px)" srcSet={mobileHeroProps.srcSet ?? mobileHeroProps.src} sizes={mobileHeroProps.sizes} />
+            <img {...desktopHeroProps} alt="" decoding="async" fetchPriority="high" />
+          </picture>
           <div className="hero-inner shell">
             <h1>{hero.title}</h1>
             <div className="hero-copy hero-copy-left">

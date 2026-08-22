@@ -12,6 +12,7 @@ const localImages = {
   "gpu2": 986,
   "hero-foreground": 1672,
   "hero-galaxy-home": 1672,
+  "home-compute-hero-2k": 2560,
   "retreat-pool": 1672,
   "yield-calculator-gpu": 1672,
 };
@@ -50,9 +51,15 @@ export const responsiveImageProps = (path = "", sizes = "100vw") => {
   const image = localImage(path);
   if (!image) return { src: publicAsset(path) };
   if (isCdbSourceCapture()) return { src: cdbSourceAsset(image) };
+  const srcSet = [
+    `${assetUrl(path, 768)} 768w`,
+    `${assetUrl(path, 1280)} 1280w`,
+    ...(image.name === "home-compute-hero-2k" ? [`${assetUrl(path, 1920)} 1920w`] : []),
+    `${assetUrl(path)} ${image.width}w`,
+  ].join(", ");
   return {
     src: assetUrl(path),
-    srcSet: `${assetUrl(path, 768)} 768w, ${assetUrl(path, 1280)} 1280w, ${assetUrl(path)} ${image.width}w`,
+    srcSet,
     sizes,
   };
 };
