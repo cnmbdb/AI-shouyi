@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useRouterState } from "@tanstack/react-router";
 import { SiteFooter, SiteHeader } from "./components/SiteChrome.jsx";
-import { ConsoleLoader } from "./components/ConsoleLoader.jsx";
+import { ConsoleLoader, PublicRouteLoader } from "./components/ConsoleLoader.jsx";
 import { loadCurrentUser, logoutAccount, subscribeToAuthChanges } from "./lib/auth.js";
 import { getCachedSiteSettings, getSiteSettings, subscribeToPublishedContent } from "./lib/platformData.js";
 import { normalizeHomeSettings } from "./data/homeSettings.js";
@@ -54,6 +54,7 @@ export function App() {
   const legacyProductSlug = productSegments.length === 1 ? productSegments[0] : "";
   const publicPageByPath = { "/": "home", "/estates": "estates", "/blog": "blog", "/about": "about", "/calculator": "calculator", "/agency": "agency", "/contact": "contact" };
   const page = isBlogArticle ? "blog" : isStoreProduct ? "product" : publicPageByPath[pathname] ?? "home";
+  const isPrimaryPublicPage = ["home", "estates", "about", "calculator", "agency", "contact"].includes(page);
   const publicSettings = useQuery({
     queryKey: ["public-settings"],
     queryFn: getSiteSettings,
@@ -169,7 +170,7 @@ export function App() {
   };
 
   if (!isConsole && !publicSettings.data && publicSettings.isPending) {
-    return <div className="route-loader">正在同步 ai.suxin.ai 最新配置...</div>;
+    return <PublicRouteLoader fullScreen message="正在同步 ai.suxin.ai 最新配置" />;
   }
 
   if (!isConsole && !publicSettings.data && publicSettings.isError) {
@@ -177,8 +178,8 @@ export function App() {
   }
 
   if (isAuth) {
-    if (session.isLoading) return <div className="route-loader">正在确认登录状态...</div>;
-    return <Suspense fallback={<div className="route-loader">正在加载账户入口...</div>}><AuthPage pathname={pathname} user={session.data?.user} onSuccess={(user) => {
+    if (session.isLoading) return <PublicRouteLoader fullScreen message="正在确认登录状态" />;
+    return <Suspense fallback={<PublicRouteLoader fullScreen message="正在加载账户入口" />}><AuthPage pathname={pathname} user={session.data?.user} onSuccess={(user) => {
         queryClient.setQueryData(["session"], { user });
         router.navigate({ to: "/" });
       }} onNavigate={navigate} navigationSettings={navigationSettings} /></Suspense>;
@@ -190,7 +191,7 @@ export function App() {
   }
 
   return (
-    <div className={`app-shell app-${page}`}>
+    <div className={`app-shell app-${page}${isPrimaryPublicPage ? " app-primary-public" : ""}`}>
       <SiteHeader
         page={page}
         menuOpen={menuOpen}
@@ -202,7 +203,7 @@ export function App() {
         settings={navigationSettings}
       />
       <main id="home">
-        <Suspense fallback={<div className="route-loader">正在加载页面...</div>}>
+        <Suspense fallback={<PublicRouteLoader />}>
           {page === "home" ? <HomePage settings={homeSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
           {page === "estates" ? <EstatesPage settings={productSettings} onNavigate={navigate} onNotice={setNotice} /> : null}
           {page === "blog" && !isBlogArticle ? <BlogPage settings={blogSettings} onNotice={setNotice} onNavigate={navigate} /> : null}

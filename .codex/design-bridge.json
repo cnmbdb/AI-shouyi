@@ -1,0 +1,91 @@
+{
+  "version": 2,
+  "figmaUrl": "",
+  "figmaReady": true,
+  "changeCount": 0,
+  "appliedChangeCount": 0,
+  "pendingChangeCount": 0,
+  "designSnapshotPath": "",
+  "activePageId": "contact",
+  "pages": [
+    {
+      "id": "about",
+      "name": "关于我们",
+      "path": "/cdb-entry.html?page=about",
+      "entry": "cdb-entry.html",
+      "route": "/cdb-entry.html?page=about",
+      "sourceHash": "424c29ab58feb4746909e17b3bb0fe123fe58d56b346305fb7b0e6f5ac8f865f",
+      "acceptsFigmaSeed": false,
+      "syncState": "figma_changed",
+      "figmaReady": true,
+      "lastSentAt": "2026-08-22T17:32:53.618Z",
+      "nodeCount": 11
+    },
+    {
+      "id": "estates",
+      "name": "投资 GPU",
+      "path": "/cdb-entry.html?page=estates",
+      "entry": "cdb-entry.html",
+      "route": "/cdb-entry.html?page=estates",
+      "sourceHash": "424c29ab58feb4746909e17b3bb0fe123fe58d56b346305fb7b0e6f5ac8f865f",
+      "acceptsFigmaSeed": false,
+      "syncState": "source_changed",
+      "figmaReady": true,
+      "lastSentAt": "2026-08-22T17:29:12.700Z",
+      "nodeCount": 4
+    },
+    {
+      "id": "calculator",
+      "name": "收益计算",
+      "path": "/cdb-entry.html?page=calculator",
+      "entry": "cdb-entry.html",
+      "route": "/cdb-entry.html?page=calculator",
+      "sourceHash": "424c29ab58feb4746909e17b3bb0fe123fe58d56b346305fb7b0e6f5ac8f865f",
+      "acceptsFigmaSeed": false,
+      "syncState": "source_changed",
+      "figmaReady": true,
+      "lastSentAt": "2026-08-22T17:29:16.993Z",
+      "nodeCount": 4
+    },
+    {
+      "id": "agency",
+      "name": "我要代理",
+      "path": "/cdb-entry.html?page=agency",
+      "entry": "cdb-entry.html",
+      "route": "/cdb-entry.html?page=agency",
+      "sourceHash": "424c29ab58feb4746909e17b3bb0fe123fe58d56b346305fb7b0e6f5ac8f865f",
+      "acceptsFigmaSeed": false,
+      "syncState": "source_changed",
+      "figmaReady": true,
+      "lastSentAt": "2026-08-22T17:29:20.630Z",
+      "nodeCount": 4
+    },
+    {
+      "id": "blog",
+      "name": "博客",
+      "path": "/cdb-entry.html?page=blog",
+      "entry": "cdb-entry.html",
+      "route": "/cdb-entry.html?page=blog",
+      "sourceHash": "424c29ab58feb4746909e17b3bb0fe123fe58d56b346305fb7b0e6f5ac8f865f",
+      "acceptsFigmaSeed": false,
+      "syncState": "source_changed",
+      "figmaReady": true,
+      "lastSentAt": "2026-08-22T17:29:24.421Z",
+      "nodeCount": 4
+    },
+    {
+      "id": "contact",
+      "name": "联系我们",
+      "path": "/cdb-entry.html?page=contact",
+      "entry": "cdb-entry.html",
+      "route": "/cdb-entry.html?page=contact",
+      "sourceHash": "424c29ab58feb4746909e17b3bb0fe123fe58d56b346305fb7b0e6f5ac8f865f",
+      "acceptsFigmaSeed": false,
+      "syncState": "failed",
+      "figmaReady": true,
+      "lastSentAt": "2026-08-22T17:29:28.138Z",
+      "nodeCount": 4
+    }
+  ],
+  "updatedAt": "2026-08-22T17:39:14.149Z"
+}

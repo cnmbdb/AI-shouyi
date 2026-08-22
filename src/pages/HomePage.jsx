@@ -3,22 +3,22 @@ import { preload } from "react-dom";
 import {
   ArrowLeft,
   ArrowRight,
-  Buildings,
+  BookmarkSimple,
+  ChartLineUp,
+  Circuitry,
+  CloudArrowUp,
+  Coins,
   Cpu,
-  Cube,
-  Diamond,
-  FlowerLotus,
+  CurrencyCircleDollar,
+  DesktopTower,
+  Gauge,
+  GraphicsCard,
+  Handshake,
   HardDrives,
-  Heart,
-  HouseLine,
   Leaf,
   MapPin,
-  Medal,
-  Mountains,
   Quotes,
   ShieldCheck,
-  Sparkle,
-  UserFocus,
   UsersThree,
   Wallet,
 } from "@phosphor-icons/react";
@@ -26,8 +26,35 @@ import { defaultHomeSettings } from "../data/homeSettings.js";
 import { assetUrl, preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
 import { resolveManagedLink } from "../lib/managedLink.js";
 
-const iconMap = { Buildings, Mountains, Cube, FlowerLotus, Diamond, UserFocus, ShieldCheck, Leaf, HouseLine, UsersThree, Medal, Heart, Sparkle, Cpu, HardDrives, Wallet };
-const resolveIcon = (name) => iconMap[name] ?? Sparkle;
+const iconMap = {
+  GraphicsCard,
+  Cpu,
+  Circuitry,
+  HardDrives,
+  DesktopTower,
+  CloudArrowUp,
+  Gauge,
+  ChartLineUp,
+  CurrencyCircleDollar,
+  Coins,
+  Wallet,
+  Handshake,
+  ShieldCheck,
+  UsersThree,
+  Leaf,
+  // Keep published legacy icon names readable while rendering compute-product semantics.
+  Buildings: GraphicsCard,
+  Mountains: CloudArrowUp,
+  Cube: Circuitry,
+  FlowerLotus: Cpu,
+  Diamond: GraphicsCard,
+  UserFocus: UsersThree,
+  HouseLine: DesktopTower,
+  Medal: Gauge,
+  Heart: ChartLineUp,
+  Sparkle: Handshake,
+};
+const resolveIcon = (name) => iconMap[name] ?? Cpu;
 
 function ArrowButton({ label = "Open", onClick, dark = false, asSpan = false }) {
   if (asSpan) return <span className={`circle-arrow ${dark ? "dark" : ""}`} aria-hidden="true"><ArrowRight weight="bold" /></span>;
@@ -73,7 +100,7 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
   return (
     <>
       {hero.enabled ? (
-        <section className="hero" aria-label="Galaxy Home luxury estate" style={{ backgroundImage: `url(${assetUrl(hero.backgroundImage, 1280)})`, backgroundPosition: hero.backgroundPosition, "--hero-mobile-height": `${hero.mobileHeight ?? 560}px`, "--hero-mobile-fit": hero.mobileBackgroundFit ?? "cover" }}>
+        <section className="hero" aria-label="速芯算力首页" style={{ backgroundImage: `url(${assetUrl(hero.backgroundImage, 1280)})`, backgroundPosition: hero.backgroundPosition, "--hero-mobile-height": `${hero.mobileHeight ?? 560}px`, "--hero-mobile-fit": hero.mobileBackgroundFit ?? "cover" }}>
           <div className="hero-inner shell">
             <h1>{hero.title}</h1>
             <div className="hero-copy hero-copy-left">
@@ -110,7 +137,7 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
             <p>{about.description}</p>
             <button className="soft-button" onClick={() => handleLink(about.buttonLink)}>{about.buttonLabel} <ArrowRight weight="bold" /></button>
           </div>
-          <div className="about-image" aria-label="Luxury private retreat" style={{ backgroundImage: `url(${assetUrl(about.image, 768)})`, backgroundPosition: about.imagePosition }} />
+          <div className="about-image" aria-label="算力中心与 GPU 设备" style={{ backgroundImage: `url(${assetUrl(about.image, 768)})`, backgroundPosition: about.imagePosition }} />
           <div className="benefit-grid">
             {about.benefits.map((item) => {
               const Icon = resolveIcon(item.icon);
@@ -131,7 +158,7 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
               <article className="estate-card home-clickable" key={estate.id} style={{ backgroundImage: `url(${assetUrl(estate.image, 768)})`, backgroundPosition: estate.imagePosition }} onClick={() => handleLink(estate.link)}>
                 <div className="estate-shade" />
                 <span className="estate-tag">{estate.tag}</span>
-                <button className={`heart-button ${liked.has(estate.title) ? "liked" : ""}`} onClick={(event) => { event.stopPropagation(); toggleLike(estate.title); }} aria-label={`Save ${estate.title}`}><Heart weight={liked.has(estate.title) ? "fill" : "regular"} /></button>
+                <button className={`heart-button ${liked.has(estate.title) ? "liked" : ""}`} onClick={(event) => { event.stopPropagation(); toggleLike(estate.title); }} aria-label={`收藏 ${estate.title}`}><BookmarkSimple weight={liked.has(estate.title) ? "fill" : "regular"} /></button>
                 <div className="estate-meta"><h3>{estate.title}</h3><div><span><MapPin weight="fill" /> {estate.location}</span><strong>{estate.price}</strong></div></div>
               </article>
             ))}
@@ -149,7 +176,7 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
       ) : null}
 
       {testimonials.enabled ? (
-        <section className="testimonials shell" id="testimonials" style={{ backgroundImage: `linear-gradient(90deg, white 0%, white 83%, rgba(113,100,214,.08) 100%), url(${assetUrl(testimonials.backgroundImage, 768)})`, backgroundPosition: `0 0, ${testimonials.backgroundPosition}`, backgroundSize: "auto, 20% 100%", backgroundRepeat: "no-repeat" }}>
+        <section className="testimonials shell" id="testimonials" style={{ backgroundImage: `linear-gradient(90deg, white 0%, white 83%, rgba(118,185,0,.09) 100%), url(${assetUrl(testimonials.backgroundImage, 768)})`, backgroundPosition: `0 0, ${testimonials.backgroundPosition}`, backgroundSize: "auto, 20% 100%", backgroundRepeat: "no-repeat" }}>
           <span className="eyebrow centered">{testimonials.eyebrow}</span>
           <button className="testimonial-arrow left" onClick={() => setTestimonialPage((value) => (value - 1 + testimonialCount) % testimonialCount)} aria-label="Previous testimonials"><ArrowLeft /></button>
           <div className="testimonial-grid" style={{ transform: `translateX(${-visibleTestimonialPage * 1.2}%)` }}>

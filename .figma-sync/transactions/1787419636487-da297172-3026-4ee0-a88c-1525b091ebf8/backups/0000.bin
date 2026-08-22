@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-CN" translate="no" class="notranslate">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google" content="notranslate" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="Aether Lane luxury estates above the skyline." />
+    <link rel="icon" href="/images/gpu-logo.svg" />
+    <title>速芯算力suxin.ai</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

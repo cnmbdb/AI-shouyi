@@ -145,3 +145,11 @@ Prototype homepage mobile-layout rule: Home Hero mobile height and background fi
 Prototype mobile-footer layout rule: on small screens, the footer brand spans the full row, the website-navigation and platform columns render side by side, and contact, media, and legal content span the full row. Do not collapse all footer content into one narrow column with unused space.
 
 Prototype homepage mobile-hero proportion rule: horizontal Home Hero artwork defaults to a compact 560px mobile section with cover fitting. Avoid contain fitting inside a tall mobile section because it creates large empty bands above and below the artwork; keep the following feature cards visible near the first viewport boundary.
+
+Prototype homepage compute-visual rule: Home uses NVIDIA Green `#76B900` as its only interaction and selection accent. Feature, benefit, statistics, testimonial, and CTA icons must describe the platform's GPU devices, compute hosting, running yield, settlement, users, or agency workflows; legacy real-estate and generic lifestyle icon names remain read-compatible but render as the closest compute-product symbol.
+
+Prototype public-route loading rule: public route and authentication loading states reuse the authenticated console's compact pixel RTX 5090 loader, with a neutral gray rail and NVIDIA Green `#76B900` progress layer. Do not render the legacy purple loading sentence.
+
+Prototype primary-public parity rule: Home, About, yield calculator, agency, and contact follow the Investment GPU page's shared desktop shell width, header geometry, footer density, and readable 13–15px content typography while preserving each page's own section anatomy and CMS contract.
+
+Prototype shared-navigation active rule: desktop shared navigation uses a GSAP-driven sliding gray-white capsule with a soft neutral shadow behind the active item. It must persist through client-side route changes, remain readable over the frosted header, and respect `prefers-reduced-motion`; mobile keeps a compact static active state.

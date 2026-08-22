@@ -1,11 +1,26 @@
 import { normalizeFocalPosition } from "../lib/focalPosition.js";
 
 export const homeIconOptions = [
-  ["Buildings", "建筑"], ["Mountains", "山峰"], ["Cube", "立方体"], ["FlowerLotus", "莲花"],
-  ["Diamond", "钻石"], ["UserFocus", "用户"], ["ShieldCheck", "安全"], ["Leaf", "叶子"],
-  ["HouseLine", "房屋"], ["UsersThree", "用户组"], ["Medal", "奖章"], ["Heart", "爱心"],
-  ["Sparkle", "闪光"], ["Cpu", "处理器"], ["HardDrives", "服务器"], ["Wallet", "钱包"],
+  ["GraphicsCard", "GPU 显卡"], ["Cpu", "算力芯片"], ["Circuitry", "计算电路"], ["HardDrives", "服务器"],
+  ["DesktopTower", "算力中心"], ["CloudArrowUp", "云端托管"], ["Gauge", "运行效率"], ["ChartLineUp", "收益增长"],
+  ["CurrencyCircleDollar", "收益结算"], ["Coins", "Token 产出"], ["Wallet", "资金账户"], ["Handshake", "合作代理"],
+  ["ShieldCheck", "安全保障"], ["UsersThree", "用户服务"], ["Leaf", "绿色能源"],
 ];
+
+const legacyHomeIconAliases = {
+  Buildings: "GraphicsCard",
+  Mountains: "CloudArrowUp",
+  Cube: "Circuitry",
+  FlowerLotus: "Cpu",
+  Diamond: "GraphicsCard",
+  UserFocus: "UsersThree",
+  HouseLine: "DesktopTower",
+  Medal: "Gauge",
+  Heart: "ChartLineUp",
+  Sparkle: "Handshake",
+};
+
+const normalizeHomeIcon = (icon, fallback = "Cpu") => legacyHomeIconAliases[icon] ?? icon ?? fallback;
 
 export const defaultHomeSettings = {
   version: 3,
@@ -27,10 +42,10 @@ export const defaultHomeSettings = {
     mobileColumns: 2,
     mobileCardHeight: 250,
     items: [
-      { id: "feature-sky", icon: "Buildings", title: "Sky Villas", description: "Architectural masterpieces floating above the clouds with infinite panoramic views.", image: "/images/hero-galaxy-home.png", imagePosition: "42% 66%", link: "/estates" },
-      { id: "feature-view", icon: "Mountains", title: "Panoramic Views", description: "Wake up to endless horizons and golden sunsets from every vantage.", image: "/images/hero-galaxy-home.png", imagePosition: "8% 38%", link: "/estates" },
-      { id: "feature-smart", icon: "Cube", title: "Smart Living", description: "Intelligent home systems designed for comfort, security, and effortless living.", image: "/images/estate-coast.png", imagePosition: "50% 63%", link: "/estates" },
-      { id: "feature-private", icon: "FlowerLotus", title: "Private Retreat", description: "Secluded sanctuaries designed for peace, privacy and ultimate rejuvenation.", image: "/images/estate-coast.png", imagePosition: "66% 52%", link: "/estates" },
+      { id: "feature-sky", icon: "GraphicsCard", title: "Sky Villas", description: "Architectural masterpieces floating above the clouds with infinite panoramic views.", image: "/images/hero-galaxy-home.png", imagePosition: "42% 66%", link: "/estates" },
+      { id: "feature-view", icon: "CloudArrowUp", title: "Panoramic Views", description: "Wake up to endless horizons and golden sunsets from every vantage.", image: "/images/hero-galaxy-home.png", imagePosition: "8% 38%", link: "/estates" },
+      { id: "feature-smart", icon: "Circuitry", title: "Smart Living", description: "Intelligent home systems designed for comfort, security, and effortless living.", image: "/images/estate-coast.png", imagePosition: "50% 63%", link: "/estates" },
+      { id: "feature-private", icon: "Cpu", title: "Private Retreat", description: "Secluded sanctuaries designed for peace, privacy and ultimate rejuvenation.", image: "/images/estate-coast.png", imagePosition: "66% 52%", link: "/estates" },
     ],
   },
   about: {
@@ -43,8 +58,8 @@ export const defaultHomeSettings = {
     buttonLabel: "Learn More About Us",
     buttonLink: "#contact",
     benefits: [
-      { id: "benefit-curated", icon: "Diamond", title: "Curated Excellence", description: "Handpicked estates in extraordinary locations around the world.", link: "/estates" },
-      { id: "benefit-service", icon: "UserFocus", title: "Bespoke Service", description: "Personalized guidance and white-glove service at every step.", link: "#contact" },
+      { id: "benefit-curated", icon: "GraphicsCard", title: "Curated Excellence", description: "Handpicked estates in extraordinary locations around the world.", link: "/estates" },
+      { id: "benefit-service", icon: "UsersThree", title: "Bespoke Service", description: "Personalized guidance and white-glove service at every step.", link: "#contact" },
       { id: "benefit-secure", icon: "ShieldCheck", title: "Trusted & Secure", description: "Transparent processes and complete peace of mind for your investment.", link: "#contact" },
       { id: "benefit-green", icon: "Leaf", title: "Sustainable Living", description: "Eco-conscious design that supports a better future generation.", link: "/blog" },
     ],
@@ -64,10 +79,10 @@ export const defaultHomeSettings = {
   stats: {
     enabled: true,
     items: [
-      { id: "stat-properties", icon: "HouseLine", value: "320+", label: "Properties Sold", link: "/estates" },
+      { id: "stat-properties", icon: "DesktopTower", value: "320+", label: "Properties Sold", link: "/estates" },
       { id: "stat-clients", icon: "UsersThree", value: "1,240+", label: "Premium Clients", link: "#testimonials" },
-      { id: "stat-years", icon: "Medal", value: "18+", label: "Years of Expertise", link: "/blog" },
-      { id: "stat-satisfaction", icon: "Heart", value: "98%", label: "Client Satisfaction", link: "#testimonials" },
+      { id: "stat-years", icon: "Gauge", value: "18+", label: "Years of Expertise", link: "/blog" },
+      { id: "stat-satisfaction", icon: "ChartLineUp", value: "98%", label: "Client Satisfaction", link: "#testimonials" },
     ],
   },
   testimonials: {
@@ -83,7 +98,7 @@ export const defaultHomeSettings = {
   },
   cta: {
     enabled: true,
-    icon: "Sparkle",
+    icon: "Handshake",
     title: "Ready to Find Your Galaxy Home?",
     description: "Book a private viewing or explore our exclusive estates.",
     primaryButton: { label: "Book a Private Viewing", link: "#contact" },
@@ -114,11 +129,14 @@ export function normalizeHomeSettings(saved) {
   normalized.features.mobileCardHeight = Math.max(180, Math.min(420, Number(normalized.features.mobileCardHeight) || 250));
   normalized.hero.backgroundPosition = normalizeFocalPosition(normalized.hero.backgroundPosition);
   normalized.hero.foregroundPosition = normalizeFocalPosition(normalized.hero.foregroundPosition);
-  normalized.features.items = normalized.features.items.map((item) => ({ ...item, imagePosition: normalizeFocalPosition(item.imagePosition) }));
+  normalized.features.items = normalized.features.items.map((item) => ({ ...item, icon: normalizeHomeIcon(item.icon, "GraphicsCard"), imagePosition: normalizeFocalPosition(item.imagePosition) }));
   normalized.about.imagePosition = normalizeFocalPosition(normalized.about.imagePosition);
+  normalized.about.benefits = normalized.about.benefits.map((item) => ({ ...item, icon: normalizeHomeIcon(item.icon, "ShieldCheck") }));
   normalized.featured.items = normalized.featured.items.map((item) => ({ ...item, imagePosition: normalizeFocalPosition(item.imagePosition) }));
+  normalized.stats.items = normalized.stats.items.map((item) => ({ ...item, icon: normalizeHomeIcon(item.icon, "ChartLineUp") }));
   normalized.testimonials.backgroundPosition = normalizeFocalPosition(normalized.testimonials.backgroundPosition);
   normalized.testimonials.items = normalized.testimonials.items.map((item) => ({ ...item, avatarPosition: normalizeFocalPosition(item.avatarPosition) }));
+  normalized.cta.icon = normalizeHomeIcon(normalized.cta.icon, "Handshake");
   return normalized;
 }
 

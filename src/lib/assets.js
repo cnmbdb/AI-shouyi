@@ -35,9 +35,13 @@ const publicAsset = (path = "") => {
   return `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
 };
 
+const cdbSourceAsset = (image) => publicAsset(`/cdb-images/${image.name}.jpg`);
+const isCdbSourceCapture = () => typeof window !== "undefined" && window.__CDB_SOURCE_CAPTURE__ === true;
+
 export const assetUrl = (path = "", width) => {
   const image = localImage(path);
   if (!image) return publicAsset(path);
+  if (isCdbSourceCapture()) return cdbSourceAsset(image);
   const suffix = width ? `-${width}` : "";
   return publicAsset(`/images/${image.name}${suffix}.webp`);
 };
@@ -45,6 +49,7 @@ export const assetUrl = (path = "", width) => {
 export const responsiveImageProps = (path = "", sizes = "100vw") => {
   const image = localImage(path);
   if (!image) return { src: publicAsset(path) };
+  if (isCdbSourceCapture()) return { src: cdbSourceAsset(image) };
   return {
     src: assetUrl(path),
     srcSet: `${assetUrl(path, 768)} 768w, ${assetUrl(path, 1280)} 1280w, ${assetUrl(path)} ${image.width}w`,

@@ -14,6 +14,7 @@ import {
   SquaresFour,
 } from "@phosphor-icons/react";
 import { defaultBlogSettings } from "../data/siteSettings.js";
+import { blogFallback } from "../data/blogFallback.js";
 import { getBlogPosts, getCachedBlogPosts, subscribeNewsletter } from "../lib/platformData.js";
 import { assetUrl, preloadImageUrl, responsiveImageProps } from "../lib/assets.js";
 
@@ -81,7 +82,7 @@ function EditorsCard({ post, onOpen }) {
   );
 }
 
-export function BlogPage({ onNotice, onNavigate, settings = defaultBlogSettings }) {
+export function BlogPage({ onNotice, onNavigate, settings = defaultBlogSettings, captureMode = false }) {
   const [category, setCategory] = useState("All");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -89,13 +90,16 @@ export function BlogPage({ onNotice, onNavigate, settings = defaultBlogSettings 
     queryKey: ["blog-posts"],
     queryFn: getBlogPosts,
     retry: false,
-    initialData: getCachedBlogPosts,
+    initialData: captureMode
+      ? blogFallback.map((post) => ({ ...post, author_avatar: null }))
+      : getCachedBlogPosts,
     initialDataUpdatedAt: 0,
     staleTime: 30_000,
     gcTime: 30 * 60_000,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: "always",
-    refetchOnReconnect: "always",
+    refetchOnMount: captureMode ? false : "always",
+    refetchOnWindowFocus: !captureMode,
+    refetchOnReconnect: !captureMode,
+    enabled: !captureMode,
   });
   const posts = postsQuery.data ?? [];
 

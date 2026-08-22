@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import {
   EnvelopeSimple,
   FacebookLogo,
@@ -16,6 +18,8 @@ import { defaultFooterSettings, defaultNavigationSettings } from "../data/siteSe
 import { assetUrl } from "../lib/assets.js";
 import { resolveManagedLink } from "../lib/managedLink.js";
 import { BrandLogoMark } from "./BrandLogo.jsx";
+
+gsap.registerPlugin(useGSAP);
 
 const socialIcons = {
   Instagram: InstagramLogo,
@@ -89,11 +93,60 @@ export function UserMenu({ user, onNavigate, onLogout, compact = false, loginLab
 export function SiteHeader({ page, menuOpen, onMenuToggle, onNavigate, onSection, user, onLogout, settings = defaultNavigationSettings }) {
   const openLink = createSiteLinkHandler(onNavigate, onSection);
   const items = settings.items.filter((item) => item.enabled !== false);
+  const navRef = useRef(null);
+  const pillRef = useRef(null);
+  const pillReady = useRef(false);
+
+  useGSAP(() => {
+    const nav = navRef.current;
+    const pill = pillRef.current;
+    if (!nav || !pill) return undefined;
+
+    const syncPill = (animate = true) => {
+      const activeButton = nav.querySelector("button.active");
+      if (!activeButton) {
+        pillReady.current = false;
+        gsap.set(pill, { autoAlpha: 0 });
+        return;
+      }
+
+      const navBox = nav.getBoundingClientRect();
+      const activeBox = activeButton.getBoundingClientRect();
+      const target = {
+        x: activeBox.left - navBox.left,
+        width: activeBox.width,
+      };
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (animate && pillReady.current && !reducedMotion) {
+        gsap.to(pill, { ...target, autoAlpha: 1, duration: 0.46, ease: "power3.out", overwrite: "auto" });
+      } else {
+        gsap.set(pill, { x: target.x, width: target.width, autoAlpha: 1 });
+      }
+      pillReady.current = true;
+    };
+
+    const media = gsap.matchMedia();
+    media.add("(min-width: 721px)", () => {
+      syncPill(false);
+      const resizeObserver = new ResizeObserver(() => syncPill(true));
+      const mutationObserver = new MutationObserver(() => window.requestAnimationFrame(() => syncPill(true)));
+      resizeObserver.observe(nav);
+      mutationObserver.observe(nav, { attributes: true, attributeFilter: ["class"], childList: true, subtree: true });
+      return () => {
+        resizeObserver.disconnect();
+        mutationObserver.disconnect();
+      };
+    });
+
+    return () => media.revert();
+  }, { scope: navRef });
 
   return (
     <header className={`topbar shell ${settings.sticky ? "topbar-sticky" : ""}`}>
       <Logo onNavigate={onNavigate} siteName={settings.siteName} logo={settings.logo} logoSize={settings.logoSize} fallback="gpu" />
-      <nav className={menuOpen ? "open" : ""} aria-label="主导航">
+      <nav ref={navRef} className={menuOpen ? "open" : ""} aria-label="主导航">
+        <span ref={pillRef} className="nav-active-pill" aria-hidden="true" />
         {items.map((item) => {
           const itemPage = activePageForLink(item.link);
           return <button className={itemPage && page === itemPage ? "active" : ""} key={item.id} onClick={() => openLink(item.link)}>{item.label}</button>;

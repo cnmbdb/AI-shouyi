@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "transactionId": "1787419636487-da297172-3026-4ee0-a88c-1525b091ebf8",
+  "kind": "cdb-preflight-fix",
+  "parentTransactionId": "",
+  "undoable": true,
+  "status": "committed",
+  "createdAt": "2026-08-22T17:27:16.487Z",
+  "completedAt": "2026-08-22T17:27:16.490Z",
+  "files": [
+    {
+      "path": "index.html",
+      "existedBefore": true,
+      "beforeHash": "8e6f6432033e24d07e08fbd60479a5d93edd54966b753d70e1b39131c31b786b",
+      "afterHash": "8d49a9258a2402b95a98d5cee602f21e52a46520a5b7e25a878766e6acb7d95e",
+      "backup": "backups/0000.bin",
+      "delete": false
+    }
+  ]
+}

@@ -1,4 +1,5 @@
-const loadingStages = ["验证账户", "读取算力资产", "准备控制台"];
+const consoleLoadingStages = ["验证账户", "读取算力资产", "准备控制台"];
+const publicLoadingStages = ["连接内容", "加载页面", "准备交互"];
 
 function PixelGpu5090() {
   return (
@@ -24,12 +25,18 @@ function PixelGpu5090() {
   );
 }
 
-export function ConsoleLoader({ message = "正在同步设备、跑算与资金数据" }) {
+function ComputeLoader({
+  title,
+  message,
+  stages,
+  ariaLabel,
+  className = "",
+}) {
   return (
-    <main className="console-loader-screen" role="status" aria-live="polite" aria-label="正在进入算力控制台">
+    <div className={`console-loader-screen ${className}`.trim()} role="status" aria-live="polite" aria-label={ariaLabel}>
       <section className="console-loader-card">
         <div className="console-loader-copy">
-          <strong>正在进入算力控制台</strong>
+          <strong>{title}</strong>
           <span>{message}</span>
         </div>
         <div className="console-loader-progress" aria-hidden="true">
@@ -39,9 +46,32 @@ export function ConsoleLoader({ message = "正在同步设备、跑算与资金�
           </div>
         </div>
         <div className="console-loader-stages" aria-hidden="true">
-          {loadingStages.map((stage, index) => <span key={stage} style={{ "--loader-delay": `${index * 0.42}s` }}><i />{stage}</span>)}
+          {stages.map((stage, index) => <span key={stage} style={{ "--loader-delay": `${index * 0.42}s` }}><i />{stage}</span>)}
         </div>
       </section>
-    </main>
+    </div>
+  );
+}
+
+export function ConsoleLoader({ message = "正在同步设备、跑算与资金数据" }) {
+  return (
+    <ComputeLoader
+      title="正在进入算力控制台"
+      message={message}
+      stages={consoleLoadingStages}
+      ariaLabel="正在进入算力控制台"
+    />
+  );
+}
+
+export function PublicRouteLoader({ message = "正在同步页面内容与算力配置", fullScreen = false }) {
+  return (
+    <ComputeLoader
+      title="正在加载算力页面"
+      message={message}
+      stages={publicLoadingStages}
+      ariaLabel="正在加载算力页面"
+      className={`public-route-loader${fullScreen ? " public-route-loader-full" : ""}`}
+    />
   );
 }

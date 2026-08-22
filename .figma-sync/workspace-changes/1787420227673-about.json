@@ -1,0 +1,1782 @@
+{
+  "protocolVersion": 14,
+  "capturedAt": "2026-08-22T17:37:07.676Z",
+  "changeSetId": "1787420227549-56118db30b34a",
+  "pageId": "about",
+  "sourceHash": "a64802f5f8997a6319ea18c8bef13a7179a214bbe30a0e9e9974905bdf05602f",
+  "changes": [
+    {
+      "nodeId": "page-root",
+      "nodeName": "page-root",
+      "nodeType": "FRAME",
+      "sourceRef": {
+        "selector": "[data-codex-id=\"page-root\"]"
+      },
+      "category": "geometry",
+      "property": "height",
+      "from": 900,
+      "to": 3368.3401
+    },
+    {
+      "nodeId": "root",
+      "nodeName": "root",
+      "nodeType": "FRAME",
+      "sourceRef": {
+        "selector": "[data-codex-id=\"root\"]"
+      },
+      "category": "geometry",
+      "property": "height",
+      "from": 73.59,
+      "to": 3368.3401
+    },
+    {
+      "nodeId": "div",
+      "nodeName": "div",
+      "nodeType": "FRAME",
+      "sourceRef": null,
+      "category": "geometry",
+      "property": "height",
+      "from": 73.59,
+      "to": 3368.3401
+    },
+    {
+      "nodeId": "div",
+      "nodeName": "div",
+      "nodeType": "FRAME",
+      "sourceRef": null,
+      "category": "layout",
+      "property": "padding",
+      "from": {
+        "top": 8,
+        "right": 8,
+        "bottom": 8,
+        "left": 8
+      },
+      "to": {
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "left": 0
+      },
+      "layoutContext": {
+        "layoutMode": "NONE",
+        "width": 1440,
+        "height": 3368.3401
+      }
+    },
+    {
+      "nodeId": "page-root",
+      "nodeName": "page-root",
+      "nodeType": "FRAME",
+      "sourceRef": {
+        "selector": "[data-codex-id=\"page-root\"]"
+      },
+      "category": "structure",
+      "property": "structure",
+      "from": [
+        {
+          "id": "44:2",
+          "parentId": null,
+          "parentPageNodeId": null,
+          "index": 0,
+          "type": "FRAME",
+          "name": "Page · 速芯算力 - 公共页面 · 关于我们",
+          "pageNodeId": "page-root",
+          "pageNodeType": "frame",
+          "sourceRef": {
+            "selector": "[data-codex-id=\"page-root\"]"
+          },
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 1395,
+            "y": -689,
+            "width": 1440,
+            "height": 900
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1395,
+            -689
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:3",
+          "parentId": "44:2",
+          "parentPageNodeId": "page-root",
+          "index": 0,
+          "type": "FRAME",
+          "name": "root",
+          "pageNodeId": "root",
+          "pageNodeType": "frame",
+          "sourceRef": {
+            "selector": "[data-codex-id=\"root\"]"
+          },
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 73.59
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1395,
+            -689
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:4",
+          "parentId": "44:3",
+          "parentPageNodeId": "root",
+          "index": 0,
+          "type": "FRAME",
+          "name": "div",
+          "pageNodeId": "div",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 8,
+              "right": 8,
+              "bottom": 8,
+              "left": 8
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 73.59
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1395,
+            -689
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:26",
+          "parentId": "44:4",
+          "parentPageNodeId": "div",
+          "index": 0,
+          "type": "FRAME",
+          "name": "div-1",
+          "pageNodeId": "div-1",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "flex",
+            "direction": "horizontal",
+            "gap": 8,
+            "counterGap": 8,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "center",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 8,
+            "y": 8,
+            "width": 1424,
+            "height": 24
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1403,
+            -681
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:27",
+          "parentId": "44:26",
+          "parentPageNodeId": "div-1",
+          "index": 0,
+          "type": "TEXT",
+          "name": "strong",
+          "pageNodeId": "strong",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 190.22,
+            "height": 24
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1403,
+            -681
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:28",
+          "parentId": "44:26",
+          "parentPageNodeId": "div-1",
+          "index": 1,
+          "type": "FRAME",
+          "name": "button",
+          "pageNodeId": "button",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 1.6,
+              "right": 3.2,
+              "bottom": 1.6,
+              "left": 3.2
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 198.22,
+            "y": 0.405,
+            "width": 66.11,
+            "height": 23.19
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1601.22,
+            -680.595
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:29",
+          "parentId": "44:28",
+          "parentPageNodeId": "button",
+          "index": 0,
+          "type": "TEXT",
+          "name": "button text",
+          "pageNodeId": "button-text-1",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": null,
+          "bounds": {
+            "x": 2.39,
+            "y": 2.59,
+            "width": 61.33,
+            "height": 17
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1603.61,
+            -678.0049
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:30",
+          "parentId": "44:4",
+          "parentPageNodeId": "div",
+          "index": 1,
+          "type": "FRAME",
+          "name": "div-2",
+          "pageNodeId": "div-2",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 8,
+            "y": 32,
+            "width": 1424,
+            "height": 4
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1403,
+            -657
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:31",
+          "parentId": "44:4",
+          "parentPageNodeId": "div",
+          "index": 2,
+          "type": "FRAME",
+          "name": "div-3",
+          "pageNodeId": "div-3",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 8,
+            "y": 36,
+            "width": 1424,
+            "height": 29.59
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1403,
+            -653
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:32",
+          "parentId": "44:31",
+          "parentPageNodeId": "div-3",
+          "index": 0,
+          "type": "FRAME",
+          "name": "pre",
+          "pageNodeId": "pre",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 4.8,
+              "right": 4.8,
+              "bottom": 4.8,
+              "left": 4.8
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 1424,
+            "height": 29.59
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1403,
+            -653
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:33",
+          "parentId": "44:32",
+          "parentPageNodeId": "pre",
+          "index": 0,
+          "type": "TEXT",
+          "name": "code",
+          "pageNodeId": "code",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": null,
+          "bounds": {
+            "x": 5.8,
+            "y": 7.8,
+            "width": 249.24,
+            "height": 14
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1408.8,
+            -645.2
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        }
+      ],
+      "to": [
+        {
+          "id": "44:2",
+          "parentId": null,
+          "parentPageNodeId": null,
+          "index": 0,
+          "type": "FRAME",
+          "name": "page-root",
+          "pageNodeId": "page-root",
+          "pageNodeType": "frame",
+          "sourceRef": {
+            "selector": "[data-codex-id=\"page-root\"]"
+          },
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 1395,
+            "y": -689,
+            "width": 1440,
+            "height": 3368.3401
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1395,
+            -689
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:3",
+          "parentId": "44:2",
+          "parentPageNodeId": "page-root",
+          "index": 0,
+          "type": "FRAME",
+          "name": "root",
+          "pageNodeId": "root",
+          "pageNodeType": "frame",
+          "sourceRef": {
+            "selector": "[data-codex-id=\"root\"]"
+          },
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 3368.3401
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1395,
+            -689
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:4",
+          "parentId": "44:3",
+          "parentPageNodeId": "root",
+          "index": 0,
+          "type": "FRAME",
+          "name": "div",
+          "pageNodeId": "div",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 3368.3401
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1395,
+            -689
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:34",
+          "parentId": "44:4",
+          "parentPageNodeId": "div",
+          "index": 0,
+          "type": "FRAME",
+          "name": "header",
+          "pageNodeId": "header",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "flex",
+            "direction": "horizontal",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 0,
+              "right": 13,
+              "bottom": 0,
+              "left": 18
+            },
+            "align": "center",
+            "justify": "space-between",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 228,
+            "y": 17,
+            "width": 984,
+            "height": 51
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1623,
+            -672
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:35",
+          "parentId": "44:34",
+          "parentPageNodeId": "header",
+          "index": 0,
+          "type": "FRAME",
+          "name": "速芯算力suxin.ai 返回首页",
+          "pageNodeId": "button",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "flex",
+            "direction": "horizontal",
+            "gap": 9,
+            "counterGap": 9,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "center",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 18,
+            "y": 12.75,
+            "width": 163.39,
+            "height": 25.5
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1641,
+            -659.25
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:36",
+          "parentId": "44:35",
+          "parentPageNodeId": "button",
+          "index": 0,
+          "type": "FRAME",
+          "name": "img",
+          "pageNodeId": "img",
+          "pageNodeType": "svg",
+          "sourceRef": {
+            "file": "images/gpu-logo.svg"
+          },
+          "layoutMeta": null,
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 0,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 0,
+            "y": 0.25,
+            "width": 25,
+            "height": 25
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1641,
+            -659
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:42",
+          "parentId": "44:35",
+          "parentPageNodeId": "button",
+          "index": 1,
+          "type": "TEXT",
+          "name": "strong",
+          "pageNodeId": "strong",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 34,
+            "y": 0,
+            "width": 134.49,
+            "height": 25.5
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1675,
+            -659.25
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:43",
+          "parentId": "44:34",
+          "parentPageNodeId": "header",
+          "index": 1,
+          "type": "FRAME",
+          "name": "主导航",
+          "pageNodeId": "nav",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "flex",
+            "direction": "horizontal",
+            "gap": 22,
+            "counterGap": 22,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "center",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 274.29,
+            "y": 6.25,
+            "width": 495.17,
+            "height": 38.5
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1897.29,
+            -665.75
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:44",
+          "parentId": "44:43",
+          "parentPageNodeId": "nav",
+          "index": 0,
+          "type": "TEXT",
+          "name": "button-1",
+          "pageNodeId": "button-1",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 34.5,
+            "height": 38.5
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1897.29,
+            -665.75
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:45",
+          "parentId": "44:43",
+          "parentPageNodeId": "nav",
+          "index": 1,
+          "type": "TEXT",
+          "name": "button-2",
+          "pageNodeId": "button-2",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 56.5,
+            "y": 0,
+            "width": 64.5,
+            "height": 38.5
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1953.79,
+            -665.75
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:46",
+          "parentId": "44:43",
+          "parentPageNodeId": "nav",
+          "index": 2,
+          "type": "TEXT",
+          "name": "button-3",
+          "pageNodeId": "button-3",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 143,
+            "y": 0,
+            "width": 67.67,
+            "height": 38.5
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            2040.29,
+            -665.75
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:47",
+          "parentId": "44:43",
+          "parentPageNodeId": "nav",
+          "index": 3,
+          "type": "TEXT",
+          "name": "button-4",
+          "pageNodeId": "button-4",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 232.67,
+            "y": 0,
+            "width": 64.5,
+            "height": 38.5
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            2129.96,
+            -665.75
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:48",
+          "parentId": "44:43",
+          "parentPageNodeId": "nav",
+          "index": 4,
+          "type": "TEXT",
+          "name": "button-5",
+          "pageNodeId": "button-5",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 319.17,
+            "y": 0,
+            "width": 64.5,
+            "height": 38.5
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            2216.46,
+            -665.75
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:49",
+          "parentId": "44:43",
+          "parentPageNodeId": "nav",
+          "index": 5,
+          "type": "TEXT",
+          "name": "button-6",
+          "pageNodeId": "button-6",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 405.67,
+            "y": 0,
+            "width": 34.5,
+            "height": 38.5
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            2302.96,
+            -665.75
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:50",
+          "parentId": "44:43",
+          "parentPageNodeId": "nav",
+          "index": 6,
+          "type": "TEXT",
+          "name": "button-7",
+          "pageNodeId": "button-7",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 462.17,
+            "y": 0,
+            "width": 64.5,
+            "height": 38.5
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            2359.46,
+            -665.75
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:51",
+          "parentId": "44:34",
+          "parentPageNodeId": "header",
+          "index": 2,
+          "type": "FRAME",
+          "name": "button-8",
+          "pageNodeId": "button-8",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 9,
+              "right": 22,
+              "bottom": 9,
+              "left": 22
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 862.36,
+            "y": 5.75,
+            "width": 108.64,
+            "height": 39.5
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            2485.3599,
+            -666.25
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:52",
+          "parentId": "44:51",
+          "parentPageNodeId": "button-8",
+          "index": 0,
+          "type": "TEXT",
+          "name": "span",
+          "pageNodeId": "span",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": null,
+          "bounds": {
+            "x": 21.05,
+            "y": 10,
+            "width": 66.54,
+            "height": 18
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            2506.4099,
+            -656.25
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:26",
+          "parentId": "44:4",
+          "parentPageNodeId": "div",
+          "index": 1,
+          "type": "FRAME",
+          "name": "div-1",
+          "pageNodeId": "div-1",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "flex",
+            "direction": "horizontal",
+            "gap": 8,
+            "counterGap": 8,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "center",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 8,
+            "y": 8,
+            "width": 1424,
+            "height": 24
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1403,
+            -681
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:27",
+          "parentId": "44:26",
+          "parentPageNodeId": "div-1",
+          "index": 0,
+          "type": "TEXT",
+          "name": "strong",
+          "pageNodeId": "strong",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 190.22,
+            "height": 24
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1403,
+            -681
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:28",
+          "parentId": "44:26",
+          "parentPageNodeId": "div-1",
+          "index": 1,
+          "type": "FRAME",
+          "name": "button",
+          "pageNodeId": "button",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 1.6,
+              "right": 3.2,
+              "bottom": 1.6,
+              "left": 3.2
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": {
+            "align": "auto",
+            "grow": 0,
+            "shrink": 1,
+            "basis": "auto",
+            "order": 0,
+            "positioning": "auto",
+            "horizontalSizing": "fixed",
+            "verticalSizing": "fixed",
+            "gridRow": "auto",
+            "gridColumn": "auto"
+          },
+          "bounds": {
+            "x": 198.22,
+            "y": 0.405,
+            "width": 66.11,
+            "height": 23.19
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1601.22,
+            -680.595
+          ],
+          "parentLayout": "HORIZONTAL",
+          "positioning": "AUTO",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:29",
+          "parentId": "44:28",
+          "parentPageNodeId": "button",
+          "index": 0,
+          "type": "TEXT",
+          "name": "button text",
+          "pageNodeId": "button-text-1",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": null,
+          "bounds": {
+            "x": 2.39,
+            "y": 2.59,
+            "width": 61.33,
+            "height": 17
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1603.61,
+            -678.0049
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:30",
+          "parentId": "44:4",
+          "parentPageNodeId": "div",
+          "index": 2,
+          "type": "FRAME",
+          "name": "div-2",
+          "pageNodeId": "div-2",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 8,
+            "y": 32,
+            "width": 1424,
+            "height": 4
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1403,
+            -657
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:31",
+          "parentId": "44:4",
+          "parentPageNodeId": "div",
+          "index": 3,
+          "type": "FRAME",
+          "name": "div-3",
+          "pageNodeId": "div-3",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 0,
+              "right": 0,
+              "bottom": 0,
+              "left": 0
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 8,
+            "y": 36,
+            "width": 1424,
+            "height": 29.59
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1403,
+            -653
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:32",
+          "parentId": "44:31",
+          "parentPageNodeId": "div-3",
+          "index": 0,
+          "type": "FRAME",
+          "name": "pre",
+          "pageNodeId": "pre",
+          "pageNodeType": "frame",
+          "sourceRef": null,
+          "layoutMeta": {
+            "kind": "none",
+            "direction": "none",
+            "gap": 0,
+            "counterGap": 0,
+            "padding": {
+              "top": 4.8,
+              "right": 4.8,
+              "bottom": 4.8,
+              "left": 4.8
+            },
+            "align": "start",
+            "justify": "start",
+            "wrap": false,
+            "primarySizing": "fixed",
+            "counterSizing": "fixed"
+          },
+          "layoutItem": null,
+          "bounds": {
+            "x": 0,
+            "y": 0,
+            "width": 1424,
+            "height": 29.59
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1403,
+            -653
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        },
+        {
+          "id": "44:33",
+          "parentId": "44:32",
+          "parentPageNodeId": "pre",
+          "index": 0,
+          "type": "TEXT",
+          "name": "code",
+          "pageNodeId": "code",
+          "pageNodeType": "text",
+          "sourceRef": null,
+          "layoutMeta": null,
+          "layoutItem": null,
+          "bounds": {
+            "x": 5.8,
+            "y": 7.8,
+            "width": 249.24,
+            "height": 14
+          },
+          "worldTransform": [
+            1,
+            0,
+            0,
+            1,
+            1408.8,
+            -645.2
+          ],
+          "parentLayout": "NONE",
+          "positioning": "ABSOLUTE",
+          "constraints": {
+            "horizontal": "MIN",
+            "vertical": "MIN"
+          }
+        }
+      ]
+    }
+  ],
+  "annotations": [],
+  "figma": {
+    "pageName": "Page 1",
+    "rootNodeId": "44:2",
+    "rootNodeName": "page-root"
+  }
+}

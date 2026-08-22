@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "projectId": "ai-shouyi-public-pages",
+  "name": "速芯算力 - 公共页面",
+  "source": {
+    "kind": "selected-folder",
+    "root": "."
+  },
+  "entry": "cdb-entry.html",
+  "pages": [
+    {
+      "id": "about",
+      "name": "关于我们",
+      "entry": "cdb-entry.html",
+      "route": "/cdb-entry.html?page=about",
+      "captureRoot": "[data-codex-root]",
+      "viewport": { "width": 1440, "height": 900 }
+    },
+    {
+      "id": "estates",
+      "name": "投资 GPU",
+      "entry": "cdb-entry.html",
+      "route": "/cdb-entry.html?page=estates",
+      "captureRoot": "[data-codex-root]",
+      "viewport": { "width": 1440, "height": 900 }
+    },
+    {
+      "id": "calculator",
+      "name": "收益计算",
+      "entry": "cdb-entry.html",
+      "route": "/cdb-entry.html?page=calculator",
+      "captureRoot": "[data-codex-root]",
+      "viewport": { "width": 1440, "height": 900 }
+    },
+    {
+      "id": "agency",
+      "name": "我要代理",
+      "entry": "cdb-entry.html",
+      "route": "/cdb-entry.html?page=agency",
+      "captureRoot": "[data-codex-root]",
+      "viewport": { "width": 1440, "height": 900 }
+    },
+    {
+      "id": "blog",
+      "name": "博客",
+      "entry": "cdb-entry.html",
+      "route": "/cdb-entry.html?page=blog",
+      "captureRoot": "[data-codex-root]",
+      "viewport": { "width": 1440, "height": 900 }
+    },
+    {
+      "id": "contact",
+      "name": "联系我们",
+      "entry": "cdb-entry.html",
+      "route": "/cdb-entry.html?page=contact",
+      "captureRoot": "[data-codex-root]",
+      "viewport": { "width": 1440, "height": 900 }
+    }
+  ],
+  "assets": {
+    "roots": ["public", "src"],
+    "allowRemote": true
+  },
+  "mapping": {
+    "attribute": "data-codex-id",
+    "requireUnique": true
+  },
+  "runtime": {
+    "dom": "dynamic",
+    "spa": true
+  }
+}
