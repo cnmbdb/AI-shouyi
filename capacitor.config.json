@@ -1,6 +1,6 @@
 {
   "appId": "ai.suxin.aetherlane",
-  "appName": "Aether Lane",
+  "appName": "速芯算力",
   "webDir": "dist",
   "server": {
     "hostname": "localhost",
