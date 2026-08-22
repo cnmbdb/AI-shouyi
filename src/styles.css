@@ -101,14 +101,15 @@ p, h1, h2, h3 { margin-top: 0; }
 .circle-arrow.dark { width: 27px; height: 27px; background: #7862dc; border: 0; }
 
 .feature-grid { position: relative; z-index: 4; margin-top: -149px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
-.feature-card { min-height: 248px; position: relative; overflow: hidden; border-radius: 11px; border: 1px solid rgba(255,255,255,.72); color: white; background-size: cover; box-shadow: 0 14px 25px rgba(45,45,125,.13); padding: 19px; display: flex; flex-direction: column; }
-.card-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(49,45,157,.32) 0%, rgba(36,39,135,.14) 45%, rgba(22,27,102,.58) 100%); }
-.feature-icon, .feature-content, .feature-card .circle-arrow { position: relative; z-index: 2; }
-.feature-icon { width: 40px; height: 40px; padding: 9px; box-sizing: content-box; border: 1px solid rgba(255,255,255,.42); border-radius: 15px; background: rgba(79,125,0,.8); filter: drop-shadow(0 5px 12px rgba(23,44,8,.25)); }
+.feature-card { min-height: 248px; position: relative; overflow: hidden; border-radius: 11px; border: 1px solid rgba(255,255,255,.72); color: white; box-shadow: 0 14px 25px rgba(45,45,125,.13); padding: 19px; display: flex; flex-direction: column; transform-origin: 50% 70%; }
+.feature-card-media { position: absolute; z-index: 0; inset: -1px; border-radius: inherit; background-size: cover; background-repeat: no-repeat; transform-origin: center; }
+.card-shade { position: absolute; z-index: 1; inset: 0; background: linear-gradient(180deg, rgba(49,45,157,.32) 0%, rgba(36,39,135,.14) 45%, rgba(22,27,102,.58) 100%); }
+.feature-content, .feature-card .circle-arrow { position: relative; z-index: 2; }
 .feature-content { margin-top: auto; padding-right: 5px; }
 .feature-content h3 { margin-bottom: 8px; font-size: 18px; }
 .feature-content p { margin-bottom: 0; font-size: 12px; line-height: 1.55; max-width: 160px; }
 .feature-card .circle-arrow { position: absolute; right: 11px; bottom: 11px; width: 29px; height: 29px; }
+.feature-card:focus-visible { outline: 2px solid #76b900; outline-offset: 3px; }
 
 .about-panel { margin-top: 18px; min-height: 250px; display: grid; grid-template-columns: 1.07fr .62fr 1.48fr; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; background: white; }
 .about-story { padding: 26px 12px 20px 22px; }
@@ -190,6 +191,8 @@ p, h1, h2, h3 { margin-top: 0; }
 .footer-column.contact a, .footer-column.contact p { display: flex; align-items: flex-start; gap: 6px; }
 .footer-column.contact svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 4px; }
 .footer-image { border-radius: 9px; background: url("/images/hero-galaxy-home-768.webp") 52% 53% / cover; height: 140px; }
+.footer-image { transform-origin: 50% 80%; }
+.footer-image:focus-visible, .footer a:focus-visible, .footer button:focus-visible { outline: 2px solid #76b900; outline-offset: 3px; }
 .footer-bottom { grid-column: 1 / -1; border-top: 1px solid rgba(60,65,158,.1); display: flex; justify-content: center; align-items: center; font-size: 11px; color: #737a96; min-height: 29px; position: relative; }
 .footer-bottom > div { position: absolute; right: 0; display: flex; gap: 30px; }
 .footer-bottom button { padding: 0; color: inherit; background: transparent; font: inherit; }
@@ -219,18 +222,6 @@ p, h1, h2, h3 { margin-top: 0; }
 .app-home .circle-arrow.dark { color: #fff; background: var(--home-green-dark); }
 .app-home .feature-card { border-color: rgba(255,255,255,.76); box-shadow: 0 14px 25px rgba(39,65,15,.14); }
 .app-home .card-shade { background: linear-gradient(180deg, rgba(45,78,15,.28) 0%, rgba(31,56,11,.1) 45%, rgba(17,34,8,.7) 100%); }
-.app-home .feature-icon {
-  width: 40px;
-  height: 40px;
-  padding: 9px;
-  box-sizing: content-box;
-  border: 1px solid rgba(255,255,255,.4);
-  border-radius: 15px;
-  color: #fff;
-  background: rgba(79,125,0,.8);
-  filter: drop-shadow(0 5px 12px rgba(20,42,7,.28));
-  backdrop-filter: blur(8px);
-}
 .app-home .about-panel,
 .app-home .stats,
 .app-home .testimonials,

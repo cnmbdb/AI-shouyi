@@ -162,36 +162,98 @@ export function SiteHeader({ page, menuOpen, onMenuToggle, onNavigate, onSection
 
 export function SiteFooter({ onNavigate, onSection, settings = defaultFooterSettings }) {
   const openLink = createSiteLinkHandler(onNavigate, onSection);
+  const footerRef = useRef(null);
+  const reducedFooterMotion = useRef(false);
+
+  const { contextSafe } = useGSAP(() => {
+    const media = gsap.matchMedia();
+    media.add({ reduce: "(prefers-reduced-motion: reduce)" }, ({ conditions }) => {
+      reducedFooterMotion.current = conditions.reduce;
+    });
+    return () => media.revert();
+  }, { scope: footerRef });
+
+  const animateFooterItemIn = contextSafe((event) => {
+    if (reducedFooterMotion.current) return;
+    const target = event.currentTarget;
+    target.dataset.footerRestColor ||= getComputedStyle(target).color;
+    const isSocial = target.matches(".socials a");
+    const isImage = target.matches(".footer-image");
+    const isBrand = target.matches(".footer-brand-logo-motion");
+    const isLink = target.matches(".footer-column button, .footer-column.contact a, .footer-bottom button");
+
+    gsap.to(target, {
+      x: isLink ? 5 : 0,
+      y: isSocial ? -4 : isImage ? -5 : isBrand ? -3 : 0,
+      scale: isSocial ? 1.1 : isImage ? 1.018 : 1,
+      rotation: isSocial ? -4 : 0,
+      color: isLink ? "#4f7d00" : target.dataset.footerRestColor,
+      duration: isImage ? 0.48 : 0.32,
+      ease: isSocial ? "back.out(1.8)" : "power3.out",
+      overwrite: "auto",
+    });
+    const icon = target.querySelector("svg");
+    if (icon) gsap.to(icon, { scale: 1.12, rotation: isSocial ? 8 : -3, duration: 0.34, ease: "back.out(1.8)", overwrite: "auto" });
+  });
+
+  const animateFooterItemOut = contextSafe((event) => {
+    const target = event.currentTarget;
+    if (reducedFooterMotion.current) {
+      gsap.set(target, { clearProps: "transform,color" });
+      return;
+    }
+    gsap.to(target, {
+      x: 0,
+      y: 0,
+      scale: 1,
+      rotation: 0,
+      color: target.dataset.footerRestColor,
+      duration: 0.4,
+      ease: "power3.out",
+      overwrite: "auto",
+      onComplete: () => gsap.set(target, { clearProps: "transform,color" }),
+    });
+    const icon = target.querySelector("svg");
+    if (icon) gsap.to(icon, { scale: 1, rotation: 0, duration: 0.38, ease: "power3.out", overwrite: "auto", onComplete: () => gsap.set(icon, { clearProps: "transform" }) });
+  });
+
+  const footerMotionProps = {
+    onPointerEnter: animateFooterItemIn,
+    onPointerLeave: animateFooterItemOut,
+    onFocus: animateFooterItemIn,
+    onBlur: animateFooterItemOut,
+  };
+
   if (!settings.enabled) return null;
 
   return (
-    <footer className="footer shell">
+    <footer ref={footerRef} className="footer shell">
       <div className="footer-brand">
-        <Logo onNavigate={onNavigate} siteName={settings.siteName} logo={settings.logo} fallback="gpu" />
+        <div className="footer-brand-logo-motion" {...footerMotionProps}><Logo onNavigate={onNavigate} siteName={settings.siteName} logo={settings.logo} fallback="gpu" /></div>
         <p style={{ whiteSpace: "pre-line" }}>{settings.description}</p>
         <div className="socials">
           {settings.socials.map((item) => {
             const Icon = socialIcons[item.icon] ?? InstagramLogo;
-            return <a href={item.link} key={item.id} aria-label={item.label}><Icon weight="fill" /></a>;
+            return <a href={item.link} key={item.id} aria-label={item.label} {...footerMotionProps}><Icon weight="fill" /></a>;
           })}
         </div>
       </div>
       {settings.columns.map((column) => (
         <div className="footer-column" key={column.id}>
           <h3>{column.title}</h3>
-          {column.items.filter((item) => item.enabled !== false).map((item) => <button key={item.id} onClick={() => openLink(item.link)}>{item.label}</button>)}
+          {column.items.filter((item) => item.enabled !== false).map((item) => <button key={item.id} onClick={() => openLink(item.link)} {...footerMotionProps}>{item.label}</button>)}
         </div>
       ))}
       <div className="footer-column contact">
         <h3>{settings.contact.title}</h3>
-        <a href={`tel:${settings.contact.phone.replace(/[^+\d]/g, "")}`}><Phone weight="fill" /> {settings.contact.phone}</a>
-        <a href={`mailto:${settings.contact.email}`}><EnvelopeSimple weight="fill" /> {settings.contact.email}</a>
+        <a href={`tel:${settings.contact.phone.replace(/[^+\d]/g, "")}`} {...footerMotionProps}><Phone weight="fill" /> {settings.contact.phone}</a>
+        <a href={`mailto:${settings.contact.email}`} {...footerMotionProps}><EnvelopeSimple weight="fill" /> {settings.contact.email}</a>
         <p><MapPin weight="fill" /> <span style={{ whiteSpace: "pre-line" }}>{settings.contact.address}</span></p>
       </div>
-      <div className="footer-image" style={{ backgroundImage: `url(${assetUrl(settings.image, 768)})`, backgroundPosition: settings.imagePosition }} />
+      <div className="footer-image" tabIndex={0} aria-label="页脚展示图片" style={{ backgroundImage: `url(${assetUrl(settings.image, 768)})`, backgroundPosition: settings.imagePosition }} {...footerMotionProps} />
       <div className="footer-bottom">
         <span>{settings.copyright}</span>
-        <div>{settings.legalLinks.map((item) => <button key={item.id} onClick={() => openLink(item.link)}>{item.label}</button>)}</div>
+        <div>{settings.legalLinks.map((item) => <button key={item.id} onClick={() => openLink(item.link)} {...footerMotionProps}>{item.label}</button>)}</div>
       </div>
     </footer>
   );
