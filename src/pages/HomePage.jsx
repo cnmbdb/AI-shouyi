@@ -120,7 +120,7 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
             return (
               <article className="feature-card home-clickable" key={item.id} style={{ backgroundImage: `url(${assetUrl(item.image, 768)})`, backgroundPosition: item.imagePosition }} onClick={() => handleLink(item.link)}>
                 <div className="card-shade" />
-                <Icon className="feature-icon" size={34} weight="thin" />
+                <Icon className="feature-icon" size={40} weight="fill" />
                 <div className="feature-content"><h3>{item.title}</h3><p>{item.description}</p></div>
                 <ArrowButton label={`View ${item.title}`} onClick={(event) => { event.stopPropagation(); handleLink(item.link); }} />
               </article>
@@ -141,7 +141,7 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
           <div className="benefit-grid">
             {about.benefits.map((item) => {
               const Icon = resolveIcon(item.icon);
-              return <article className="home-clickable" key={item.id} onClick={() => handleLink(item.link)}><span className="benefit-icon"><Icon size={28} weight="thin" /></span><div><h3>{item.title}</h3><p>{item.description}</p></div></article>;
+              return <article className="home-clickable" key={item.id} onClick={() => handleLink(item.link)}><span className="benefit-icon"><Icon size={30} weight="duotone" /></span><div><h3>{item.title}</h3><p>{item.description}</p></div></article>;
             })}
           </div>
         </section>
@@ -170,7 +170,7 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
         <section className="stats shell" aria-label="Company statistics">
           {stats.items.map((item) => {
             const Icon = resolveIcon(item.icon);
-            return <article className="home-clickable" key={item.id} onClick={() => handleLink(item.link)}><span><Icon size={34} weight="thin" /></span><div><strong>{item.value}</strong><p>{item.label}</p></div></article>;
+            return <article className="home-clickable" key={item.id} onClick={() => handleLink(item.link)}><span><Icon size={38} weight="fill" /></span><div><strong>{item.value}</strong><p>{item.label}</p></div></article>;
           })}
         </section>
       ) : null}
@@ -189,7 +189,7 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
 
       {cta.enabled ? (
         <section className="cta shell" id="contact">
-          <CtaIcon size={38} weight="thin" />
+          <CtaIcon size={42} weight="fill" />
           <div><h2>{cta.title}</h2><p>{cta.description}</p></div>
           <button className="primary-button" onClick={() => handleLink(cta.primaryButton.link)}>{cta.primaryButton.label} <ArrowButton label={cta.primaryButton.label} dark asSpan /></button>
           <button className="outline-button" onClick={() => handleLink(cta.secondaryButton.link)}>{cta.secondaryButton.label}</button>

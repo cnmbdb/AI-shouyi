@@ -240,7 +240,7 @@ function SelectField({ label, value, onChange, children }) {
 }
 
 function FilterLabel({ icon: Icon, children }) {
-  return <span className="filter-control-label"><Icon weight="duotone" aria-hidden="true" />{children}</span>;
+  return <span className="filter-control-label"><Icon weight="fill" aria-hidden="true" />{children}</span>;
 }
 
 function PropertyCard({ estate, liked, onLike, onOpen, layout }) {
@@ -257,9 +257,9 @@ function PropertyCard({ estate, liked, onLike, onOpen, layout }) {
         </div>
       </div>
       <div className="browse-card-specs">
-        <span><GraphicsCard weight="duotone" /> {estate.gpuModel}</span>
-        <span><Memory weight="duotone" /> {estate.vram}</span>
-        <span><CalendarBlank weight="duotone" /> {estate.hostingTerm}</span>
+        <span><GraphicsCard weight="fill" /> {estate.gpuModel}</span>
+        <span><Memory weight="fill" /> {estate.vram}</span>
+        <span><CalendarBlank weight="fill" /> {estate.hostingTerm}</span>
       </div>
     </article>
   );
@@ -430,7 +430,7 @@ export function EstatesPage({ onNavigate, onNotice, settings = defaultProductSet
       </section> : null}
 
       {settings.cta.enabled ? <section className="catalog-cta shell">
-        <Sparkle weight="thin" />
+        <Sparkle weight="fill" />
         <div><h2>{settings.cta.title}</h2><p>{settings.cta.description}</p></div>
         <button className="consult-button" onClick={() => openLink(settings.cta.primaryButton.link)}>{settings.cta.primaryButton.label} <span><ArrowRight weight="bold" /></span></button>
         <button className="custom-listings" onClick={() => openLink(settings.cta.secondaryButton.link)}>{settings.cta.secondaryButton.label}</button>

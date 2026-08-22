@@ -78,7 +78,7 @@ export function ContactPage({ settings = defaultMarketingPageSettings.contact, o
           <div className="managed-faq-list">
             {faq.items.filter((entry) => entry.enabled !== false).map((entry, index) => (
               <details key={entry.id} open={index === 0}>
-                <summary><span><PageIcon name={entry.icon} weight="thin" /></span><strong>{entry.title}</strong><CaretDown /></summary>
+                <summary><span><PageIcon name={entry.icon} weight="duotone" /></span><strong>{entry.title}</strong><CaretDown weight="bold" /></summary>
                 <div><p>{entry.description}</p>{entry.link ? <button type="button" onClick={() => openMarketingLink(entry.link, onNavigate, onNotice)}>继续了解 <ArrowRight weight="bold" /></button> : null}</div>
               </details>
             ))}
@@ -94,7 +94,7 @@ export function ContactPage({ settings = defaultMarketingPageSettings.contact, o
             <div className="managed-contact-fields">
               {formSection.items.filter((entry) => entry.enabled !== false).map((entry) => (
                 <label className={entry.fieldType === "textarea" ? "managed-contact-field managed-contact-field-wide" : "managed-contact-field"} key={entry.id}>
-                  <span><PageIcon name={entry.icon} weight="thin" />{entry.title}</span>
+                  <span><PageIcon name={entry.icon} weight="fill" />{entry.title}</span>
                   {entry.fieldType === "textarea"
                     ? <textarea rows="5" value={form[entry.id] ?? ""} placeholder={entry.description} onChange={(event) => setForm((current) => ({ ...current, [entry.id]: event.target.value }))} />
                     : <input value={form[entry.id] ?? ""} placeholder={entry.description} onChange={(event) => setForm((current) => ({ ...current, [entry.id]: event.target.value }))} />}

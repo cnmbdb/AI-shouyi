@@ -172,7 +172,7 @@ export function SiteFooter({ onNavigate, onSection, settings = defaultFooterSett
         <div className="socials">
           {settings.socials.map((item) => {
             const Icon = socialIcons[item.icon] ?? InstagramLogo;
-            return <a href={item.link} key={item.id} aria-label={item.label}><Icon /></a>;
+            return <a href={item.link} key={item.id} aria-label={item.label}><Icon weight="fill" /></a>;
           })}
         </div>
       </div>

@@ -24,7 +24,7 @@ export function AboutPage({ settings = defaultMarketingPageSettings.about, onNav
         <section className="managed-story shell" id="about-story">
           <MarketingImage section={story} sizes="(max-width: 760px) 100vw, 44vw" />
           <div className="managed-story-copy">
-            <span className="managed-section-mark"><PageIcon name={story.icon} weight="thin" /></span>
+            <span className="managed-section-mark"><PageIcon name={story.icon} /></span>
             <h2>{story.title}</h2>
             <p>{story.description}</p>
             <div className="managed-story-items">

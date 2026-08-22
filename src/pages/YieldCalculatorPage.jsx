@@ -69,7 +69,7 @@ export function YieldCalculatorPage({ settings = defaultMarketingPageSettings.ca
               <article><span>闭口协议</span><strong>{result.contractMonths} 个月</strong></article>
             </div>
             <label className="yield-input yield-device-count">
-              <span><PageIcon name="HardDrives" weight="thin" />设备数量</span>
+              <span><PageIcon name="HardDrives" weight="fill" />设备数量</span>
               <div><input type="number" min="1" step="1" value={deviceCount} onChange={(event) => setDeviceCount(Math.max(1, numberValue(event.target.value, 1)))} /><b>台</b></div>
               <small>调整参与委托租赁的设备数量，结果会立即重新计算。</small>
             </label>
@@ -81,7 +81,7 @@ export function YieldCalculatorPage({ settings = defaultMarketingPageSettings.ca
           </div>
           <aside className="yield-results" aria-live="polite">
             <MarketingImage section={calculator} sizes="(max-width: 760px) 100vw, 38vw" />
-            <div className="yield-result-heading"><span><PageIcon name="ChartLineUp" weight="thin" /></span><div><strong>本次测算结果</strong><small>示例估算，不代表固定收益</small></div></div>
+            <div className="yield-result-heading"><span><PageIcon name="ChartLineUp" /></span><div><strong>本次测算结果</strong><small>示例估算，不代表固定收益</small></div></div>
             <div className="yield-result-grid">
               <article><span>委托设备</span><strong>{activePlan.gpuModel} × {result.count} 台</strong></article>
               <article><span>单台每月委托租赁</span><strong>{formatCurrency(result.unitMonthlyLease)}</strong></article>

@@ -153,3 +153,7 @@ Prototype public-route loading rule: public route and authentication loading sta
 Prototype primary-public parity rule: Home, About, yield calculator, agency, and contact follow the Investment GPU page's shared desktop shell width, header geometry, footer density, and readable 13–15px content typography while preserving each page's own section anatomy and CMS contract.
 
 Prototype shared-navigation active rule: desktop shared navigation uses a GSAP-driven sliding gray-white capsule with a soft neutral shadow behind the active item. It must persist through client-side route changes, remain readable over the frosted header, and respect `prefers-reduced-motion`; mobile keeps a compact static active state.
+
+Prototype primary-public icon rule: the six primary public pages use one rounded, substantial Phosphor icon system. Feature and section anchors favor filled icons; repeated list items may use duotone icons for detail. Avoid thin-weight icons, undersized glyphs, and tiny containers; use consistent rounded NVIDIA Green surfaces while preserving every CMS icon-name mapping and semantic meaning.
+
+Prototype shared-header geometry rule: the persistent public header is a full-viewport-width, square-corner frosted top bar positioned flush against the top edge with no outer gap or capsule silhouette. Its inner brand, navigation, and account controls align to the shared 1200px content width through responsive horizontal padding; the GSAP active-menu capsule remains an inner navigation state only.

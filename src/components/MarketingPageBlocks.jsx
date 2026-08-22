@@ -60,9 +60,9 @@ const iconMap = {
   Wrench,
 };
 
-export const PageIcon = ({ name, ...props }) => {
+export const PageIcon = ({ name, weight = "fill", ...props }) => {
   const Icon = iconMap[name] ?? Cpu;
-  return <Icon {...props} />;
+  return <Icon weight={weight} {...props} />;
 };
 
 export const getMarketingSection = (settings, id) => settings.sections.find((section) => section.id === id);
@@ -95,7 +95,7 @@ export function MarketingAction({ button, onNavigate, onNotice, variant = "prima
   );
 }
 export function MarketingImage({ section, eager = false, sizes = "(max-width: 760px) 100vw, 50vw", className = "" }) {
-  if (!section?.image) return <div className={`managed-image-placeholder ${className}`}><PageIcon name={section?.icon} weight="thin" /></div>;
+  if (!section?.image) return <div className={`managed-image-placeholder ${className}`}><PageIcon name={section?.icon} /></div>;
   return (
     <div className={`managed-image ${className}`.trim()}>
       <img
@@ -116,7 +116,7 @@ export function MarketingHero({ hero, pageName, onNavigate, onNotice }) {
   return (
     <section className="managed-hero shell" aria-labelledby={`${pageName}-title`}>
       <div className="managed-hero-copy">
-        <span className="managed-hero-icon"><PageIcon name={hero.icon} weight="thin" /></span>
+        <span className="managed-hero-icon"><PageIcon name={hero.icon} /></span>
         <h1 id={`${pageName}-title`}>{hero.title}</h1>
         <p>{hero.description}</p>
         <MarketingAction button={hero.button} onNavigate={onNavigate} onNotice={onNotice} />
@@ -129,7 +129,7 @@ export function MarketingHero({ hero, pageName, onNavigate, onNotice }) {
 export function MarketingSectionHeading({ section }) {
   return (
     <header className="managed-section-heading">
-      <span><PageIcon name={section.icon} weight="thin" /></span>
+      <span><PageIcon name={section.icon} /></span>
       <div><h2>{section.title}</h2><p>{section.description}</p></div>
     </header>
   );
@@ -140,7 +140,7 @@ export function MarketingItem({ entry, onNavigate, onNotice, className = "" }) {
   const clickable = Boolean(entry.link);
   const content = (
     <>
-      <span className="managed-item-icon"><PageIcon name={entry.icon} weight="thin" /></span>
+      <span className="managed-item-icon"><PageIcon name={entry.icon} weight="duotone" /></span>
       <div><h3>{entry.title}</h3><p>{entry.description}</p></div>
       {clickable ? <ArrowRight className="managed-item-arrow" weight="bold" /> : null}
     </>
@@ -154,7 +154,7 @@ export function MarketingCta({ section, onNavigate, onNotice }) {
   return (
     <section className="managed-cta shell" style={{ "--managed-cta-image": `url(${assetUrl(section.image, 1280)})`, "--managed-cta-position": section.imagePosition }}>
       <div className="managed-cta-copy">
-        <span><PageIcon name={section.icon} weight="thin" /></span>
+        <span><PageIcon name={section.icon} /></span>
         <div><h2>{section.title}</h2><p>{section.description}</p></div>
         <MarketingAction button={section.button} onNavigate={onNavigate} onNotice={onNotice} />
       </div>
