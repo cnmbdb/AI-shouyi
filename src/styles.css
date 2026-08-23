@@ -500,6 +500,7 @@ p, h1, h2, h3 { margin-top: 0; }
 
 @media (max-width: 720px) {
   .shell { width: calc(100% - 30px); }
+  .app-home > main#home { padding-top: 58px; }
   .topbar { top: 10px; }
   .app-estates .shell { width: calc(100% - 30px); }
   .app-estates .topbar { height: 51px; padding: 0 13px 0 18px; }
@@ -518,7 +519,7 @@ p, h1, h2, h3 { margin-top: 0; }
     height: auto;
     min-height: 0;
     aspect-ratio: var(--hero-mobile-aspect, 100 / 75);
-    margin-inline: auto;
+    margin: 0 auto;
     background-color: #fff;
   }
   .hero-background img { object-fit: var(--hero-mobile-fit, cover); object-position: var(--hero-mobile-position, 50% 46%); transform: scale(var(--hero-mobile-zoom, 1)); transform-origin: var(--hero-mobile-position, 50% 46%); }
