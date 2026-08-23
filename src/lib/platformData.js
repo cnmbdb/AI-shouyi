@@ -429,18 +429,32 @@ export async function uploadSiteImage(file, scope = "content") {
 export async function listSiteImages(scope = "content") {
   const client = requireSupabase();
   const safeScope = String(scope).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "") || "content";
-  const { data, error } = await client.storage.from("site-media").list(`site-content/${safeScope}`, {
-    limit: 100,
-    sortBy: { column: "created_at", order: "desc" },
-  });
-  throwIfError(error);
-  const uploaded = (data ?? [])
-    .filter((item) => item.name && item.id)
-    .map((item) => {
-      const path = `site-content/${safeScope}/${item.name}`;
-      const { data: publicData } = client.storage.from("site-media").getPublicUrl(path);
-      return { ...item, path, url: publicData.publicUrl };
+  const storage = client.storage.from("site-media");
+  const listOptions = { limit: 100, sortBy: { column: "created_at", order: "desc" } };
+  const { data: rootEntries } = await storage.list("site-content", listOptions);
+  const discoveredScopes = (rootEntries ?? [])
+    .filter((item) => item.name && !item.id)
+    .map((item) => item.name);
+  const scopes = [...new Set([safeScope, ...discoveredScopes])];
+  const folderResults = await Promise.allSettled(scopes.map(async (folder) => {
+    const { data, error } = await storage.list(`site-content/${folder}`, listOptions);
+    if (error) throw error;
+    return (data ?? []).filter((item) => item.name && item.id).map((item) => ({ ...item, folder }));
+  }));
+  const uploadedByPath = new Map();
+  folderResults.forEach((result) => {
+    if (result.status !== "fulfilled") return;
+    result.value.forEach((item) => {
+      const path = `site-content/${item.folder}/${item.name}`;
+      const { data: publicData } = storage.getPublicUrl(path);
+      if (publicData.publicUrl) uploadedByPath.set(path, { ...item, path, url: publicData.publicUrl });
     });
+  });
+  const uploaded = [...uploadedByPath.values()].sort((left, right) => {
+    const leftTime = Date.parse(left.updated_at || left.created_at || "") || 0;
+    const rightTime = Date.parse(right.updated_at || right.created_at || "") || 0;
+    return rightTime - leftTime;
+  });
   const bundled = bundledImageAssets.map((item) => ({
     id: `bundled-${item.name}`,
     name: item.name,

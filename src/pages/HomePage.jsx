@@ -150,6 +150,11 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
   const visibleTestimonialPage = Math.min(testimonialPage, testimonialCount - 1);
   const CtaIcon = resolveIcon(cta.icon);
   const mobileHeroImage = hero.mobileBackgroundImage || hero.backgroundImage;
+  const mobileHeroAspectRatio = hero.mobileBackgroundFit === "contain"
+    && Number(hero.mobileAspectRatio) === 90
+    && Number(hero.mobileHeight) === 350
+    ? 75
+    : hero.mobileAspectRatio ?? 75;
   const desktopHeroProps = responsiveImageProps(hero.backgroundImage, "(max-width: 720px) 100vw, 100vw");
   const mobileHeroProps = responsiveImageProps(mobileHeroImage, "100vw");
 
@@ -172,6 +177,8 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
           "--hero-desktop-position": hero.backgroundPosition,
           "--hero-desktop-zoom": (hero.desktopBackgroundZoom ?? 100) / 100,
           "--hero-mobile-height": `${hero.mobileHeight ?? 560}px`,
+          "--hero-mobile-width": `${hero.mobileWidthPercent ?? 100}%`,
+          "--hero-mobile-aspect": `100 / ${mobileHeroAspectRatio}`,
           "--hero-mobile-fit": hero.mobileBackgroundFit ?? "cover",
           "--hero-mobile-position": hero.mobileBackgroundPosition ?? hero.backgroundPosition,
           "--hero-mobile-zoom": (hero.mobileBackgroundZoom ?? 100) / 100,
@@ -193,7 +200,12 @@ export function HomePage({ settings = defaultHomeSettings, onNavigate, onNotice 
       ) : null}
 
       {features.enabled ? (
-        <section className="feature-grid shell" id="projects" style={{ "--feature-mobile-columns": features.mobileColumns ?? 2, "--feature-mobile-height": `${features.mobileCardHeight ?? 250}px` }}>
+        <section className="feature-grid shell" id="projects" style={{
+          "--feature-mobile-columns": features.mobileColumns ?? 2,
+          "--feature-mobile-height": `${features.mobileCardHeight ?? 250}px`,
+          "--feature-mobile-width": `${features.mobileWidthPercent ?? 92}%`,
+          "--feature-mobile-aspect": `100 / ${features.mobileCardAspectRatio ?? 142}`,
+        }}>
           {features.items.map((item) => <FeatureCard key={item.id} item={item} onOpen={() => handleLink(item.link)} />)}
         </section>
       ) : null}

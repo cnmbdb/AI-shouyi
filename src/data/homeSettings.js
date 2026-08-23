@@ -26,13 +26,15 @@ const legacyComputeHeroUpload = "/site-content/hero-bg/1787422956900-b75ad73a-41
 const normalizeComputeHeroAsset = (value) => String(value || "").includes(legacyComputeHeroUpload) ? computeHero2k : value;
 
 export const defaultHomeSettings = {
-  version: 4,
+  version: 7,
   hero: {
     enabled: true,
     desktopHeight: 690,
     desktopBackgroundFit: "cover",
     desktopBackgroundZoom: 100,
     mobileHeight: 560,
+    mobileWidthPercent: 100,
+    mobileAspectRatio: 75,
     mobileBackgroundFit: "cover",
     mobileBackgroundZoom: 100,
     backgroundImage: computeHero2k,
@@ -50,6 +52,8 @@ export const defaultHomeSettings = {
     enabled: true,
     mobileColumns: 2,
     mobileCardHeight: 250,
+    mobileWidthPercent: 92,
+    mobileCardAspectRatio: 142,
     items: [
       { id: "feature-sky", icon: "GraphicsCard", title: "Sky Villas", description: "Architectural masterpieces floating above the clouds with infinite panoramic views.", image: "/images/hero-galaxy-home.png", imagePosition: "42% 66%", link: "/estates" },
       { id: "feature-view", icon: "CloudArrowUp", title: "Panoramic Views", description: "Wake up to endless horizons and golden sunsets from every vantage.", image: "/images/hero-galaxy-home.png", imagePosition: "8% 38%", link: "/estates" },
@@ -128,6 +132,7 @@ function mergeSettings(defaults, saved) {
 
 export function normalizeHomeSettings(saved) {
   const normalized = !saved?.version || !saved.hero ? structuredClone(defaultHomeSettings) : mergeSettings(defaultHomeSettings, saved);
+  const savedVersion = Number(saved?.version) || 0;
   const hadPreviousMobileHeroDefaults = Number(saved?.hero?.mobileHeight) === 760 && saved?.hero?.mobileBackgroundFit === "contain";
   if (!saved?.hero?.mobileHeight || hadPreviousMobileHeroDefaults) normalized.hero.mobileHeight = defaultHomeSettings.hero.mobileHeight;
   if (!saved?.hero?.mobileBackgroundFit || hadPreviousMobileHeroDefaults) normalized.hero.mobileBackgroundFit = defaultHomeSettings.hero.mobileBackgroundFit;
@@ -136,6 +141,15 @@ export function normalizeHomeSettings(saved) {
   normalized.hero.mobileBackgroundImage = normalizeComputeHeroAsset(normalized.hero.mobileBackgroundImage);
   normalized.hero.desktopHeight = Math.max(480, Math.min(960, Number(normalized.hero.desktopHeight) || 690));
   normalized.hero.mobileHeight = Math.max(320, Math.min(900, Number(normalized.hero.mobileHeight) || 560));
+  normalized.hero.mobileWidthPercent = Math.max(70, Math.min(100, Number(normalized.hero.mobileWidthPercent) || 100));
+  const savedMobileAspectRatio = Number(saved?.hero?.mobileAspectRatio);
+  const migratedComputeHeroRatio = normalized.hero.mobileBackgroundFit === "contain"
+    && savedMobileAspectRatio === 90
+    && (savedVersion < 7 || Number(saved?.hero?.mobileHeight) === 350);
+  if (migratedComputeHeroRatio) normalized.hero.mobileHeight = defaultHomeSettings.hero.mobileHeight;
+  normalized.hero.mobileAspectRatio = Math.max(60, Math.min(260, migratedComputeHeroRatio
+    ? 75
+    : savedMobileAspectRatio || Math.round((normalized.hero.mobileHeight / 390) * 100)));
   normalized.hero.desktopBackgroundFit = ["cover", "contain"].includes(normalized.hero.desktopBackgroundFit) ? normalized.hero.desktopBackgroundFit : "cover";
   normalized.hero.mobileBackgroundFit = ["cover", "contain"].includes(normalized.hero.mobileBackgroundFit) ? normalized.hero.mobileBackgroundFit : "cover";
   normalized.hero.desktopBackgroundZoom = Math.max(100, Math.min(250, Number(normalized.hero.desktopBackgroundZoom) || 100));
@@ -144,6 +158,9 @@ export function normalizeHomeSettings(saved) {
   normalized.version = defaultHomeSettings.version;
   normalized.features.mobileColumns = Math.max(1, Math.min(2, Number(normalized.features.mobileColumns) || 2));
   normalized.features.mobileCardHeight = Math.max(180, Math.min(420, Number(normalized.features.mobileCardHeight) || 250));
+  normalized.features.mobileWidthPercent = Math.max(70, Math.min(100, Number(normalized.features.mobileWidthPercent) || 92));
+  const referenceCardWidth = (360 - (normalized.features.mobileColumns - 1) * 8) / normalized.features.mobileColumns;
+  normalized.features.mobileCardAspectRatio = Math.max(80, Math.min(260, Number(saved?.features?.mobileCardAspectRatio) || Math.round((normalized.features.mobileCardHeight / referenceCardWidth) * 100)));
   normalized.hero.backgroundPosition = normalizeFocalPosition(normalized.hero.backgroundPosition);
   normalized.hero.mobileBackgroundPosition = normalizeFocalPosition(normalized.hero.mobileBackgroundPosition);
   normalized.hero.foregroundPosition = normalizeFocalPosition(normalized.hero.foregroundPosition);

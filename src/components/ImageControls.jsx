@@ -8,6 +8,36 @@ import { assetUrl } from "@/lib/assets.js";
 import { parseFocalPosition } from "@/lib/focalPosition.js";
 import { listSiteImages, uploadSiteImage } from "@/lib/platformData.js";
 
+const mediaIdentity = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const url = new URL(raw, window.location.origin);
+    const path = decodeURIComponent(url.pathname).replace(/\/+$/, "");
+    const storageMarker = "/storage/v1/object/public/site-media/";
+    const markerIndex = path.indexOf(storageMarker);
+    return markerIndex >= 0 ? path.slice(markerIndex + storageMarker.length) : path;
+  } catch {
+    return decodeURIComponent(raw.split(/[?#]/)[0]).replace(/\/+$/, "");
+  }
+};
+
+const isSameMedia = (item, value) => {
+  const target = mediaIdentity(value);
+  return Boolean(target) && [item?.path, item?.url].some((candidate) => mediaIdentity(candidate) === target);
+};
+
+const pinCurrentMedia = (items, currentImage, prefix) => {
+  const normalizedItems = items.map((item) => ({ ...item, current: false }));
+  if (!currentImage) return normalizedItems;
+  const currentIndex = normalizedItems.findIndex((item) => isSameMedia(item, currentImage));
+  if (currentIndex >= 0) {
+    const [currentItem] = normalizedItems.splice(currentIndex, 1);
+    return [{ ...currentItem, current: true }, ...normalizedItems];
+  }
+  return [{ id: `current-${prefix}`, name: "当前已使用图片", path: currentImage, url: assetUrl(currentImage, 768), current: true }, ...normalizedItems];
+};
+
 export function ImageControls({ prefix, image, fallbackImage = "", position, zoom = 100, onImage, onPosition, onZoom, variant = "content", placeholder = null, label = "", previewAspect = "" }) {
   const inputRef = useRef(null);
   const cropDraggingRef = useRef(false);
@@ -73,6 +103,10 @@ export function ImageControls({ prefix, image, fallbackImage = "", position, zoo
     try {
       const uploaded = await uploadSiteImage(file, prefix);
       onImage(uploaded.url);
+      setLibraryItems((current) => pinCurrentMedia([
+        { id: uploaded.path || uploaded.url, name: uploaded.path?.split("/").pop() || file.name, path: uploaded.path, url: uploaded.url },
+        ...current.filter((item) => !isSameMedia(item, uploaded.url)),
+      ], uploaded.url, prefix));
       setUploadStatus("上传成功，请保存发布");
     } catch (error) {
       setUploadError(true);
@@ -90,17 +124,11 @@ export function ImageControls({ prefix, image, fallbackImage = "", position, zoo
     try {
       const items = await listSiteImages(prefix);
       const currentImage = image || fallbackImage;
-      const currentIndex = items.findIndex((item) => item.url === currentImage || item.path === currentImage);
-      if (currentImage && currentIndex >= 0) {
-        const [currentItem] = items.splice(currentIndex, 1);
-        items.unshift({ ...currentItem, current: true });
-      } else if (currentImage) {
-        items.unshift({ id: `current-${prefix}`, name: "当前已使用图片", path: currentImage, url: assetUrl(currentImage, 768), current: true });
-      }
-      setLibraryItems(items);
+      setLibraryItems(pinCurrentMedia(items, currentImage, prefix));
     } catch (error) {
-      setLibraryItems([]);
-      setLibraryError(error.message || "媒体库暂时无法读取");
+      const currentImage = image || fallbackImage;
+      setLibraryItems(pinCurrentMedia([], currentImage, prefix));
+      setLibraryError(currentImage ? "已显示当前图片；其他已上传图片暂时无法同步" : (error.message || "媒体库暂时无法读取"));
     } finally {
       setLibraryLoading(false);
     }
@@ -195,16 +223,17 @@ export function ImageControls({ prefix, image, fallbackImage = "", position, zoo
             </button>
             <button type="button" className="site-media-choice" onClick={openChooser}>
               <Images />
-              <strong>项目媒体库</strong>
-              <span>查看当前设置范围已上传的图片</span>
+              <strong>同步媒体库</strong>
+              <span>刷新全部已上传图片、当前使用图片和项目内置素材</span>
             </button>
           </div>
           <div className="site-media-library" aria-live="polite">
             {libraryLoading ? <div className="site-media-empty"><LoaderCircle className="home-upload-spinner" />正在读取媒体库...</div> : null}
-            {!libraryLoading && libraryError ? <div className="site-media-empty site-media-error">{libraryError}</div> : null}
-            {!libraryLoading && !libraryError && !libraryItems.length ? <div className="site-media-empty"><Images />当前范围还没有上传图片</div> : null}
-            {!libraryLoading && !libraryError && libraryItems.length ? <div className="site-media-grid">
-              {libraryItems.map((item) => { const selected = item.url === displayImage || item.path === displayImage; return <button type="button" className={`site-media-item${selected ? " selected" : ""}`} key={item.id} onClick={() => chooseLibraryImage(item)}>
+            {!libraryLoading && libraryError && !libraryItems.length ? <div className="site-media-empty site-media-error">{libraryError}</div> : null}
+            {!libraryLoading && libraryError && libraryItems.length ? <div className="site-media-sync-warning">{libraryError}</div> : null}
+            {!libraryLoading && !libraryError && !libraryItems.length ? <div className="site-media-empty"><Images />媒体库暂时没有可用图片</div> : null}
+            {!libraryLoading && libraryItems.length ? <div className="site-media-grid">
+              {libraryItems.map((item) => { const selected = isSameMedia(item, displayImage); return <button type="button" className={`site-media-item${selected ? " selected" : ""}`} key={item.id} onClick={() => chooseLibraryImage(item)}>
                 <img src={item.url} loading="lazy" alt={item.name} />
                 <span>{item.current ? `当前使用 · ${item.name}` : item.bundled ? `项目内置 · ${item.name}` : `已上传 · ${item.name}`}</span>
                 {selected ? <Check /> : null}

@@ -514,16 +514,20 @@ p, h1, h2, h3 { margin-top: 0; }
   .header-cta-mobile { display: inline; }
   .menu-toggle { width: 36px; height: 36px; padding: 0; display: grid; place-items: center; flex: 0 0 auto; }
   .hero {
-    height: var(--hero-mobile-height, 560px);
-    background-color: #080d2b;
+    width: var(--hero-mobile-width, 100%);
+    height: auto;
+    min-height: 0;
+    aspect-ratio: var(--hero-mobile-aspect, 100 / 75);
+    margin-inline: auto;
+    background-color: #fff;
   }
   .hero-background img { object-fit: var(--hero-mobile-fit, cover); object-position: var(--hero-mobile-position, 50% 46%); transform: scale(var(--hero-mobile-zoom, 1)); transform-origin: var(--hero-mobile-position, 50% 46%); }
   .hero h1 { left: 0; width: 100%; transform: none; text-align: left; white-space: normal; font-size: clamp(66px, 21vw, 95px); line-height: .88; letter-spacing: -6px; top: 90px; }
   .hero-foreground { display: none; }
   .hero-copy { top: 310px; width: 82%; }
   .hero-tagline { display: none; }
-  .feature-grid { margin-top: -105px; grid-template-columns: repeat(var(--feature-mobile-columns, 2), minmax(0, 1fr)); }
-  .feature-card { min-height: var(--feature-mobile-height, 250px); padding: 14px; }
+  .feature-grid { width: var(--feature-mobile-width, 92%); margin-top: 0; grid-template-columns: repeat(var(--feature-mobile-columns, 2), minmax(0, 1fr)); }
+  .feature-card { min-height: 0; aspect-ratio: var(--feature-mobile-aspect, 100 / 142); padding: 14px; }
   .feature-content h3 { font-size: 15px; line-height: 1.25; }
   .feature-content p { padding-right: 28px; font-size: 12px; line-height: 1.45; }
   .about-panel { grid-template-columns: 1fr; }
@@ -577,9 +581,9 @@ p, h1, h2, h3 { margin-top: 0; }
 }
 
 @media (max-width: 470px) {
-  .hero { height: var(--hero-mobile-height, 560px); }
-  .feature-grid { grid-template-columns: repeat(var(--feature-mobile-columns, 2), minmax(0, 1fr)); margin-top: -80px; gap: 8px; }
-  .feature-card { min-height: var(--feature-mobile-height, 250px); }
+  .hero { width: var(--hero-mobile-width, 100%); height: auto; aspect-ratio: var(--hero-mobile-aspect, 100 / 75); }
+  .feature-grid { width: var(--feature-mobile-width, 92%); grid-template-columns: repeat(var(--feature-mobile-columns, 2), minmax(0, 1fr)); margin-top: 0; gap: 8px; }
+  .feature-card { min-height: 0; aspect-ratio: var(--feature-mobile-aspect, 100 / 142); }
   .benefit-grid { grid-template-columns: 1fr; }
   .stats {
     grid-template-columns: 1fr;
@@ -876,7 +880,7 @@ p, h1, h2, h3 { margin-top: 0; }
 @media (max-width: 720px) {
   .app-primary-public .shell,
   .app-primary-public .managed-page .shell { width: calc(100% - 30px); }
-  .app-shell .topbar { top: 0; height: 58px; padding: 0 15px; }
+  .app-shell .topbar { top: 0; width: 100%; max-width: none; margin-inline: 0; height: 58px; padding: 0 15px; }
   .app-primary-public .brand strong { font-size: 17px; }
   .app-primary-public .footer { min-height: 0; gap: 20px 16px; padding: 20px 20px 0; }
   .app-primary-public .footer-image { height: 150px; }
@@ -2057,6 +2061,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .site-media-empty { display: flex; min-height: 130px; align-items: center; justify-content: center; gap: 7px; color: var(--muted-foreground); font-size: 13px; text-align: center; }
 .site-media-empty svg { width: 18px; height: 18px; }
 .site-media-error { color: var(--destructive); }
+.site-media-sync-warning { margin-bottom: 8px; padding: 8px 10px; border: 1px solid color-mix(in srgb, #76b900 24%, var(--border)); border-radius: 7px; color: var(--muted-foreground); background: color-mix(in srgb, #76b900 7%, var(--background)); font-size: 12px; }
 .site-media-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .site-media-item { position: relative; display: grid; gap: 5px; min-width: 0; padding: 5px; border: 1px solid var(--border); border-radius: 8px; background: var(--background); color: var(--muted-foreground); text-align: left; }
 .site-media-item:hover, .site-media-item.selected { border-color: #76b900; box-shadow: 0 0 0 2px color-mix(in srgb, #76b900 18%, transparent); }

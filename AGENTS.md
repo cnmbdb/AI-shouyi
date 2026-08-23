@@ -40,6 +40,8 @@ Prototype media-library source rule: the project media library combines bundled 
 
 Prototype media-library ordering rule: the current field image is pinned first, followed by Supabase uploads and then bundled project assets; every thumbnail states whether it is current, uploaded, or bundled.
 
+Prototype media-library synchronization rule: every CMS image chooser aggregates uploads from all `site-content` scopes rather than only the current field folder, deduplicates equivalent public URLs and storage paths, and refreshes after upload. The current field image remains visible and pinned even when the Supabase listing request partially fails.
+
 Prototype compute-spec rule: public product cards must use GPU-compute specifications and matching hardware icons. Show GPU model, VRAM, and hosting term rather than bedroom, bathroom, or floor-area semantics; expose the same three fields in product settings.
 
 Prototype product-results copy rule: the public product results heading must have a prominent dedicated input in product browsing settings. The input supports a `{count}` token that renders the current visible product count after filtering.
@@ -144,7 +146,9 @@ Prototype homepage mobile-layout rule: Home Hero mobile height and background fi
 
 Prototype mobile-footer layout rule: on small screens, the footer brand spans the full row, the website-navigation and platform columns render side by side, and contact, media, and legal content span the full row. Do not collapse all footer content into one narrow column with unused space.
 
-Prototype homepage mobile-hero proportion rule: horizontal Home Hero artwork defaults to a compact 560px mobile section with cover fitting. Avoid contain fitting inside a tall mobile section because it creates large empty bands above and below the artwork; keep the following feature cards visible near the first viewport boundary.
+Prototype homepage mobile-hero proportion rule: horizontal Home Hero artwork defaults to a compact 144% height-to-width mobile section with cover fitting. Avoid contain fitting inside an excessively tall ratio because it creates large empty bands above and below the artwork; keep the following feature cards visible near the first viewport boundary.
+
+Prototype homepage mobile proportional-sizing rule: Home Hero mobile sizing uses administrator-controlled viewport-width percentage and height-to-width percentage rather than a fixed pixel height. The four-card section separately exposes its mobile section width percentage, column count, and shared card height-to-width percentage; both sections scale proportionally across phone widths while retaining their media focal and fit controls.
 
 Prototype homepage compute-visual rule: Home uses NVIDIA Green `#76B900` as its only interaction and selection accent. Feature, benefit, statistics, testimonial, and CTA icons must describe the platform's GPU devices, compute hosting, running yield, settlement, users, or agency workflows; legacy real-estate and generic lifestyle icon names remain read-compatible but render as the closest compute-product symbol.
 
@@ -167,3 +171,7 @@ Prototype homepage feature-card rule: the four Home feature cards render without
 Prototype homepage feature-card motion rule: the four Home feature cards use a restrained GSAP hover and keyboard-focus interaction with a small card lift, gentle background depth scale, raised copy, and arrow response. The effect must cleanly reverse, use transform-only motion, remain scoped and cleaned up through `useGSAP`, and disable nonessential movement for `prefers-reduced-motion`.
 
 Prototype shared-footer motion rule: the persistent public footer uses restrained, scoped GSAP hover and keyboard-focus feedback across the brand, social buttons, navigation and legal links, contact links, and footer image. Motion uses small transform-only lifts, shifts, scales, and icon responses with NVIDIA Green link emphasis, clean reversal, `useGSAP` cleanup, and `prefers-reduced-motion` support.
+
+Prototype footer-image settings clarity rule: footer settings must clearly distinguish the 25px left brand Logo from the large right-side footer display image. Both image editors open by default and use explicit labels stating their public positions so replacing one cannot be mistaken for replacing the other.
+
+Prototype homepage mobile hero-fit rule: the mobile shared header must always span the full viewport and must not inherit the narrowed `.shell` width. The bundled 4:3 Home Hero defaults to a 75% height-to-width section, uses a white fallback surface for contain-fit media, and the following feature grid starts after the Hero rather than overlapping it with a negative margin.
