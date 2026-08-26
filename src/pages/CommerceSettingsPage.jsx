@@ -34,12 +34,23 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { commerceSettingNormalizers, defaultCommerceSettings } from "../data/commerceSettings.js";
+import { buildVariantMatrix, commerceSettingNormalizers, commerceSpecificationFields, defaultCommerceSettings } from "../data/commerceSettings.js";
 import { getCommerceSettings, saveCommerceSetting } from "../lib/platformData.js";
 import { PaymentSettingsEditor } from "./PaymentSettingsEditor.jsx";
 
 const clone = (value) => structuredClone(value);
 const uid = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+const makeSpecificationLevel = (field, values = ["0"]) => {
+  const definition = commerceSpecificationFields.find((item) => item.value === field) ?? commerceSpecificationFields[0];
+  return { id: uid("spec-level"), field: definition.value, name: definition.label, unit: definition.unit, options: values.map((value) => ({ id: uid("spec-option"), value: String(value) })) };
+};
+const defaultSpecificationLevels = () => [
+  makeSpecificationLevel("computePower", ["30", "50", "100"]),
+  makeSpecificationLevel("monthlyReturnRate", ["3", "10", "40"]),
+  makeSpecificationLevel("rentalDuration", ["1", "30", "180"]),
+  makeSpecificationLevel("dailyTokenOutput", ["300", "500", "1000"]),
+];
+const syncProductVariants = (product) => { product.variants = buildVariantMatrix(product.specs, product.variants, product.rentalPrice, product.inventory); };
 const slugify = (value, fallback) => String(value || fallback).trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || fallback;
 const money = (value) => `¥${Number(value || 0).toLocaleString("zh-CN", { maximumFractionDigits: 2 })}`;
 const productPath = (product) => `/estates/${encodeURIComponent(product.categoryId || "uncategorized")}/${encodeURIComponent(product.id)}`;
@@ -48,8 +59,6 @@ const pageMeta = {
   products: { success: "商品目录已保存" },
   payment: { success: "支付渠道已保存" },
 };
-
-const periodOptions = [["day", "天"], ["month", "月"], ["year", "年"]];
 
 async function copyText(value) {
   const input = document.createElement("textarea");
@@ -184,7 +193,9 @@ function ProductCatalogEditor({ settings, edit, dirty, pending, onNotice, onPubl
 
   const addProduct = () => {
     const id = uid("commerce-product");
-    edit((next) => next.items.push({
+    edit((next) => {
+      const specs = defaultSpecificationLevels();
+      next.items.push({
       id,
       categoryId: next.categories[0]?.id ?? "",
       slug: slugify(id, "new-product"),
@@ -206,10 +217,12 @@ function ProductCatalogEditor({ settings, edit, dirty, pending, onNotice, onPubl
       buyoutPrice: "0",
       inventory: "0",
       details: "",
-      specs: [],
+      specs,
+      variants: buildVariantMatrix(specs, [], "0", "0"),
       enabled: false,
       sortOrder: String(next.items.length * 10 + 10),
-    }));
+      });
+    });
     setEditingId(id);
   };
 
@@ -236,15 +249,15 @@ function ProductCatalogEditor({ settings, edit, dirty, pending, onNotice, onPubl
       </AccordionItem>
 
       <AccordionItem value="products">
-        <AccordionTrigger><SectionHeading title="商品列表" description="管理图片、分类、规格、价格、详情、租用与买断计费" count={settings.items.length} /></AccordionTrigger>
+        <AccordionTrigger><SectionHeading title="商品列表" description="每个型号对应一个商品，商品内管理多条跑算规格" count={settings.items.length} /></AccordionTrigger>
         <AccordionContent>
           <Card size="sm" className="commerce-table-card">
             <CardHeader><CardTitle>全部商品</CardTitle><CardDescription>分享链接始终指向继承公共顶部导航和页脚的商品详情页。</CardDescription><CardAction><Button variant="outline" size="sm" onClick={addProduct}><PackagePlus />添加商品</Button></CardAction></CardHeader>
             <CardContent className="commerce-table-content"><div className="commerce-table-scroll"><Table className="commerce-product-table"><TableHeader><TableRow><TableHead>商品</TableHead><TableHead>分类 / 规格</TableHead><TableHead>计费</TableHead><TableHead>库存</TableHead><TableHead>状态</TableHead><TableHead className="text-right">操作</TableHead></TableRow></TableHeader><TableBody>
               {settings.items.map((item, index) => <TableRow key={item.id} data-state={editingId === item.id ? "selected" : undefined}>
                 <TableCell><div className="commerce-product-identity"><img src={item.image} alt="" /><div><strong>{item.name}</strong><small>{item.sku}</small></div></div></TableCell>
-                <TableCell><div className="commerce-product-summary"><strong>{categoryMap.get(item.categoryId) || "未分类"}</strong><small>{item.gpuModel} · {item.vram}</small></div></TableCell>
-                <TableCell><div className="commerce-product-billing"><Badge variant="outline">{item.billingType === "rental" ? "租用" : item.billingType === "buyout" ? "买断" : "租用 + 买断"}</Badge><small>{item.billingType === "buyout" ? money(item.buyoutPrice) : `${money(item.rentalPrice)} / ${periodOptions.find(([value]) => value === item.rentalPeriodUnit)?.[1] ?? "期"}`}</small></div></TableCell>
+                <TableCell><div className="commerce-product-summary"><strong>{item.gpuModel}</strong><small>{categoryMap.get(item.categoryId) || "未分类"} · {item.specs.length} 个维度 · {item.variants.length} 个 SKU</small></div></TableCell>
+                <TableCell><div className="commerce-product-billing"><Badge variant="outline">{item.billingType === "rental" ? "租用" : item.billingType === "buyout" ? "买断" : "租用 + 买断"}</Badge><small>{item.billingType === "buyout" ? money(item.buyoutPrice) : `${money(Math.min(...item.variants.map((entry) => Number(entry.price) || 0)))} 起 / 月`}</small></div></TableCell>
                 <TableCell>{item.inventory}</TableCell>
                 <TableCell><div className="commerce-status-control"><Switch size="sm" checked={item.enabled} onCheckedChange={(value) => edit((next) => { next.items[index].enabled = value; })} aria-label={`${item.name}上架状态`} /><Badge variant={item.enabled ? "secondary" : "outline"}>{item.enabled ? "已上架" : "已下架"}</Badge></div></TableCell>
                 <TableCell className="text-right"><div className="commerce-row-actions"><Button variant="ghost" size="xs" onClick={() => setEditingId(item.id)}><Pencil />编辑</Button><Button variant="ghost" size="xs" onClick={() => copyProductLink(item)}><Copy />复制链接</Button><DeleteButton iconOnly label={item.name} onConfirm={() => { edit((next) => { next.items.splice(index, 1); }); if (editingId === item.id) setEditingId(null); }} /></div></TableCell>
@@ -276,9 +289,16 @@ function ProductEditorDialog({ product, index, categories, edit, dirty, pending,
         <ImageControls prefix={`store-product-${product.id}`} image={product.image} position={product.imagePosition} onImage={(value) => set("image", value)} onPosition={(value) => set("imagePosition", value)} previewAspect="1 / 1" />
         <FieldGroup className="home-fields-grid"><TextControl id={`product-name-${product.id}`} label="商品名称" value={product.name} onChange={(value) => set("name", value)} /><TextControl id={`product-sku-${product.id}`} label="SKU" value={product.sku} onChange={(value) => set("sku", value)} /><SelectControl id={`product-category-${product.id}`} label="商品分类" value={product.categoryId || "__none__"} options={[["__none__", "未分类"], ...categories.map((item) => [item.id, item.name])]} onChange={(value) => set("categoryId", value === "__none__" ? "" : value)} /><TextControl id={`product-slug-${product.id}`} label="SEO 标识" value={product.slug} onChange={(value) => set("slug", slugify(value, `product-${index + 1}`))} description="分享路径固定为 /estates/商品分类ID/商品ID" /><TextControl id={`product-share-${product.id}`} label="分享标识（兼容）" value={product.shareToken} onChange={(value) => set("shareToken", value.replace(/[^a-zA-Z0-9_-]/g, ""))} /><TextControl id={`product-order-${product.id}`} label="显示顺序" type="number" value={product.sortOrder} onChange={(value) => set("sortOrder", value)} /></FieldGroup>
         <TextControl id={`product-summary-${product.id}`} label="商品摘要" textarea value={product.summary} onChange={(value) => set("summary", value)} />
-        <FieldGroup className="home-fields-grid"><TextControl id={`product-gpu-${product.id}`} label="GPU 型号" value={product.gpuModel} onChange={(value) => set("gpuModel", value)} /><TextControl id={`product-vram-${product.id}`} label="显存" value={product.vram} onChange={(value) => set("vram", value)} /><TextControl id={`product-term-${product.id}`} label="托管 / 交付说明" value={product.hostingTerm} onChange={(value) => set("hostingTerm", value)} /><TextControl id={`product-stock-${product.id}`} label="库存" type="number" min="0" value={product.inventory} onChange={(value) => set("inventory", value)} /></FieldGroup>
-        <Card size="sm" className="commerce-billing-card"><CardHeader><CardTitle>计费与续费</CardTitle><CardDescription>订单创建时会保存价格快照；续费订单关联原租用订单并延长到期时间。</CardDescription></CardHeader><CardContent className="commerce-editor-content"><SelectControl id={`product-billing-${product.id}`} label="计费方式" value={product.billingType} options={[["rental", "仅租用"], ["buyout", "仅买断"], ["both", "租用与买断"]]} onChange={(value) => set("billingType", value)} />{supportsRental ? <><FieldGroup className="commerce-billing-grid"><TextControl id={`product-rental-${product.id}`} label="租用价格" type="number" min="0" value={product.rentalPrice} onChange={(value) => set("rentalPrice", value)} /><TextControl id={`product-period-count-${product.id}`} label="每期数量" type="number" min="1" value={product.rentalPeriodCount} onChange={(value) => set("rentalPeriodCount", value)} /><SelectControl id={`product-period-unit-${product.id}`} label="租期单位" value={product.rentalPeriodUnit} options={periodOptions} onChange={(value) => set("rentalPeriodUnit", value)} /><TextControl id={`product-renewal-${product.id}`} label="每期续费价格" type="number" min="0" value={product.renewalPrice} onChange={(value) => set("renewalPrice", value)} /></FieldGroup><ToggleControl id={`product-renewable-${product.id}`} label="允许到期续费" description="关闭后支付 API 会拒绝为该商品创建续费订单" checked={product.renewable} onChange={(value) => set("renewable", value)} /></> : null}{supportsBuyout ? <TextControl id={`product-buyout-${product.id}`} label="买断价格" type="number" min="0" value={product.buyoutPrice} onChange={(value) => set("buyoutPrice", value)} /> : null}</CardContent></Card>
-        <div><div className="commerce-subheading"><div><strong>商品规格</strong><span>详情页以参数表展示</span></div><Button variant="outline" size="xs" onClick={() => edit((next) => next.items[index].specs.push({ id: uid("spec"), name: "新规格", value: "" }))}><Plus />添加规格</Button></div><div className="commerce-spec-list">{product.specs.map((spec, specIndex) => <div key={spec.id}><Input aria-label="规格名称" value={spec.name} onChange={(event) => edit((next) => { next.items[index].specs[specIndex].name = event.target.value; })} /><Input aria-label="规格值" value={spec.value} onChange={(event) => edit((next) => { next.items[index].specs[specIndex].value = event.target.value; })} /><Button variant="ghost" size="icon-xs" onClick={() => edit((next) => { next.items[index].specs.splice(specIndex, 1); })} aria-label="删除规格"><Trash2 /></Button></div>)}</div></div>
+        <FieldGroup className="home-fields-grid"><TextControl id={`product-gpu-${product.id}`} label="GPU 型号（唯一）" value={product.gpuModel} onChange={(value) => set("gpuModel", value)} description="同一型号只建立一个商品；不同方案请在下方添加多条跑算规格。" /><TextControl id={`product-vram-${product.id}`} label="显存" value={product.vram} onChange={(value) => set("vram", value)} /><TextControl id={`product-term-${product.id}`} label="托管 / 交付说明" value={product.hostingTerm} onChange={(value) => set("hostingTerm", value)} /><TextControl id={`product-stock-${product.id}`} label="商品库存（默认值）" type="number" min="0" value={product.inventory} onChange={(value) => set("inventory", value)} description="SKU 库存未单独设置时使用；下方价格区可逐行覆盖。" /></FieldGroup>
+        <Card size="sm" className="commerce-billing-card"><CardHeader><CardTitle>计费与续费</CardTitle><CardDescription>租赁价格由下方 SKU 价格表决定，订单创建时保存不可变规格与价格快照。</CardDescription></CardHeader><CardContent className="commerce-editor-content"><SelectControl id={`product-billing-${product.id}`} label="计费方式" value={product.billingType} options={[["rental", "仅租用"], ["buyout", "仅买断"], ["both", "租用与买断"]]} onChange={(value) => set("billingType", value)} />{supportsRental ? <><div className="commerce-spec-source-note">先维护四个规格维度，再在 SKU 价格区逐行填写每一种组合的月租价格。</div><ToggleControl id={`product-renewable-${product.id}`} label="允许到期续费" description="关闭后支付 API 会拒绝为该商品创建续费订单" checked={product.renewable} onChange={(value) => set("renewable", value)} /></> : null}{supportsBuyout ? <TextControl id={`product-buyout-${product.id}`} label="买断价格" type="number" min="0" value={product.buyoutPrice} onChange={(value) => set("buyoutPrice", value)} /> : null}</CardContent></Card>
+        <div className="commerce-variant-editor commerce-specification-block">
+          <div className="commerce-subheading"><div><strong>1. 规格区块</strong><span>规格只负责定义选项；四个维度的选项会自动组合成商城 SKU</span></div><Button variant="outline" size="xs" disabled={product.specs.length >= 4} onClick={() => edit((next) => { const target = next.items[index]; const used = new Set(target.specs.map((level) => level.field)); const field = commerceSpecificationFields.find((item) => !used.has(item.value))?.value ?? commerceSpecificationFields[0].value; target.specs.push(makeSpecificationLevel(field)); syncProductVariants(target); })}><Plus />添加规格维度</Button></div>
+          <Accordion type="multiple" defaultValue={product.specs.map((level) => level.id)} className="commerce-spec-levels">{product.specs.map((level, levelIndex) => <AccordionItem value={level.id} key={level.id} className="commerce-spec-level"><AccordionTrigger><div className="commerce-spec-level-heading"><Badge variant="outline">{["一级", "二级", "三级", "四级"][levelIndex] ?? `${levelIndex + 1}级`}</Badge><div><strong>{level.name}</strong><span>{level.options.length} 个可选值 · {level.options.map((option) => `${option.value}${level.unit}`).join("、")}</span></div></div></AccordionTrigger><AccordionContent><div className="commerce-spec-level-editor"><div className="commerce-spec-level-meta commerce-spec-level-meta-simple"><TextControl id={`spec-level-name-${level.id}`} label="规格名称" value={level.name} onChange={(value) => edit((next) => { next.items[index].specs[levelIndex].name = value; })} /><TextControl id={`spec-level-unit-${level.id}`} label="单位" value={level.unit} onChange={(value) => edit((next) => { next.items[index].specs[levelIndex].unit = value; })} /></div><div className="commerce-spec-options-heading"><strong>可选规格值</strong><Button variant="outline" size="xs" onClick={() => edit((next) => { const target = next.items[index]; target.specs[levelIndex].options.push({ id: uid("spec-option"), value: "0" }); syncProductVariants(target); })}><Plus />添加值</Button></div><div className="commerce-spec-option-list">{level.options.map((option, optionIndex) => <div key={option.id}><Badge variant="secondary">{optionIndex + 1}</Badge><Input aria-label={`${level.name}选项 ${optionIndex + 1}`} value={option.value} onChange={(event) => edit((next) => { next.items[index].specs[levelIndex].options[optionIndex].value = event.target.value; })} /><span>{level.unit || "无单位"}</span>{level.options.length > 1 ? <Button variant="ghost" size="icon-xs" onClick={() => edit((next) => { const target = next.items[index]; target.specs[levelIndex].options.splice(optionIndex, 1); syncProductVariants(target); })} aria-label={`删除${level.name}选项 ${optionIndex + 1}`}><Trash2 /></Button> : null}</div>)}</div>{product.specs.length > 1 ? <Button className="commerce-delete-level" variant="ghost" size="xs" onClick={() => edit((next) => { const target = next.items[index]; target.specs.splice(levelIndex, 1); syncProductVariants(target); })}><Trash2 />删除该规格维度</Button> : null}</div></AccordionContent></AccordionItem>)}</Accordion>
+        </div>
+        <div className="commerce-variant-editor commerce-price-block">
+          <div className="commerce-subheading"><div><strong>2. SKU 价格与库存区块</strong><span>{product.specs.map((level) => level.options.length).join(" × ")} = {product.variants.length} 个规格组合，每行独立编辑月租价格和库存</span></div><Badge variant="secondary">{product.variants.length} 个 SKU</Badge></div>
+          <div className="commerce-sku-price-table"><Table><TableHeader><TableRow><TableHead className="commerce-sku-index">#</TableHead>{product.specs.map((level) => <TableHead key={level.id}>{level.name}</TableHead>)}<TableHead className="commerce-sku-price-column">月租价格（元）</TableHead><TableHead className="commerce-sku-inventory-column">库存（台）</TableHead></TableRow></TableHeader><TableBody>{product.variants.map((variant, variantIndex) => <TableRow key={variant.id}><TableCell className="commerce-sku-index">{variantIndex + 1}</TableCell>{product.specs.map((level) => { const option = level.options.find((entry) => entry.id === variant.selections[level.id]); return <TableCell key={level.id}><Badge variant="outline">{option?.value ?? "-"}{level.unit}</Badge></TableCell>; })}<TableCell className="commerce-sku-price-column"><Input type="number" min="0" aria-label={`SKU ${variantIndex + 1} 月租价格`} value={variant.price} onChange={(event) => edit((next) => { next.items[index].variants[variantIndex].price = event.target.value; })} /></TableCell><TableCell className="commerce-sku-inventory-column"><Input type="number" min="0" step="1" aria-label={`SKU ${variantIndex + 1} 库存`} value={variant.inventory ?? "0"} onChange={(event) => edit((next) => { next.items[index].variants[variantIndex].inventory = event.target.value; })} /></TableCell></TableRow>)}</TableBody></Table></div>
+        </div>
         <TextControl id={`product-details-${product.id}`} label="商品详情" textarea value={product.details} onChange={(value) => set("details", value)} description="支持纯文本换行，详情页会保留段落结构。" />
           </div>
         </ScrollArea>

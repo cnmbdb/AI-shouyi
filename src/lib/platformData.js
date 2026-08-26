@@ -1,5 +1,5 @@
 import { requireSupabase } from "./supabase.js";
-import { defaultCommerceSettings, normalizeCommerceProducts, normalizePaymentSettings } from "../data/commerceSettings.js";
+import { defaultCommerceSettings, normalizeCommerceProducts, normalizePaymentSettings, resolveProductVariant } from "../data/commerceSettings.js";
 import { siteSettingNormalizers } from "../data/siteSettings.js";
 import { prepareManagedLinkForPublish } from "./managedLink.js";
 import { bundledImageAssets, assetUrl } from "./assets.js";
@@ -236,7 +236,11 @@ const categoryToRow = (item) => ({
   sort_order: Number(item.sortOrder) || 0,
 });
 
-const productToRow = (item) => ({
+const productToRow = (item) => {
+  const selected = resolveProductVariant(item);
+  const monthlyPrice = selected.price;
+  const rentalDays = Math.max(1, Number(selected.specification.rentalDuration?.value ?? 30) || 30);
+  return ({
   id: item.id,
   category_id: item.categoryId || null,
   slug: item.slug.trim().toLowerCase(),
@@ -250,18 +254,19 @@ const productToRow = (item) => ({
   vram: item.vram ?? "",
   hosting_term: item.hostingTerm ?? "",
   billing_type: item.billingType,
-  rental_price: Number(item.rentalPrice) || 0,
-  rental_period_unit: item.rentalPeriodUnit,
-  rental_period_count: Math.max(1, Number(item.rentalPeriodCount) || 1),
+  rental_price: monthlyPrice,
+  rental_period_unit: "day",
+  rental_period_count: rentalDays,
   renewable: item.billingType !== "buyout" && item.renewable !== false,
-  renewal_price: Number(item.renewalPrice) || 0,
+  renewal_price: monthlyPrice,
   buyout_price: Number(item.buyoutPrice) || 0,
   inventory: Math.max(0, Number(item.inventory) || 0),
   details: item.details ?? "",
-  specs: item.specs ?? [],
+  specs: { levels: item.specs ?? [], variants: item.variants ?? [] },
   enabled: item.enabled !== false,
   sort_order: Number(item.sortOrder) || 0,
-});
+  });
+};
 
 const publicChannelFallback = (channel) => ({
   ...channel,
@@ -315,6 +320,15 @@ export async function getCommerceSettings() {
 
 async function saveProductCatalog(client, value) {
   const normalized = normalizeCommerceProducts(value);
+  const modelKeys = normalized.items.map((item) => String(item.gpuModel || "").trim().toLocaleLowerCase("zh-CN"));
+  const duplicateModel = modelKeys.find((model, index) => model && modelKeys.indexOf(model) !== index);
+  if (duplicateModel) throw new Error("GPU 型号必须唯一，请合并同型号商品并使用多条跑算规格");
+  if (normalized.items.some((item) => !String(item.gpuModel || "").trim())) throw new Error("每个商品都必须填写唯一 GPU 型号");
+  if (normalized.items.some((item) => !item.specs.length || item.specs.some((level) => !level.options?.length))) throw new Error("每个商品的规格层级都至少需要一个可选值");
+  if (normalized.items.some((item) => new Set(item.specs.map((level) => level.field)).size !== item.specs.length)) throw new Error("同一个商品不能重复添加相同的规格类型");
+  if (normalized.items.some((item) => item.variants.length !== item.specs.reduce((total, level) => total * level.options.length, 1))) throw new Error("SKU 价格矩阵不完整，请重新打开商品编辑器后保存");
+  if (normalized.items.some((item) => item.variants.some((variant) => !Number.isFinite(Number(variant.price)) || Number(variant.price) < 0))) throw new Error("每个 SKU 组合都必须填写有效的月租价格");
+  if (normalized.items.some((item) => item.variants.some((variant) => !Number.isInteger(Number(variant.inventory)) || Number(variant.inventory) < 0))) throw new Error("每个 SKU 组合都必须填写有效的库存数量");
   const categories = normalized.categories.map(categoryToRow);
   const products = normalized.items.map(productToRow);
   if (categories.length) throwIfError((await client.from("store_categories").upsert(categories, { onConflict: "id" })).error);
@@ -332,6 +346,32 @@ async function saveProductCatalog(client, value) {
   const removedCategories = (currentCategories.data ?? []).map((item) => item.id).filter((id) => !categoryIds.has(id));
   if (removedCategories.length) throwIfError((await client.from("store_categories").delete().in("id", removedCategories)).error);
   return normalized;
+}
+
+export async function getPublicStoreProducts() {
+  const client = requireSupabase();
+  const [categoriesResult, productsResult] = await Promise.all([
+    client.from("store_categories").select("id, name, slug, description, enabled, sort_order").eq("enabled", true).order("sort_order"),
+    client.from("store_products").select("id, category_id, slug, share_token, sku, name, summary, image_url, image_position, gpu_model, vram, hosting_term, billing_type, rental_price, rental_period_unit, rental_period_count, renewable, renewal_price, buyout_price, inventory, details, specs, enabled, sort_order").eq("enabled", true).order("sort_order"),
+  ]);
+
+  if (isMissingCommerceTable(categoriesResult.error) || isMissingCommerceTable(productsResult.error)) {
+    const fallback = normalizeCommerceProducts(readCommerceFallback().products ?? defaultCommerceSettings.products);
+    return {
+      categories: fallback.categories.filter((item) => item.enabled !== false),
+      items: fallback.items.filter((item) => item.enabled !== false),
+    };
+  }
+  throwIfError(categoriesResult.error);
+  throwIfError(productsResult.error);
+  if (!(productsResult.data ?? []).length) {
+    const fallback = normalizeCommerceProducts(defaultCommerceSettings.products);
+    return { categories: fallback.categories.filter((item) => item.enabled !== false), items: fallback.items.filter((item) => item.enabled !== false) };
+  }
+  return normalizeCommerceProducts({
+    categories: (categoriesResult.data ?? []).map(categoryFromRow),
+    items: (productsResult.data ?? []).map(productFromRow),
+  });
 }
 
 async function savePaymentChannels(client, value) {
@@ -387,7 +427,10 @@ export async function getPublicStoreProduct(categoryId, productId, legacySlug = 
   }
   throwIfError(result.error);
   if (!result.data) return null;
-  return { ...productFromRow(result.data), category: result.data.store_categories ?? null };
+  const rawProduct = productFromRow(result.data);
+  const category = result.data.store_categories ? { id: rawProduct.categoryId || "uncategorized", ...result.data.store_categories, enabled: true, sortOrder: "0" } : null;
+  const normalized = normalizeCommerceProducts({ categories: category ? [category] : [], items: [rawProduct] });
+  return { ...normalized.items[0], category };
 }
 
 export async function createStorePayment(payload) {

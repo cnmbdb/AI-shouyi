@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { defaultMarketingPageSettings } from "../data/marketingPages.js";
+import { resolveProductVariant } from "../data/commerceSettings.js";
+import { commerceProductsRefreshKey, getPublicStoreProducts } from "../lib/platformData.js";
 import {
   getMarketingSection,
   MarketingAction,
@@ -20,36 +23,59 @@ export function YieldCalculatorPage({ settings = defaultMarketingPageSettings.ca
   const method = getMarketingSection(settings, "method");
   const cta = getMarketingSection(settings, "cta");
   const config = calculator?.calculatorConfig ?? defaultMarketingPageSettings.calculator.sections[0].calculatorConfig;
-  const plans = config.plans?.length ? config.plans : defaultMarketingPageSettings.calculator.sections[0].calculatorConfig.plans;
-  const [activePlanId, setActivePlanId] = useState(plans[0].id);
-  const activePlan = plans.find((plan) => plan.id === activePlanId) ?? plans[0];
-  const defaultDeviceCount = Math.max(1, numberValue(activePlan.defaultDeviceCount, 1));
-  const [deviceCount, setDeviceCount] = useState(defaultDeviceCount);
+  const productsQuery = useQuery({
+    queryKey: ["public-store-products"],
+    queryFn: getPublicStoreProducts,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
+  });
+  const allProducts = productsQuery.data?.items ?? [];
+  const selectedProductIds = Array.isArray(config.productIds) ? new Set(config.productIds) : null;
+  const products = selectedProductIds ? allProducts.filter((product) => selectedProductIds.has(product.id)) : allProducts;
+  const [activeProductId, setActiveProductId] = useState("");
+  const activeProduct = products.find((product) => product.id === activeProductId) ?? products[0];
+  const levels = activeProduct?.specs ?? [];
+  const [specSelections, setSpecSelections] = useState({});
+  const selectedSku = useMemo(() => resolveProductVariant(activeProduct, specSelections), [activeProduct, specSelections]);
+  const selectedSpecs = selectedSku.specification;
+  const [deviceCount, setDeviceCount] = useState(1);
 
   useEffect(() => {
-    if (!plans.some((plan) => plan.id === activePlanId)) setActivePlanId(plans[0].id);
-  }, [activePlanId, plans]);
+    if (products.length && !products.some((product) => product.id === activeProductId)) setActiveProductId(products[0].id);
+  }, [activeProductId, products]);
 
-  useEffect(() => setDeviceCount(defaultDeviceCount), [activePlan.id, defaultDeviceCount]);
+  useEffect(() => setSpecSelections({}), [activeProduct?.id]);
+
+  useEffect(() => {
+    const refresh = (event) => { if (event.key === commerceProductsRefreshKey) void productsQuery.refetch(); };
+    window.addEventListener("storage", refresh);
+    return () => window.removeEventListener("storage", refresh);
+  }, [productsQuery.refetch]);
 
   const result = useMemo(() => {
     const count = Math.max(1, numberValue(deviceCount, 1));
-    const unitPrice = Math.max(0, numberValue(activePlan.unitPrice));
-    const monthlyRate = Math.max(0, numberValue(activePlan.monthlyReturnRate));
-    const contractMonths = Math.max(1, numberValue(activePlan.contractMonths, 1));
-    const unitMonthlyLease = unitPrice * (monthlyRate / 100);
-    const monthlyLease = count * unitMonthlyLease;
+    const monthlyRentalPrice = Math.max(0, selectedSku.price);
+    const monthlyRate = Math.max(0, numberValue(selectedSpecs.monthlyReturnRate?.value));
+    const rentalDays = Math.max(1, numberValue(selectedSpecs.rentalDuration?.value, 1));
+    const rentalMonths = rentalDays / 30;
+    const dailyTokenOutput = Math.max(0, numberValue(selectedSpecs.dailyTokenOutput?.value));
+    const unitMonthlyYield = monthlyRentalPrice * (monthlyRate / 100);
+    const monthlyYield = count * unitMonthlyYield;
     return {
       count,
-      unitPrice,
+      monthlyRentalPrice,
       monthlyRate,
-      contractMonths,
-      unitMonthlyLease,
-      monthlyLease,
-      totalPrice: count * unitPrice,
-      contractLease: monthlyLease * contractMonths,
+      rentalDays,
+      rentalMonths,
+      dailyTokenOutput,
+      unitMonthlyYield,
+      monthlyYield,
+      monthlyRentalTotal: count * monthlyRentalPrice,
+      contractYield: monthlyYield * rentalMonths,
+      dailyTokenTotal: count * dailyTokenOutput,
     };
-  }, [activePlan.contractMonths, activePlan.monthlyReturnRate, activePlan.unitPrice, deviceCount]);
+  }, [selectedSku.price, selectedSpecs, deviceCount]);
 
   return (
     <div className="managed-page managed-calculator-page">
@@ -59,15 +85,21 @@ export function YieldCalculatorPage({ settings = defaultMarketingPageSettings.ca
         <section className="yield-calculator shell" id="calculator">
           <div className="yield-calculator-form">
             <MarketingSectionHeading section={calculator} />
-            <div className="yield-plan-selector" role="tablist" aria-label="选择 GPU 委托租赁方案">
-              {plans.map((plan) => <button type="button" role="tab" aria-selected={plan.id === activePlan.id} className={plan.id === activePlan.id ? "active" : ""} key={plan.id} onClick={() => setActivePlanId(plan.id)}>{plan.gpuModel}</button>)}
-            </div>
-            <div className="yield-plan-grid">
-              <article><span>GPU 型号</span><strong>{activePlan.gpuModel}</strong></article>
-              <article><span>单台售价</span><strong>{formatCurrency(result.unitPrice)}</strong></article>
-              <article><span>月回报率</span><strong>{result.monthlyRate.toFixed(2).replace(/\.00$/, "")}%</strong></article>
-              <article><span>闭口协议</span><strong>{result.contractMonths} 个月</strong></article>
-            </div>
+            {productsQuery.isLoading ? <div className="yield-product-state">正在读取已上架商品与规格...</div> : null}
+            {productsQuery.isError ? <div className="yield-product-state error"><strong>商品数据读取失败</strong><button type="button" onClick={() => productsQuery.refetch()}>重新读取</button></div> : null}
+            {!productsQuery.isLoading && !productsQuery.isError && !products.length ? <div className="yield-product-state">当前暂无可测算的上架商品。</div> : null}
+            {activeProduct && levels.length ? <>
+              <label className="yield-product-select"><span>选择真实商品</span><select value={activeProduct.id} onChange={(event) => setActiveProductId(event.target.value)}><option value="" disabled>请选择商品</option>{products.map((product) => <option value={product.id} key={product.id}>{product.name}</option>)}</select></label>
+              <div className="yield-specification-levels">{levels.map((level) => <fieldset key={level.id}><legend>{level.name}</legend><div className="yield-plan-selector" role="radiogroup" aria-label={`选择${level.name}`}>{level.options.map((option) => { const selectedId = specSelections[level.id] ?? level.options[0]?.id; const active = option.id === selectedId; return <button type="button" role="radio" aria-checked={active} className={active ? "active" : ""} key={option.id} onClick={() => setSpecSelections((current) => ({ ...current, [level.id]: option.id }))}><span>{option.value}</span><small>{level.unit || level.name}</small></button>; })}</div></fieldset>)}</div>
+              <div className="yield-source-note"><span>实时商品数据</span><button type="button" onClick={() => onNavigate(`/estates/${activeProduct.categoryId || "uncategorized"}/${activeProduct.id}`)}>查看商品详情</button></div>
+              <div className="yield-plan-grid yield-plan-grid-live">
+                <article><span>唯一型号</span><strong>{activeProduct.gpuModel}</strong></article>
+                <article><span>算力规格</span><strong>{selectedSpecs.computePower?.value || "待选择"}</strong></article>
+                <article><span>月租价格</span><strong>{formatCurrency(result.monthlyRentalPrice)}</strong></article>
+                <article><span>月租回报率</span><strong>{result.monthlyRate.toFixed(2).replace(/\.00$/, "")}%</strong></article>
+                <article><span>租赁时长</span><strong>{result.rentalDays} 天</strong></article>
+                <article><span>每日 TOKEN 产出</span><strong>{result.dailyTokenOutput.toLocaleString("zh-CN")} TOKEN</strong></article>
+              </div>
             <label className="yield-input yield-device-count">
               <span><PageIcon name="HardDrives" weight="fill" />设备数量</span>
               <div><input type="number" min="1" step="1" value={deviceCount} onChange={(event) => setDeviceCount(Math.max(1, numberValue(event.target.value, 1)))} /><b>台</b></div>
@@ -75,20 +107,21 @@ export function YieldCalculatorPage({ settings = defaultMarketingPageSettings.ca
             </label>
             <div className="yield-formula">
               <span>{config.monthlyLeaseLabel}</span>
-              <strong>{formatCurrency(result.unitPrice)} × {result.monthlyRate.toFixed(2).replace(/\.00$/, "")}% = {formatCurrency(result.unitMonthlyLease)} / 台</strong>
+              <strong>{formatCurrency(result.monthlyRentalPrice)} × {result.monthlyRate.toFixed(2).replace(/\.00$/, "")}% = {formatCurrency(result.unitMonthlyYield)} / 台</strong>
             </div>
             <MarketingAction button={calculator.button} onNavigate={onNavigate} onNotice={onNotice} variant="outline" />
+            </> : null}
           </div>
           <aside className="yield-results" aria-live="polite">
             <MarketingImage section={calculator} sizes="(max-width: 760px) 100vw, 38vw" />
             <div className="yield-result-heading"><span><PageIcon name="ChartLineUp" /></span><div><strong>本次测算结果</strong><small>示例估算，不代表固定收益</small></div></div>
             <div className="yield-result-grid">
-              <article><span>委托设备</span><strong>{activePlan.gpuModel} × {result.count} 台</strong></article>
-              <article><span>单台每月委托租赁</span><strong>{formatCurrency(result.unitMonthlyLease)}</strong></article>
-              <article className="yield-result-primary"><span>每月委托租赁合计</span><strong>{formatCurrency(result.monthlyLease)}</strong></article>
-              <article><span>闭口协议期限</span><strong>{result.contractMonths} 个月</strong></article>
-              <article><span>设备总售价</span><strong>{formatCurrency(result.totalPrice)}</strong></article>
-              <article><span>协议期累计委托租赁</span><strong>{formatCurrency(result.contractLease)}</strong></article>
+              <article><span>委托设备</span><strong>{activeProduct?.gpuModel || "待选择"} × {result.count} 台</strong></article>
+              <article><span>每日 TOKEN 产出</span><strong>{result.dailyTokenTotal.toLocaleString("zh-CN")} TOKEN</strong></article>
+              <article className="yield-result-primary"><span>预计每月跑算收益</span><strong>{formatCurrency(result.monthlyYield)}</strong></article>
+              <article><span>租赁期限</span><strong>{result.rentalDays} 天</strong></article>
+              <article><span>每月租金合计</span><strong>{formatCurrency(result.monthlyRentalTotal)}</strong></article>
+              <article><span>租期预计跑算收益</span><strong>{formatCurrency(result.contractYield)}</strong></article>
             </div>
           </aside>
         </section>

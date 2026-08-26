@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,7 +37,7 @@ import {
   siteSettingNormalizers,
 } from "../data/siteSettings.js";
 import { defaultMarketingPageSettings, marketingPageIconOptions, marketingPageMeta } from "../data/marketingPages.js";
-import { getSiteSettings, saveSiteSetting } from "../lib/platformData.js";
+import { getCommerceSettings, getSiteSettings, saveSiteSetting } from "../lib/platformData.js";
 
 const clone = (value) => structuredClone(value);
 const uid = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -155,10 +156,12 @@ function PublishBar({ dirty, pending, label, onReset, onPublish }) {
 export function ContentSettingsPage({ section, onNotice }) {
   const queryClient = useQueryClient();
   const query = useQuery({ queryKey: ["site-settings"], queryFn: getSiteSettings, staleTime: 30_000, refetchOnWindowFocus: false });
+  const commerceQuery = useQuery({ queryKey: ["commerce-settings"], queryFn: getCommerceSettings, enabled: section === "calculator", staleTime: 30_000, refetchOnWindowFocus: false });
   const normalize = siteSettingNormalizers[section];
   const [settings, setSettings] = useState(() => clone(defaults[section]));
   const [dirty, setDirty] = useState(false);
   const meta = sectionMeta[section];
+  const commerceProducts = section === "calculator" ? commerceQuery.data?.settings?.products?.items ?? [] : [];
 
   useEffect(() => {
     if (!query.data?.settings || !normalize) return;
@@ -199,7 +202,7 @@ export function ContentSettingsPage({ section, onNotice }) {
       {section === "footer" ? <FooterEditor settings={settings} edit={edit} /> : null}
       {section === "products" ? <ProductEditor settings={settings} edit={edit} /> : null}
       {section === "blog" ? <BlogEditor settings={settings} edit={edit} /> : null}
-      {defaultMarketingPageSettings[section] ? <MarketingPageEditor pageKey={section} settings={settings} edit={edit} /> : null}
+      {defaultMarketingPageSettings[section] ? <MarketingPageEditor pageKey={section} settings={settings} edit={edit} commerceProducts={commerceProducts} commerceLoading={commerceQuery.isLoading} commerceError={commerceQuery.error} /> : null}
 
       <PublishBar dirty={dirty} pending={mutation.isPending} label="保存并发布" onReset={() => { setSettings(clone(defaults[section])); setDirty(true); }} onPublish={() => mutation.mutate(normalize ? normalize(settings) : settings)} />
     </div>
@@ -265,7 +268,7 @@ const marketingBlockDescriptions = {
   cta: "背景图片、行动文案、图标与按钮链接",
 };
 
-function MarketingPageEditor({ pageKey, settings, edit }) {
+function MarketingPageEditor({ pageKey, settings, edit, commerceProducts = [], commerceLoading = false, commerceError = null }) {
   const meta = marketingPageMeta[pageKey];
   const hero = settings.hero;
   const openSections = ["hero", settings.sections[0]?.id].filter(Boolean);
@@ -308,19 +311,7 @@ function MarketingPageEditor({ pageKey, settings, edit }) {
               {block.kind === "calculator" ? <TextControl id="calculator-monthly-label" label="月度公式标题" value={block.calculatorConfig.monthlyLeaseLabel} onChange={(value) => edit((next) => { next.sections[blockIndex].calculatorConfig.monthlyLeaseLabel = value; })} /> : null}
             </CardContent></Card>
 
-            {block.kind === "calculator" ? <div className="calculator-config-editor">
-              {block.calculatorConfig.plans.map((plan, planIndex) => <ItemCard key={plan.id} title={plan.gpuModel} subtitle={`计算方案 ${planIndex + 1} · 5 项参数`} onDelete={block.calculatorConfig.plans.length > 1 ? () => edit((next) => { next.sections[blockIndex].calculatorConfig.plans.splice(planIndex, 1); }) : undefined}>
-                <div className="calculator-plan-fields">
-                  <TextControl id={`calculator-${plan.id}-gpu-model`} label="GPU 型号" value={plan.gpuModel} onChange={(value) => edit((next) => { next.sections[blockIndex].calculatorConfig.plans[planIndex].gpuModel = value; })} />
-                  <TextControl id={`calculator-${plan.id}-unit-price`} label="售价（元）" type="number" min="0" max="100000000" step="100" value={plan.unitPrice} onChange={(value) => edit((next) => { next.sections[blockIndex].calculatorConfig.plans[planIndex].unitPrice = Number(value); })} />
-                  <TextControl id={`calculator-${plan.id}-monthly-rate`} label="回报率（% / 月）" type="number" min="0" max="100" step="0.1" value={plan.monthlyReturnRate} onChange={(value) => edit((next) => { next.sections[blockIndex].calculatorConfig.plans[planIndex].monthlyReturnRate = Number(value); })} />
-                  <TextControl id={`calculator-${plan.id}-contract-months`} label="期限（月）" type="number" min="1" max="120" step="1" value={plan.contractMonths} onChange={(value) => edit((next) => { next.sections[blockIndex].calculatorConfig.plans[planIndex].contractMonths = Number(value); })} />
-                  <TextControl id={`calculator-${plan.id}-device-count`} label="默认数量（台）" type="number" min="1" max="1000" step="1" value={plan.defaultDeviceCount} onChange={(value) => edit((next) => { next.sections[blockIndex].calculatorConfig.plans[planIndex].defaultDeviceCount = Number(value); })} />
-                </div>
-                <div className="calculator-config-preview"><span>{block.calculatorConfig.monthlyLeaseLabel}</span><strong>¥{Number(plan.unitPrice || 0).toLocaleString("zh-CN")} × {Number(plan.monthlyReturnRate || 0)}% = ¥{Math.round(Number(plan.unitPrice || 0) * Number(plan.monthlyReturnRate || 0) / 100).toLocaleString("zh-CN")} / 台</strong></div>
-              </ItemCard>)}
-              <Button variant="outline" size="sm" onClick={() => edit((next) => { next.sections[blockIndex].calculatorConfig.plans.push({ id: uid("calculator-plan"), gpuModel: "新 GPU 方案", unitPrice: 50000, monthlyReturnRate: 8, contractMonths: 24, defaultDeviceCount: 1 }); })}><Plus />添加计算方案</Button>
-            </div> : null}
+            {block.kind === "calculator" ? <><Card size="sm" className="calculator-commerce-source"><CardContent><strong>商品与规格数据由商城统一管理</strong><span>前台收益计算器会实时读取已上架且被选中的商品。型号、算力、月租回报、租赁时长、每日 TOKEN 产出、月租价格和 SKU 库存请前往“商城 → 商品列表”编辑，避免两套数据不一致。</span></CardContent></Card><CalculatorProductSelector products={commerceProducts} selectedIds={block.calculatorConfig.productIds} loading={commerceLoading} error={commerceError} onChange={(productIds) => edit((next) => { next.sections[blockIndex].calculatorConfig.productIds = productIds; })} /></> : null}
 
             {block.kind !== "calculator" && block.items.length ? <div className="home-item-list compact">{block.items.map((entry, itemIndex) => (
               <ItemCard key={entry.id} title={entry.title} subtitle={`区块项目 ${itemIndex + 1}`} onDelete={() => edit((next) => { next.sections[blockIndex].items.splice(itemIndex, 1); })}>
@@ -346,6 +337,42 @@ function MarketingPageEditor({ pageKey, settings, edit }) {
         </AccordionItem>
       ))}
     </Accordion>
+  );
+}
+
+function CalculatorProductSelector({ products, selectedIds, loading, error, onChange }) {
+  const availableIds = products.map((product) => product.id);
+  const selected = Array.isArray(selectedIds) ? new Set(selectedIds) : new Set(availableIds.filter((id) => products.find((product) => product.id === id)?.enabled !== false));
+  const selectedCount = availableIds.filter((id) => selected.has(id)).length;
+  const allSelected = availableIds.length > 0 && selectedCount === availableIds.length;
+  const someSelected = selectedCount > 0 && !allSelected;
+  const update = (next) => onChange([...next].filter((id) => availableIds.includes(id)));
+
+  return (
+    <Card size="sm" className="calculator-product-selector">
+      <CardHeader>
+        <div><CardTitle>添加已有商品</CardTitle><CardDescription>选择哪些商城商品出现在前台收益计算器，可批量全选或清空。</CardDescription></div>
+        <Badge variant="outline">已选 {selectedCount} / {availableIds.length}</Badge>
+      </CardHeader>
+      <CardContent>
+        {loading ? <div className="calculator-product-selector-state">正在读取商城商品...</div> : null}
+        {error ? <div className="calculator-product-selector-state error">商城商品读取失败：{error.message}</div> : null}
+        {!loading && !error && !products.length ? <div className="calculator-product-selector-state">暂无可添加的商城商品，请先在“商城 → 商品列表”创建商品。</div> : null}
+        {!loading && !error && products.length ? <>
+          <div className="calculator-product-selector-toolbar">
+            <label className="calculator-product-select-all"><Checkbox aria-label="全选已有商品" checked={allSelected ? true : someSelected ? "indeterminate" : false} onCheckedChange={(checked) => update(checked === true ? new Set(availableIds) : new Set())} /><span>全选已有商品</span></label>
+            <div><Button type="button" variant="outline" size="xs" onClick={() => update(new Set(availableIds))} disabled={allSelected}>全选</Button><Button type="button" variant="ghost" size="xs" onClick={() => update(new Set())} disabled={!selectedCount}>清空选择</Button></div>
+          </div>
+          <div className="calculator-product-selector-grid">
+            {products.map((product) => <label className={`calculator-product-option${selected.has(product.id) ? " selected" : ""}`} key={product.id}>
+              <Checkbox aria-label={`添加${product.name}`} checked={selected.has(product.id)} onCheckedChange={(checked) => { const next = new Set(selected); if (checked === true) next.add(product.id); else next.delete(product.id); update(next); }} />
+              <span><strong>{product.name}</strong><small>{product.gpuModel} · {product.specs.length} 个维度 · {product.variants.length} 个 SKU</small></span>
+              <em>{product.enabled === false ? "已下架" : "已上架"}</em>
+            </label>)}
+          </div>
+        </> : null}
+      </CardContent>
+    </Card>
   );
 }
 

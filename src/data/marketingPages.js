@@ -3,10 +3,6 @@ import { normalizeManagedLink } from "../lib/managedLink.js";
 
 const clone = (value) => structuredClone(value);
 const withId = (prefix, item, index) => ({ id: item.id || `${prefix}-${index + 1}`, ...item });
-const numberWithin = (value, fallback, min, max) => {
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? Math.min(max, Math.max(min, numeric)) : fallback;
-};
 
 const action = (label, link) => ({ label, link });
 const item = (id, title, description, icon, link = "") => ({ id, title, description, icon, link, enabled: true });
@@ -128,8 +124,8 @@ export const defaultMarketingPageSettings = {
       id: "hero",
       enabled: true,
       icon: "Calculator",
-      title: "先看清 GPU 售价、月回报率与协议周期",
-      description: "使用设备售价和月回报率，快速测算每月委托租赁金额与闭口协议期累计回报。",
+      title: "用真实商品规格测算跑算收益",
+      description: "选择已上架 GPU 商品及跑算规格，按月租价格、回报率、租期和 TOKEN 产出实时测算。",
       image: "/images/yield-calculator-gpu.png",
       imagePosition: "72% 50%",
       button: action("开始测算", "#calculator"),
@@ -141,12 +137,13 @@ export const defaultMarketingPageSettings = {
         enabled: true,
         icon: "Calculator",
         title: "GPU 跑算收益测算",
-        description: "以下为当前委托租赁方案参数，实际权益与结算规则以最终签署协议为准。",
+        description: "商品型号与规格实时来自商城，切换规格即可对比月租、回报、租期和每日 TOKEN 产出。",
         image: "/images/yield-calculator-gpu.png",
         imagePosition: "72% 50%",
         button: action("查看可用产品", "/estates"),
         calculatorConfig: {
-          monthlyLeaseLabel: "每个月委托租赁",
+          monthlyLeaseLabel: "预计每月跑算收益",
+          productIds: null,
           plans: [
             { id: "rtx-5090", gpuModel: "RTX 5090", unitPrice: 50000, monthlyReturnRate: 8, contractMonths: 24, defaultDeviceCount: 1 },
             { id: "rtx-4090", gpuModel: "RTX 4090", unitPrice: 32000, monthlyReturnRate: 7, contractMonths: 24, defaultDeviceCount: 1 },
@@ -375,24 +372,6 @@ const normalizeItem = (source, fallback, index, prefix) => withId(prefix, {
   link: normalizeManagedLink(source?.link ?? fallback?.link ?? ""),
 }, index);
 
-const normalizeCalculatorPlan = (source, fallback, index, usedIds) => {
-  const saved = source && typeof source === "object" ? source : {};
-  const defaultPlan = fallback && typeof fallback === "object" ? fallback : defaultMarketingPageSettings.calculator.sections[0].calculatorConfig.plans[0];
-  const baseId = String(saved.id ?? defaultPlan.id ?? `gpu-plan-${index + 1}`).trim() || `gpu-plan-${index + 1}`;
-  let id = baseId;
-  let duplicateIndex = 2;
-  while (usedIds.has(id)) id = `${baseId}-${duplicateIndex++}`;
-  usedIds.add(id);
-  return {
-    id,
-    gpuModel: String(saved.gpuModel ?? defaultPlan.gpuModel).trim() || defaultPlan.gpuModel,
-    unitPrice: numberWithin(saved.unitPrice, defaultPlan.unitPrice, 0, 100000000),
-    monthlyReturnRate: numberWithin(saved.monthlyReturnRate, defaultPlan.monthlyReturnRate, 0, 100),
-    contractMonths: numberWithin(saved.contractMonths, defaultPlan.contractMonths, 1, 120),
-    defaultDeviceCount: numberWithin(saved.defaultDeviceCount, defaultPlan.defaultDeviceCount, 1, 1000),
-  };
-};
-
 const normalizeSection = (source, fallback, index, pageKey) => {
   const saved = source && typeof source === "object" ? source : {};
   const fallbackItems = Array.isArray(fallback.items) ? fallback.items : [];
@@ -408,30 +387,16 @@ const normalizeSection = (source, fallback, index, pageKey) => {
     items: savedItems.map((entry, itemIndex) => normalizeItem(entry, fallbackById.get(entry.id) ?? fallbackItems[itemIndex], itemIndex, `${pageKey}-${fallback.id}-item`)),
   }, index);
   if (pageKey === "calculator" && fallback.id === "calculator") {
-    const legacyById = new Map(savedItems.map((entry) => [entry.id, entry]));
     const config = saved.calculatorConfig && typeof saved.calculatorConfig === "object" ? saved.calculatorConfig : {};
-    const fallbackPlans = fallback.calculatorConfig.plans;
-    const firstFallback = fallbackPlans[0];
-    const legacyPrice = numberWithin(legacyById.get("hardwareCost")?.value, firstFallback.unitPrice, 0, 100000000);
-    const legacyMonths = numberWithin(legacyById.get("termMonths")?.value, firstFallback.contractMonths, 1, 120);
-    const hasSavedPlans = Array.isArray(config.plans) && config.plans.length > 0;
-    const planSources = hasSavedPlans
-      ? config.plans
-      : fallbackPlans.map((plan, planIndex) => (planIndex === 0 ? {
-        ...plan,
-        gpuModel: config.gpuModel ?? plan.gpuModel,
-        defaultDeviceCount: config.defaultDeviceCount ?? legacyById.get("deviceCount")?.value ?? plan.defaultDeviceCount,
-        unitPrice: config.unitPrice ?? (legacyPrice === 29800 ? plan.unitPrice : legacyPrice),
-        monthlyReturnRate: config.monthlyReturnRate ?? plan.monthlyReturnRate,
-        contractMonths: config.contractMonths ?? (legacyMonths === 12 ? plan.contractMonths : legacyMonths),
-      } : plan));
-    const fallbackById = new Map(fallbackPlans.map((plan) => [plan.id, plan]));
-    const usedIds = new Set();
     normalized.calculatorConfig = {
       monthlyLeaseLabel: String(config.monthlyLeaseLabel ?? fallback.calculatorConfig.monthlyLeaseLabel).trim() || fallback.calculatorConfig.monthlyLeaseLabel,
-      plans: planSources.map((plan, planIndex) => normalizeCalculatorPlan(plan, fallbackById.get(plan?.id) ?? fallbackPlans[planIndex] ?? firstFallback, planIndex, usedIds)),
+      productIds: Array.isArray(config.productIds)
+        ? [...new Set(config.productIds.map((id) => String(id).trim()).filter(Boolean))]
+        : null,
     };
     normalized.items = [];
+    if (normalized.description === "以下为当前委托租赁方案参数，实际权益与结算规则以最终签署协议为准。") normalized.description = fallback.description;
+    if (normalized.calculatorConfig.monthlyLeaseLabel === "每个月委托租赁") normalized.calculatorConfig.monthlyLeaseLabel = fallback.calculatorConfig.monthlyLeaseLabel;
   }
   return normalized;
 };
@@ -442,7 +407,7 @@ export function normalizeMarketingPageSettings(pageKey, value) {
   const source = value && typeof value === "object" ? value : {};
   const savedSections = Array.isArray(source.sections) ? source.sections : [];
   const savedById = new Map(savedSections.map((section) => [section.id, section]));
-  return {
+  const normalized = {
     ...clone(fallback),
     ...source,
     hero: {
@@ -454,6 +419,11 @@ export function normalizeMarketingPageSettings(pageKey, value) {
     },
     sections: fallback.sections.map((section, index) => normalizeSection(savedById.get(section.id), section, index, pageKey)),
   };
+  if (pageKey === "calculator") {
+    if (normalized.hero.title === "先看清 GPU 售价、月回报率与协议周期") normalized.hero.title = fallback.hero.title;
+    if (normalized.hero.description === "使用设备售价和月回报率，快速测算每月委托租赁金额与闭口协议期累计回报。") normalized.hero.description = fallback.hero.description;
+  }
+  return normalized;
 }
 
 export const marketingPageNormalizers = Object.fromEntries(

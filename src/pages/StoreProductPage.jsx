@@ -12,10 +12,9 @@ import {
 } from "@phosphor-icons/react";
 import { commerceProductsRefreshKey, createStorePayment, getPublicStoreProduct } from "../lib/platformData.js";
 import { responsiveImageProps } from "../lib/assets.js";
+import { resolveProductVariant } from "../data/commerceSettings.js";
 
 const money = (value) => `¥${Number(value || 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-const periodLabels = { day: "天", month: "月", year: "年" };
-
 async function copyText(value) {
   const input = document.createElement("textarea");
   input.value = value;
@@ -56,8 +55,12 @@ export function StoreProductPage({ categoryId, productId, legacySlug, user, onNa
     refetchOnWindowFocus: "always",
   });
   const [billing, setBilling] = useState("rental");
+  const [specSelections, setSpecSelections] = useState({});
   const [ordering, setOrdering] = useState(false);
   const product = query.data;
+  const levels = product?.specs ?? [];
+  const selectedSku = useMemo(() => resolveProductVariant(product, specSelections), [product, specSelections]);
+  const selectedSpecs = selectedSku.specification;
 
   useEffect(() => {
     const syncPublishedProduct = (event) => {
@@ -66,14 +69,15 @@ export function StoreProductPage({ categoryId, productId, legacySlug, user, onNa
     window.addEventListener("storage", syncPublishedProduct);
     return () => window.removeEventListener("storage", syncPublishedProduct);
   }, [query.refetch]);
+  useEffect(() => setSpecSelections({}), [product?.id]);
   const canonicalUrl = product ? new URL(`/estates/${encodeURIComponent(product.categoryId || "uncategorized")}/${encodeURIComponent(product.id)}`, window.location.origin).toString() : window.location.href;
   const plans = useMemo(() => {
     if (!product) return [];
     const result = [];
-    if (product.billingType !== "buyout") result.push({ id: "rental", label: "租用", price: product.rentalPrice, suffix: `/ ${product.rentalPeriodCount} ${periodLabels[product.rentalPeriodUnit] || "期"}`, note: product.renewable ? `到期可按 ${money(product.renewalPrice)} 续费` : "到期后不支持续费" });
+    if (product.billingType !== "buyout") result.push({ id: "rental", label: "租用", price: selectedSku.price, suffix: `/ 月 · ${selectedSpecs.rentalDuration?.value ?? product.rentalPeriodCount} 天`, note: `月租回报 ${selectedSpecs.monthlyReturnRate?.value ?? 0}% · 每日 ${Number(selectedSpecs.dailyTokenOutput?.value || 0).toLocaleString("zh-CN")} TOKEN` });
     if (product.billingType !== "rental") result.push({ id: "buyout", label: "买断", price: product.buyoutPrice, suffix: "一次性", note: "支付完成后按订单约定交付设备所有权" });
     return result;
-  }, [product]);
+  }, [product, selectedSku.price, selectedSpecs]);
 
   const copyLink = async () => {
     try {
@@ -110,7 +114,7 @@ export function StoreProductPage({ categoryId, productId, legacySlug, user, onNa
     }
     setOrdering(true);
     try {
-      const result = await createStorePayment({ productId: product.id, orderType: selectedPlan.id, quantity: 1, cycles: 1 });
+      const result = await createStorePayment({ productId: product.id, specSelections, orderType: selectedPlan.id, quantity: 1, cycles: 1 });
       if (result.checkout?.checkout_url) {
         window.location.assign(result.checkout.checkout_url);
         return;
@@ -133,10 +137,11 @@ export function StoreProductPage({ categoryId, productId, legacySlug, user, onNa
           <div className="store-product-summary-panel">
             <div className="store-product-heading"><div><small>{product.sku}</small><h1>{product.name}</h1></div><button onClick={share} aria-label="分享商品"><ShareNetwork /></button></div>
             <p>{product.summary}</p>
-            <div className="store-product-key-specs"><span><GraphicsCard weight="duotone" />{product.gpuModel}</span><span><Memory weight="duotone" />{product.vram}</span><span><CalendarBlank weight="duotone" />{product.hostingTerm}</span></div>
+            <div className="store-product-key-specs"><span><GraphicsCard weight="duotone" />{product.gpuModel}</span><span><Memory weight="duotone" />{selectedSpecs.computePower?.value || product.vram}</span><span><CalendarBlank weight="duotone" />{selectedSpecs.rentalDuration ? `${selectedSpecs.rentalDuration.value} 天` : product.hostingTerm}</span></div>
+            {levels.length ? <div className="store-specification-levels"><div className="store-specification-heading"><strong>选择跑算规格</strong><span>{levels.length} 个规格维度</span></div>{levels.map((level, levelIndex) => <fieldset key={level.id}><legend><b>{["一级", "二级", "三级", "四级"][levelIndex] ?? `${levelIndex + 1}级`}</b>{level.name}</legend><div>{level.options.map((option) => { const selectedId = specSelections[level.id] ?? level.options[0]?.id; const active = option.id === selectedId; return <button type="button" key={option.id} className={active ? "active" : ""} onClick={() => setSpecSelections((current) => ({ ...current, [level.id]: option.id }))}>{option.value}<small>{level.unit}</small></button>; })}</div></fieldset>)}</div> : null}
             <div className="store-billing-plans">{plans.map((plan) => <button key={plan.id} className={(selectedPlan?.id ?? plans[0]?.id) === plan.id ? "active" : ""} onClick={() => setBilling(plan.id)}><span><strong>{plan.label}</strong><i>{plan.suffix}</i></span><b>{money(plan.price)}</b><small>{plan.note}</small></button>)}</div>
-            <div className="store-product-availability"><CheckCircle weight="fill" /><span>现有库存 <strong>{product.inventory}</strong> 台</span></div>
-            <button className="store-product-primary" disabled={ordering || isNativeApp} onClick={startOrder}>{isNativeApp ? "Android 版暂未开放支付" : ordering ? "正在创建订单..." : selectedPlan?.id === "buyout" ? "立即买断" : "立即租用"}</button>
+            <div className="store-product-availability"><CheckCircle weight="fill" /><span>当前规格库存 <strong>{selectedSku.variant?.inventory ?? product.inventory}</strong> 台</span></div>
+            <button className="store-product-primary" disabled={ordering || isNativeApp || Number(selectedSku.variant?.inventory ?? product.inventory) <= 0} onClick={startOrder}>{isNativeApp ? "Android 版暂未开放支付" : ordering ? "正在创建订单..." : Number(selectedSku.variant?.inventory ?? product.inventory) <= 0 ? "当前规格暂时缺货" : selectedPlan?.id === "buyout" ? "立即买断" : "立即租用"}</button>
             <button className="store-product-copy" onClick={copyLink}><Copy />复制商品分享链接</button>
           </div>
         </div>
@@ -144,7 +149,7 @@ export function StoreProductPage({ categoryId, productId, legacySlug, user, onNa
 
       <section className="store-product-content shell">
         <article><span>Product details</span><h2>商品详情</h2><p>{product.details}</p></article>
-        <aside><h2>商品规格</h2><dl>{product.specs.map((spec) => <div key={spec.id}><dt>{spec.name}</dt><dd>{spec.value}</dd></div>)}</dl><div className="store-renewal-note"><strong>计费说明</strong><p>{product.billingType === "buyout" ? "本商品为一次性买断，订单完成后不产生自动续费。" : product.renewable ? `租用订单到期前可发起续费；续费按下单时的当前续费价 ${money(product.renewalPrice)} 生成独立订单，并关联原租用订单。` : "本商品按期租用，但当前不开放续费。"}</p></div></aside>
+        <aside><h2>当前跑算规格</h2><dl><div><dt>唯一型号</dt><dd>{product.gpuModel}</dd></div>{levels.map((level) => <div key={level.id}><dt>{level.name}</dt><dd>{selectedSpecs[level.field]?.value}{level.unit}</dd></div>)}<div><dt>月租价格</dt><dd>{money(selectedSku.price)}</dd></div></dl><div className="store-renewal-note"><strong>计费说明</strong><p>{product.billingType === "buyout" ? "本商品支持一次性买断，订单完成后不产生自动续费。" : product.renewable ? "租用订单会保存四项规格选择、SKU 组合和价格快照；到期前可按届时有效的同规格价格续租。" : "本商品按期租用，但当前不开放续费。"}</p></div></aside>
       </section>
     </div>
   );
