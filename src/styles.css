@@ -768,8 +768,8 @@ p, h1, h2, h3 { margin-top: 0; }
 .yield-product-select > span { color: #30362b; font-size: 13px; font-weight: 700; }
 .yield-product-select select { min-width: 0; height: 42px; padding: 0 38px 0 12px; border: 1px solid #cfd6c8; border-radius: 9px; outline: 0; color: #22271e; background: #fff; font: inherit; font-size: 14px; }
 .yield-product-select select:focus { border-color: #76b900; box-shadow: 0 0 0 3px rgba(118,185,0,.13); }
-.yield-plan-selector { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 8px; }
-.yield-plan-selector button { min-height: 52px; padding: 8px 14px; display: grid; gap: 2px; border: 1px solid #d8ded2; border-radius: 8px; background: #fff; color: #4e5548; font: inherit; font-size: 14px; font-weight: 650; text-align: left; cursor: pointer; }
+.yield-plan-selector { margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; align-items: stretch; }
+.yield-plan-selector button { width: 100%; min-height: 52px; padding: 8px 12px; display: grid; place-items: center; gap: 2px; border: 1px solid #d8ded2; border-radius: 8px; background: #fff; color: #4e5548; font: inherit; font-size: 14px; font-weight: 650; text-align: center; cursor: pointer; }
 .yield-plan-selector button small { color: #7a8274; font-size: 11px; font-weight: 500; }
 .yield-plan-selector button:hover { border-color: #9ab86d; color: #344220; }
 .yield-plan-selector button:focus-visible { outline: 3px solid rgba(118,185,0,.2); outline-offset: 2px; }
@@ -779,9 +779,9 @@ p, h1, h2, h3 { margin-top: 0; }
 .yield-specification-levels fieldset { min-width: 0; padding: 12px 13px 13px; border: 1px solid #dde3d7; border-radius: 11px; background: #fbfcfa; }
 .yield-specification-levels legend { padding: 0 7px; color: #30362b; font-size: 13px; font-weight: 700; }
 .yield-specification-levels .yield-plan-selector { margin-top: 4px; }
-.yield-source-note { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; color: #687261; font-size: 11px; }
-.yield-source-note span { padding: 4px 8px; border-radius: 999px; color: #3f5f18; background: #edf6e4; font-weight: 700; }
-.yield-source-note button { padding: 5px 0; color: #4b711b; background: transparent; font-size: 12px; font-weight: 700; }
+.yield-live-heading { margin-top: 20px; padding-top: 15px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #dde3d7; }
+.yield-live-heading strong { color: #30362b; font-size: 15px; font-weight: 750; }
+.yield-live-heading button { padding: 5px 0; color: #4b711b; background: transparent; font-size: 12px; font-weight: 700; }
 .yield-plan-grid { margin: 16px 0 20px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .yield-plan-grid article { min-height: 78px; padding: 13px 14px; display: grid; align-content: center; border: 1px solid #dde3d7; border-radius: 12px; background: #f8faf6; }
 .yield-plan-grid span { color: #72786d; font-size: 12px; }
@@ -801,7 +801,7 @@ p, h1, h2, h3 { margin-top: 0; }
 .yield-formula { margin-bottom: 20px; padding: 14px 16px; display: grid; gap: 5px; border-left: 3px solid var(--managed-green); border-radius: 0 10px 10px 0; background: #f1f6ea; }
 .yield-formula span { color: #66705d; font-size: 12px; }
 .yield-formula strong { color: #28341d; font-size: 15px; line-height: 1.45; }
-.yield-results { background: #f6f8f3; }
+.yield-results { display: flex; flex-direction: column; background: #f6f8f3; }
 .yield-results > .managed-image { height: 174px; margin-bottom: 22px; }
 .yield-result-heading { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 15px; align-items: center; }
 .yield-result-heading strong,
@@ -934,6 +934,7 @@ p, h1, h2, h3 { margin-top: 0; }
   .managed-contact-field-wide { grid-column: auto; }
   .managed-feature-intro > .managed-image,
   .managed-faq-intro > .managed-image { height: 270px; }
+  .yield-specification-levels .yield-plan-selector { grid-template-columns: repeat(auto-fit, minmax(78px, 1fr)); }
   .managed-operations { padding-top: 54px; }
   .managed-operations-media { height: 300px; }
   .managed-operations-panel { width: calc(100% - 24px); margin-top: -45px; padding: 24px; }

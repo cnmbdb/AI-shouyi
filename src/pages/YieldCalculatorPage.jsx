@@ -91,15 +91,6 @@ export function YieldCalculatorPage({ settings = defaultMarketingPageSettings.ca
             {activeProduct && levels.length ? <>
               <label className="yield-product-select"><span>选择真实商品</span><select value={activeProduct.id} onChange={(event) => setActiveProductId(event.target.value)}><option value="" disabled>请选择商品</option>{products.map((product) => <option value={product.id} key={product.id}>{product.name}</option>)}</select></label>
               <div className="yield-specification-levels">{levels.map((level) => <fieldset key={level.id}><legend>{level.name}</legend><div className="yield-plan-selector" role="radiogroup" aria-label={`选择${level.name}`}>{level.options.map((option) => { const selectedId = specSelections[level.id] ?? level.options[0]?.id; const active = option.id === selectedId; return <button type="button" role="radio" aria-checked={active} className={active ? "active" : ""} key={option.id} onClick={() => setSpecSelections((current) => ({ ...current, [level.id]: option.id }))}><span>{option.value}</span><small>{level.unit || level.name}</small></button>; })}</div></fieldset>)}</div>
-              <div className="yield-source-note"><span>实时商品数据</span><button type="button" onClick={() => onNavigate(`/estates/${activeProduct.categoryId || "uncategorized"}/${activeProduct.id}`)}>查看商品详情</button></div>
-              <div className="yield-plan-grid yield-plan-grid-live">
-                <article><span>唯一型号</span><strong>{activeProduct.gpuModel}</strong></article>
-                <article><span>算力规格</span><strong>{selectedSpecs.computePower?.value || "待选择"}</strong></article>
-                <article><span>月租价格</span><strong>{formatCurrency(result.monthlyRentalPrice)}</strong></article>
-                <article><span>月租回报率</span><strong>{result.monthlyRate.toFixed(2).replace(/\.00$/, "")}%</strong></article>
-                <article><span>租赁时长</span><strong>{result.rentalDays} 天</strong></article>
-                <article><span>每日 TOKEN 产出</span><strong>{result.dailyTokenOutput.toLocaleString("zh-CN")} TOKEN</strong></article>
-              </div>
             <label className="yield-input yield-device-count">
               <span><PageIcon name="HardDrives" weight="fill" />设备数量</span>
               <div><input type="number" min="1" step="1" value={deviceCount} onChange={(event) => setDeviceCount(Math.max(1, numberValue(event.target.value, 1)))} /><b>台</b></div>
@@ -123,6 +114,17 @@ export function YieldCalculatorPage({ settings = defaultMarketingPageSettings.ca
               <article><span>每月租金合计</span><strong>{formatCurrency(result.monthlyRentalTotal)}</strong></article>
               <article><span>租期预计跑算收益</span><strong>{formatCurrency(result.contractYield)}</strong></article>
             </div>
+            {activeProduct && levels.length ? <>
+              <div className="yield-live-heading"><strong>实时商品数据</strong><button type="button" onClick={() => onNavigate(`/estates/${activeProduct.categoryId || "uncategorized"}/${activeProduct.id}`)}>查看商品详情</button></div>
+              <div className="yield-plan-grid yield-plan-grid-live">
+                <article><span>唯一型号</span><strong>{activeProduct.gpuModel}</strong></article>
+                <article><span>算力规格</span><strong>{selectedSpecs.computePower?.value || "待选择"}</strong></article>
+                <article><span>月租价格</span><strong>{formatCurrency(result.monthlyRentalPrice)}</strong></article>
+                <article><span>月租回报率</span><strong>{result.monthlyRate.toFixed(2).replace(/\.00$/, "")}%</strong></article>
+                <article><span>租赁时长</span><strong>{result.rentalDays} 天</strong></article>
+                <article><span>每日 TOKEN 产出</span><strong>{result.dailyTokenOutput.toLocaleString("zh-CN")} TOKEN</strong></article>
+              </div>
+            </> : null}
           </aside>
         </section>
       ) : null}
