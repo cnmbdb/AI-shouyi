@@ -354,9 +354,10 @@ p, h1, h2, h3 { margin-top: 0; }
 .browse-card-title strong { flex: 0 0 auto; font-size: 18px; }
 .browse-card-copy p { margin: 8px 0 0; display: flex; align-items: center; gap: 5px; font-size: 13px; color: rgba(255,255,255,.88); }
 .browse-card-copy p svg { width: 13px; height: 13px; }
-.browse-card-specs { min-height: 52px; padding: 0 15px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: center; color: #596253; font-size: 13px; }
-.browse-card-specs span { min-width: 0; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
-.browse-card-specs svg { width: 19px; height: 19px; color: var(--estates-green-dark); }
+.browse-card-specs { min-height: 52px; padding: 0 15px; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, .8fr) minmax(0, .9fr); column-gap: 12px; align-items: center; color: #596253; font-size: 13px; }
+.browse-card-spec { min-width: 0; display: flex; align-items: center; gap: 6px; overflow: hidden; }
+.browse-card-specs svg { flex: 0 0 auto; width: 19px; height: 19px; color: var(--estates-green-dark); }
+.browse-card-spec-value { min-width: 0; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .browse-grid.list-layout { grid-template-columns: 1fr; }
 .browse-card.list-card { display: grid; grid-template-columns: 238px 1fr; }
 .browse-card.list-card .browse-card-media { height: 154px; }

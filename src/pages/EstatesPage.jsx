@@ -257,9 +257,9 @@ function PropertyCard({ estate, liked, onLike, onOpen, layout }) {
         </div>
       </div>
       <div className="browse-card-specs">
-        <span><GraphicsCard weight="fill" /> {estate.gpuModel}</span>
-        <span><Memory weight="fill" /> {estate.vram}</span>
-        <span><CalendarBlank weight="fill" /> {estate.hostingTerm}</span>
+        <span className="browse-card-spec"><GraphicsCard weight="fill" /><span className="browse-card-spec-value">{estate.gpuModel}</span></span>
+        <span className="browse-card-spec"><Memory weight="fill" /><span className="browse-card-spec-value">{estate.vram}</span></span>
+        <span className="browse-card-spec"><CalendarBlank weight="fill" /><span className="browse-card-spec-value">{estate.hostingTerm}</span></span>
       </div>
     </article>
   );
