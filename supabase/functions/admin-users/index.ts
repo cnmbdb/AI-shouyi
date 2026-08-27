@@ -140,14 +140,14 @@ Deno.serve(async (request: Request) => {
 
       const [profileResult, ordersResult, devicesResult, earningsResult, transactionsResult, legacyOrdersResult, verificationResult, auditResult, catalogResult] = await Promise.all([
         admin.from("profiles").select("id, username, display_name, avatar_url, avatar_color, role, created_at, updated_at").eq("id", userId).maybeSingle(),
-        admin.from("store_orders").select("id, order_no, product_id, parent_order_id, order_type, product_snapshot, quantity, period_unit, period_count, unit_price, subtotal, fee_amount, total_amount, currency, status, service_starts_at, service_expires_at, expires_at, paid_at, created_at, updated_at").eq("user_id", userId).order("created_at", { ascending: false }),
-        admin.from("compute_devices").select("id, device_code, name, compute, status, daily_yield, expires_at, created_at").eq("user_id", userId).order("created_at", { ascending: false }),
+        admin.from("store_orders").select("id, order_no, product_id, parent_order_id, device_id, order_type, product_snapshot, quantity, period_unit, period_count, unit_price, subtotal, fee_amount, total_amount, currency, status, service_starts_at, service_expires_at, expires_at, paid_at, created_at, updated_at").eq("user_id", userId).order("created_at", { ascending: false }),
+        admin.from("compute_devices").select("id, device_code, name, compute, status, daily_yield, expires_at, store_order_id, product_id, product_snapshot, unit_index, created_at").eq("user_id", userId).order("created_at", { ascending: false }),
         admin.from("earnings").select("id, device_id, amount, earned_on, status, created_at").eq("user_id", userId).order("earned_on", { ascending: false }),
         admin.from("transactions").select("id, transaction_type, reference, amount, status, occurred_at").eq("user_id", userId).order("occurred_at", { ascending: false }),
         admin.from("rental_orders").select("id, order_no, product, period_months, amount, status, created_at").eq("user_id", userId).order("created_at", { ascending: false }),
         admin.from("user_verifications").select("user_id, identity_status, funds_status, identity_note, funds_note, updated_by, created_at, updated_at").eq("user_id", userId).maybeSingle(),
         admin.from("admin_user_audit_logs").select("id, admin_id, action, target_kind, target_id, before_value, after_value, reason, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(50),
-        admin.from("store_products").select("id, category_id, slug, sku, name, image_url, gpu_model, vram, hosting_term, billing_type, rental_price, rental_period_unit, rental_period_count, buyout_price, inventory, enabled").order("sort_order"),
+        admin.from("store_products").select("id, category_id, slug, sku, name, image_url, gpu_model, vram, hosting_term, billing_type, rental_price, rental_period_unit, rental_period_count, renewable, renewal_price, buyout_price, inventory, specs, enabled").order("sort_order"),
       ]);
 
       const failed = [profileResult, ordersResult, devicesResult, earningsResult, transactionsResult, legacyOrdersResult, verificationResult, auditResult, catalogResult].find((result) => result.error);
@@ -204,7 +204,7 @@ Deno.serve(async (request: Request) => {
       const resource = String(body.resource ?? "");
       const operation = String(body.operation ?? "");
       const reason = requireReason(body.reason);
-      if (!uuidPattern.test(userId) || !["order", "device", "transaction", "verification"].includes(resource) || !["create", "update", "delete"].includes(operation)) {
+      if (!uuidPattern.test(userId) || !["order", "device", "transaction", "verification"].includes(resource) || !["create", "update", "delete", "renew"].includes(operation) || (operation === "renew" && resource !== "device")) {
         return json(origin, 400, { error: "管理操作参数无效" });
       }
       const { data: managedUser } = await admin.auth.admin.getUserById(userId);
@@ -263,6 +263,23 @@ Deno.serve(async (request: Request) => {
           };
           const { data, error } = await admin.from("store_orders").insert(payload).select().single();
           if (error) throw new Error(error.code === "23505" ? "订单号冲突，请重试" : "商城订单创建失败");
+          if (["paid", "processing", "completed"].includes(status)) {
+            const devices = Array.from({ length: quantity }, (_, index) => ({
+              user_id: userId,
+              device_code: `${data.order_no}-${String(index + 1).padStart(2, "0")}`,
+              name: product.gpu_model || product.name,
+              compute: product.vram || "待配置",
+              status: "运行中",
+              daily_yield: 0,
+              expires_at: data.service_expires_at ? String(data.service_expires_at).slice(0, 10) : null,
+              store_order_id: data.id,
+              product_id: product.id,
+              product_snapshot: snapshot,
+              unit_index: index + 1,
+            }));
+            const { error: deviceError } = await admin.from("compute_devices").upsert(devices, { onConflict: "store_order_id,unit_index", ignoreDuplicates: true });
+            if (deviceError) throw new Error("订单已创建，但设备资产生成失败");
+          }
           targetId = data.id;
           afterValue = data;
         } else {
@@ -271,11 +288,13 @@ Deno.serve(async (request: Request) => {
           if (readError || !existing) throw new Error("商城订单不存在");
           beforeValue = existing;
           if (operation === "delete") {
-            const [{ count: paymentCount }, { count: renewalCount }] = await Promise.all([
+            const [{ count: paymentCount }, { count: renewalCount }, { count: deviceCount }] = await Promise.all([
               admin.from("store_payments").select("id", { count: "exact", head: true }).eq("order_id", targetId),
               admin.from("store_orders").select("id", { count: "exact", head: true }).eq("parent_order_id", targetId),
+              admin.from("compute_devices").select("id", { count: "exact", head: true }).eq("store_order_id", targetId),
             ]);
             if ((paymentCount ?? 0) > 0 || (renewalCount ?? 0) > 0) throw new Error("订单已有支付或续费记录，不能删除；请改为取消或退款状态");
+            if ((deviceCount ?? 0) > 0) throw new Error("订单已生成关联设备，不能删除；可停用设备并保留订单历史");
             const { error } = await admin.from("store_orders").delete().eq("id", targetId).eq("user_id", userId);
             if (error) throw new Error("商城订单删除失败");
           } else {
@@ -289,27 +308,93 @@ Deno.serve(async (request: Request) => {
             };
             const { data, error } = await admin.from("store_orders").update(update).eq("id", targetId).eq("user_id", userId).select().single();
             if (error) throw new Error("商城订单更新失败");
+            if (["paid", "processing", "completed"].includes(status) && !["paid", "processing", "completed"].includes(existing.status) && existing.order_type !== "renewal") {
+              const devices = Array.from({ length: Math.max(1, existing.quantity) }, (_, index) => ({
+                user_id: userId,
+                device_code: `${existing.order_no}-${String(index + 1).padStart(2, "0")}`,
+                name: existing.product_snapshot?.gpuModel || existing.product_snapshot?.name || "GPU 算力设备",
+                compute: existing.product_snapshot?.specification?.find?.((item: Record<string, unknown>) => item.field === "computePower")?.value || existing.product_snapshot?.vram || "待配置",
+                status: "运行中",
+                daily_yield: 0,
+                expires_at: data.service_expires_at ? String(data.service_expires_at).slice(0, 10) : null,
+                store_order_id: existing.id,
+                product_id: existing.product_id,
+                product_snapshot: existing.product_snapshot,
+                unit_index: index + 1,
+              }));
+              const { error: deviceError } = await admin.from("compute_devices").upsert(devices, { onConflict: "store_order_id,unit_index", ignoreDuplicates: true });
+              if (deviceError) throw new Error("订单已更新，但设备资产生成失败");
+            }
             afterValue = data;
           }
         }
       }
 
       if (resource === "device") {
-        if (operation === "create") {
-          const payload = {
-            user_id: userId,
-            device_code: String(body.deviceCode ?? "").trim().slice(0, 80),
-            name: String(body.name ?? "").trim().slice(0, 160),
-            compute: String(body.compute ?? "").trim().slice(0, 120),
-            status: String(body.status ?? "待交付").trim().slice(0, 40),
-            daily_yield: Math.max(0, Number(body.dailyYield) || 0),
-            expires_at: body.expiresAt || null,
-          };
-          if (!payload.device_code || !payload.name || !payload.compute) throw new Error("请完整填写设备编号、名称和算力");
-          const { data, error } = await admin.from("compute_devices").insert(payload).select().single();
-          if (error) throw new Error(error.code === "23505" ? "该用户已存在相同设备编号" : "设备添加失败");
-          targetId = data.id;
-          afterValue = data;
+        if (operation === "renew") {
+          if (!uuidPattern.test(targetId)) throw new Error("设备参数无效");
+          const { data: existing, error: readError } = await admin.from("compute_devices").select("*").eq("id", targetId).eq("user_id", userId).maybeSingle();
+          if (readError || !existing) throw new Error("设备不存在");
+          if (!existing.store_order_id) throw new Error("该设备没有关联商城订单，不能创建续费订单");
+          beforeValue = existing;
+          const { data: parent } = await admin.from("store_orders").select("*").eq("id", existing.store_order_id).eq("user_id", userId).maybeSingle();
+          if (!parent || parent.order_type !== "rental" || !["paid", "processing", "completed"].includes(parent.status)) throw new Error("关联的原租用订单不能续费");
+          const { data: product } = await admin.from("store_products").select("id, renewable, renewal_price, rental_price, specs").eq("id", parent.product_id).maybeSingle();
+          if (!product?.renewable) throw new Error("该商品当前不支持续费");
+          const periodCount = Math.max(1, Math.min(3650, Number(body.periodCount) || 30));
+          const unitPrice = Math.max(0, Number(body.totalAmount) || Number(parent.product_snapshot?.monthlyRentalPrice ?? product.renewal_price ?? product.rental_price) || 0);
+          const start = new Date(Math.max(Date.now(), new Date(parent.service_expires_at || Date.now()).getTime()));
+          const expiry = new Date(start.getTime() + periodCount * 86_400_000);
+          const now = new Date().toISOString();
+          const { data: renewal, error: renewalError } = await admin.from("store_orders").insert({
+            order_no: orderNumber(), user_id: userId, product_id: parent.product_id, parent_order_id: parent.id, device_id: existing.id,
+            order_type: "renewal", product_snapshot: parent.product_snapshot, quantity: 1, period_unit: "day", period_count: periodCount,
+            unit_price: unitPrice, subtotal: unitPrice, fee_amount: 0, total_amount: unitPrice, currency: parent.currency ?? "CNY",
+            status: "completed", expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), paid_at: now,
+            service_starts_at: start.toISOString(), service_expires_at: expiry.toISOString(),
+          }).select().single();
+          if (renewalError) throw new Error("管理员续费订单创建失败");
+          const parentUpdate = Number(parent.quantity) === 1 ? admin.from("store_orders").update({ service_expires_at: expiry.toISOString() }).eq("id", parent.id) : Promise.resolve({ error: null });
+          const [{ error: parentError }, { data: updatedDevice, error: deviceError }] = await Promise.all([
+            parentUpdate,
+            admin.from("compute_devices").update({ expires_at: expiry.toISOString().slice(0, 10) }).eq("id", existing.id).eq("user_id", userId).select(),
+          ]);
+          if (parentError || deviceError) throw new Error("续费到期时间同步失败");
+          targetId = renewal.id;
+          afterValue = { renewal, devices: updatedDevice };
+        } else if (operation === "create") {
+          const deviceStatus = String(body.status ?? "待交付").trim();
+          if (!["运行中", "已停用", "维护中", "待交付", "已到期"].includes(deviceStatus)) throw new Error("设备状态无效");
+          const productId = String(body.productId ?? "");
+          const variantId = String(body.variantId ?? "");
+          const quantity = Math.max(1, Math.min(100, Number(body.quantity) || 1));
+          if (!productId || !variantId) throw new Error("请选择真实商城商品和完整 SKU 规格");
+          const { data, error } = await admin.rpc("admin_create_catalog_devices", {
+            p_admin_id: authData.user.id,
+            p_user_id: userId,
+            p_product_id: productId,
+            p_variant_id: variantId,
+            p_quantity: quantity,
+            p_device_status: deviceStatus,
+            p_reason: reason,
+          });
+          if (error) {
+            const message = String(error.message ?? "");
+            if (message.includes("inventory_insufficient")) throw new Error("所选 SKU 库存不足");
+            if (message.includes("variant_not_found")) throw new Error("所选 SKU 已变化，请刷新后重新选择");
+            if (message.includes("product_not_found_or_disabled")) throw new Error("商品不存在或已下架");
+            throw new Error("管理员订单和设备生成失败");
+          }
+          return json(origin, 200, {
+            ok: true,
+            resource,
+            operation,
+            targetId: data?.orderId ?? null,
+            orderNo: data?.orderNo ?? "",
+            deviceIds: data?.deviceIds ?? [],
+            quantity: data?.quantity ?? quantity,
+            source: "管理员添加",
+          });
         } else {
           if (!uuidPattern.test(targetId)) throw new Error("设备参数无效");
           const { data: existing, error: readError } = await admin.from("compute_devices").select("*").eq("id", targetId).eq("user_id", userId).maybeSingle();
@@ -319,11 +404,13 @@ Deno.serve(async (request: Request) => {
             const { error } = await admin.from("compute_devices").delete().eq("id", targetId).eq("user_id", userId);
             if (error) throw new Error("设备删除失败");
           } else {
+            const deviceStatus = String(body.status ?? existing.status).trim();
+            if (!["运行中", "已停用", "维护中", "待交付", "已到期"].includes(deviceStatus)) throw new Error("设备状态无效");
             const update = {
               device_code: String(body.deviceCode ?? existing.device_code).trim().slice(0, 80),
               name: String(body.name ?? existing.name).trim().slice(0, 160),
               compute: String(body.compute ?? existing.compute).trim().slice(0, 120),
-              status: String(body.status ?? existing.status).trim().slice(0, 40),
+              status: deviceStatus,
               daily_yield: Math.max(0, Number(body.dailyYield) || 0),
               expires_at: body.expiresAt || null,
             };

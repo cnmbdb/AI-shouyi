@@ -62,7 +62,7 @@ Deno.serve(async (request: Request) => {
     const body = await request.json().catch(() => ({}));
     const orderType = String(body.orderType ?? "rental");
     if (!["rental", "buyout", "renewal"].includes(orderType)) return json(origin, 400, { error: "订单计费方式无效" });
-    const quantity = Math.max(1, Math.min(100, Number(body.quantity) || 1));
+    let quantity = Math.max(1, Math.min(100, Number(body.quantity) || 1));
     const cycles = Math.max(1, Math.min(120, Number(body.cycles) || 1));
 
     let productQuery = admin.from("store_products").select("*").eq("enabled", true);
@@ -79,11 +79,20 @@ Deno.serve(async (request: Request) => {
     let requestedSelections = body.specSelections && typeof body.specSelections === "object" ? body.specSelections : {};
 
     let parentOrderId: string | null = null;
+    let renewalDeviceId: string | null = null;
     if (orderType === "renewal") {
-      const { data: parent } = await admin.from("store_orders").select("id, product_id, order_type, status, user_id, product_snapshot").eq("id", String(body.parentOrderId ?? "")).maybeSingle();
+      const { data: parent } = await admin.from("store_orders").select("id, product_id, order_type, status, user_id, product_snapshot, quantity").eq("id", String(body.parentOrderId ?? "")).maybeSingle();
       if (!parent || parent.user_id !== authData.user.id || parent.product_id !== product.id || !["rental", "renewal"].includes(parent.order_type) || !["paid", "processing", "completed"].includes(parent.status)) return json(origin, 400, { error: "原租用订单不能续费" });
       parentOrderId = parent.id;
       requestedSelections = parent.product_snapshot?.specSelections ?? requestedSelections;
+      if (body.deviceId) {
+        const { data: device } = await admin.from("compute_devices").select("id").eq("id", String(body.deviceId)).eq("user_id", authData.user.id).eq("store_order_id", parent.id).maybeSingle();
+        if (!device) return json(origin, 400, { error: "续费设备与原订单不匹配" });
+        renewalDeviceId = device.id;
+        quantity = 1;
+      } else {
+        quantity = Math.max(1, Number(parent.quantity) || 1);
+      }
     }
 
     const selectedOptions = levels.map((level: Record<string, any>) => {
@@ -131,7 +140,7 @@ Deno.serve(async (request: Request) => {
     const checkoutPayload = channel.provider_type === "manual" ? { kind: "manual", instructions: channel.public_config?.instructions ?? "请联系商务完成付款。" } : { kind: channel.interaction_mode, checkout_url: checkoutUrl };
     const snapshot = { id: product.id, slug: product.slug, sku: product.sku, name: product.name, image: product.image_url, gpuModel: product.gpu_model, vram: product.vram, billingType: product.billing_type, specSelections: normalizedSelections, skuVariantId: selectedVariant?.id ?? null, skuInventory: selectedVariant?.inventory ?? product.inventory, specification: selectedOptions.filter(Boolean), monthlyRentalPrice: unitPrice };
     const periodCount = orderType === "buyout" ? null : Math.max(1, Number(selectedSpecification.rentalDuration?.value ?? product.rental_period_count) || 1) * cycles;
-    const { data: order, error: orderError } = await admin.from("store_orders").insert({ order_no: orderNo, user_id: authData.user.id, product_id: product.id, parent_order_id: parentOrderId, order_type: orderType, product_snapshot: snapshot, quantity, period_unit: orderType === "buyout" ? null : "day", period_count: periodCount, unit_price: unitPrice, subtotal, fee_amount: feeAmount, total_amount: totalAmount, currency: "CNY", expires_at: expiresAt }).select("id, order_no, status").single();
+    const { data: order, error: orderError } = await admin.from("store_orders").insert({ order_no: orderNo, user_id: authData.user.id, product_id: product.id, parent_order_id: parentOrderId, device_id: renewalDeviceId, order_type: orderType, product_snapshot: snapshot, quantity, period_unit: orderType === "buyout" ? null : "day", period_count: periodCount, unit_price: unitPrice, subtotal, fee_amount: feeAmount, total_amount: totalAmount, currency: "CNY", expires_at: expiresAt }).select("id, order_no, status").single();
     if (orderError) return json(origin, 500, { error: "订单创建失败" });
     const { data: payment, error: paymentError } = await admin.from("store_payments").insert({ payment_no: paymentNo, order_id: order.id, channel_id: channel.id, amount: totalAmount, currency: "CNY", interaction_mode: channel.interaction_mode, checkout_payload: checkoutPayload, expires_at: expiresAt }).select("id, payment_no, status").single();
     if (paymentError) { await admin.from("store_orders").delete().eq("id", order.id); return json(origin, 500, { error: "支付单创建失败" }); }

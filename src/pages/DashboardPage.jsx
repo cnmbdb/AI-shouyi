@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
   ArrowRightIcon as ArrowRight,
@@ -29,10 +29,12 @@ import {
   UserRoundIcon as UserRound,
   UsersIcon as Users,
   WalletIcon as Wallet,
+  RefreshCwIcon as RefreshCw,
+  BadgeDollarSignIcon as BadgeDollarSign,
   XIcon as X,
 } from "lucide-react";
 import { BrandLogoMark } from "../components/BrandLogo.jsx";
-import { getCachedSiteSettings, getPlatformOverview, getSiteSettings } from "../lib/platformData.js";
+import { createStorePayment, createWalletRecharge, getCachedSiteSettings, getPlatformOverview, getSiteSettings } from "../lib/platformData.js";
 import { normalizeNavigationSettings } from "../data/siteSettings.js";
 import { UserManagementPage } from "./UserManagementPage.jsx";
 import { UserDetailPage } from "./UserDetailPage.jsx";
@@ -46,6 +48,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
@@ -138,21 +142,23 @@ function Status({ value }) {
   return <Badge className="console-status" variant={active ? "secondary" : "outline"}><i />{value}</Badge>;
 }
 
-function DataTable({ data, kind = "devices" }) {
+function DataTable({ data, kind = "devices", onRenew }) {
   const columns = useMemo(() => kind === "devices" ? [
-    { accessorKey: "name", header: "设备", cell: ({ row }) => <div className="device-name"><span><Cpu /></span><div><strong>{row.original.name}</strong><small>{row.original.id}</small></div></div> },
+    { accessorKey: "name", header: "设备", cell: ({ row }) => <div className="device-name"><span><Cpu /></span><div><strong>{row.original.name}</strong><small>{row.original.id}{row.original.productSnapshot?.source === "admin" ? " · 管理员添加" : ""}</small></div></div> },
     { accessorKey: "compute", header: "算力" },
     { accessorKey: "status", header: "状态", cell: ({ getValue }) => <Status value={getValue()} /> },
     { accessorKey: "today", header: "今日收益" },
     { accessorKey: "expires", header: "到期日" },
+    { id: "actions", header: "操作", cell: ({ row }) => <div className="console-row-actions">{onRenew && row.original.storeOrderId && row.original.productId ? <Button size="xs" variant="outline" onClick={() => onRenew(row.original)}><RefreshCw />续费</Button> : <span className="console-muted-action">{row.original.storeOrderId ? "商城设备" : "管理员录入"}</span>}</div> },
   ] : [
     { accessorKey: "id", header: "订单号" },
-    { accessorKey: "product", header: "租用产品" },
+    { accessorKey: "product", header: "租用产品", cell: ({ row }) => <div className="console-order-product"><strong>{row.original.product}</strong>{row.original.source === "admin" ? <small>管理员添加</small> : null}</div> },
     { accessorKey: "period", header: "租用周期" },
     { accessorKey: "amount", header: "订单金额" },
     { accessorKey: "status", header: "状态", cell: ({ getValue }) => <Status value={getValue()} /> },
     { accessorKey: "created", header: "下单时间" },
-  ], [kind]);
+    { id: "actions", header: "操作", cell: ({ row }) => <div className="console-row-actions">{onRenew && row.original.orderType === "rental" && row.original.productId && ["paid", "processing", "completed"].includes(row.original.rawStatus) ? <Button size="xs" variant="outline" onClick={() => onRenew(row.original)}><RefreshCw />续费</Button> : <span className="console-muted-action">{row.original.orderType === "buyout" ? "已买断" : "-"}</span>}</div> },
+  ], [kind, onRenew]);
   const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() });
 
   return (
@@ -170,7 +176,9 @@ function EarningsChart({ values }) {
   const height = 210;
   const max = Math.max(...values);
   const min = Math.min(...values);
-  const points = values.map((value, index) => `${(index / (values.length - 1)) * width},${height - ((value - min) / (max - min)) * (height - 36) - 18}`).join(" ");
+  const range = Math.max(1, max - min);
+  const divisor = Math.max(1, values.length - 1);
+  const points = values.map((value, index) => `${(index / divisor) * width},${height - ((value - min) / range) * (height - 36) - 18}`).join(" ");
   const area = `0,${height} ${points} ${width},${height}`;
   return (
     <div className="earnings-chart">
@@ -212,45 +220,73 @@ function Overview({ data, onNavigate }) {
   );
 }
 
-const orderRows = [
-  { id: "CO202607180086", product: "NVIDIA H800 80G", period: "12 个月", amount: "¥128,800", status: "已完成", created: "2026-07-18 14:32" },
-  { id: "CO202606020041", product: "NVIDIA L40S 48G", period: "12 个月", amount: "¥68,600", status: "已完成", created: "2026-06-02 10:18" },
-  { id: "CO202603180019", product: "NVIDIA A100 80G", period: "12 个月", amount: "¥96,800", status: "已完成", created: "2026-03-18 09:05" },
-];
+function RechargeDialog({ open, onOpenChange, onNotice, onCompleted }) {
+  const [amount, setAmount] = useState("1000");
+  const mutation = useMutation({
+    mutationFn: () => createWalletRecharge(Number(amount)),
+    onSuccess: (result) => {
+      if (result.checkout?.checkout_url) {
+        window.location.assign(result.checkout.checkout_url);
+        return;
+      }
+      onNotice?.(result.checkout?.instructions || `充值单 ${result.recharge?.recharge_no ?? ""} 已创建`);
+      onOpenChange(false);
+      onCompleted?.();
+    },
+    onError: (error) => onNotice?.(error.message || "充值单创建失败"),
+  });
+  return <Dialog open={open} onOpenChange={mutation.isPending ? undefined : onOpenChange}><DialogContent className="wallet-recharge-dialog"><DialogHeader><DialogTitle>账户充值</DialogTitle><DialogDescription>充值成功后将写入资金流水，可在资金明细中核对。</DialogDescription></DialogHeader><div className="wallet-recharge-presets">{[500, 1000, 5000, 10000].map((value) => <Button key={value} type="button" variant={Number(amount) === value ? "default" : "outline"} onClick={() => setAmount(String(value))}>¥{value.toLocaleString("zh-CN")}</Button>)}</div><label className="wallet-recharge-field"><span>自定义充值金额</span><Input type="number" min="10" max="1000000" step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} /><small>单笔 10–1,000,000 元，实际可用范围以支付渠道为准。</small></label><DialogFooter><Button variant="outline" onClick={() => onOpenChange(false)} disabled={mutation.isPending}>取消</Button><Button onClick={() => mutation.mutate()} disabled={mutation.isPending || Number(amount) < 10}>{mutation.isPending ? "正在创建充值单..." : "前往支付"}</Button></DialogFooter></DialogContent></Dialog>;
+}
 
-function ListPage({ kind, data, onNavigate }) {
+function ListPage({ kind, data, onNavigate, onNotice, onRefresh }) {
   const isDevices = kind === "devices";
-  const rows = isDevices ? data.devices : data.orders?.length ? data.orders : orderRows;
+  const rows = isDevices ? data.devices : data.orders ?? [];
+  const [rechargeOpen, setRechargeOpen] = useState(false);
+  const renewMutation = useMutation({
+    mutationFn: (row) => createStorePayment({ productId: row.productId, orderType: "renewal", parentOrderId: row.storeOrderId ?? row.recordId, deviceId: row.storeOrderId ? row.recordId : undefined, quantity: row.quantity ?? 1, cycles: 1 }),
+    onSuccess: (result) => {
+      if (result.checkout?.checkout_url) { window.location.assign(result.checkout.checkout_url); return; }
+      onNotice?.(result.checkout?.instructions || `续费订单 ${result.order?.order_no ?? ""} 已创建`);
+      onRefresh?.();
+    },
+    onError: (error) => onNotice?.(error.message || "续费订单创建失败"),
+  });
+  const renew = (row) => {
+    if (renewMutation.isPending) return;
+    renewMutation.mutate(row);
+  };
   return (
     <section className="console-panel list-page-panel">
       <div className="list-toolbar">
         <InputGroup className="console-search"><InputGroupAddon><SlidersHorizontal /></InputGroupAddon><InputGroupInput aria-label={isDevices ? "搜索设备" : "搜索订单"} placeholder={isDevices ? "搜索设备名称或编号" : "搜索订单号或产品"} /></InputGroup>
-        <Button size="sm" onClick={() => onNavigate("/estates")}><Package data-icon="inline-start" />租用新设备</Button>
+        <div className="list-toolbar-actions"><Button variant="outline" size="sm" onClick={() => setRechargeOpen(true)}><BadgeDollarSign data-icon="inline-start" />账户充值</Button><Button size="sm" onClick={() => onNavigate("/estates")}><Package data-icon="inline-start" />租用新设备</Button></div>
       </div>
-      <DataTable data={rows} kind={isDevices ? "devices" : "orders"} />
+      <DataTable data={rows} kind={isDevices ? "devices" : "orders"} onRenew={renew} />
+      {!rows.length ? <div className="console-list-empty"><Package /><strong>{isDevices ? "暂无自有算力设备" : "暂无租用订单"}</strong><span>{isDevices ? "支付完成后的设备会自动出现在这里。" : "可前往产品商城选择真实 GPU 规格。"}</span><Button size="sm" onClick={() => onNavigate("/estates")}>浏览算力商品</Button></div> : null}
       <div className="table-footer"><span>共 {rows.length} 条记录</span><div><Button variant="outline" size="xs" disabled>上一页</Button><Button size="xs">1</Button><Button variant="outline" size="xs" disabled>下一页</Button></div></div>
+      <RechargeDialog open={rechargeOpen} onOpenChange={setRechargeOpen} onNotice={onNotice} onCompleted={onRefresh} />
     </section>
   );
 }
 
-function FinancePage({ kind }) {
-  const transactions = [
-    ["2026-07-22 09:42", "跑算收益", "H800-0186", "+¥188.26", "已入账"],
-    ["2026-07-22 09:40", "跑算收益", "L40S-0631", "+¥116.70", "已入账"],
-    ["2026-07-21 18:30", "周度结算", "SET-0721", "+¥2,036.40", "已结算"],
-    ["2026-07-18 14:32", "设备租用", "CO202607180086", "-¥128,800.00", "已完成"],
-  ];
+function FinancePage({ kind, data, onNotice, onRefresh }) {
+  const [rechargeOpen, setRechargeOpen] = useState(false);
+  const transactions = data?.transactions?.map((item) => [item.time, item.type, item.reference, item.amount, item.status]) ?? [];
+  const finance = data?.finance ?? {};
+  const formatMoney = (value) => `¥${Number(value || 0).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   return (
     <>
       <section className="finance-summary">
-        <article><p>{kind === "earnings" ? "累计跑算收益" : "可用余额"}</p><strong>{kind === "earnings" ? "¥42,680.18" : "¥16,420.36"}</strong><span><TrendUp /> 本月 +8.2%</span></article>
-        <article><p>本月已结算</p><strong>¥6,242.32</strong><small>下次结算 07-28</small></article>
-        <article><p>待结算收益</p><strong>¥2,184.20</strong><small>预计 6 天后入账</small></article>
+        <article><p>{kind === "earnings" ? "累计跑算收益" : "可用余额"}</p><strong>{formatMoney(kind === "earnings" ? finance.totalEarnings : finance.availableBalance)}</strong><span><TrendUp /> 实时账户数据</span></article>
+        <article><p>已结算收益</p><strong>{formatMoney(finance.settledEarnings)}</strong><small>以已入账流水为准</small></article>
+        <article><p>待结算收益</p><strong>{formatMoney(finance.pendingEarnings)}</strong><small>结算后自动进入资金流水</small></article>
       </section>
       <section className="console-panel finance-panel">
-        <div className="panel-heading"><div><h2>{kind === "earnings" ? "跑算收益明细" : "最近资金流水"}</h2><p>数据更新于 2026-07-22 10:00</p></div><Button variant="outline" size="xs">全部类型 <CaretDown data-icon="inline-end" /></Button></div>
+        <div className="panel-heading"><div><h2>{kind === "earnings" ? "跑算收益明细" : "最近资金流水"}</h2><p>订单、充值和跑算收益统一记录</p></div><div className="finance-heading-actions">{kind === "transactions" ? <Button size="xs" onClick={() => setRechargeOpen(true)}><BadgeDollarSign />账户充值</Button> : null}<Button variant="outline" size="xs">全部类型 <CaretDown data-icon="inline-end" /></Button></div></div>
         <div className="transaction-list">{transactions.map(([time, type, ref, amount, status]) => <article key={`${time}-${ref}`}><span className={amount.startsWith("+") ? "income" : "expense"}>{amount.startsWith("+") ? <ChartLineUp /> : <Receipt />}</span><div><strong>{type}</strong><small>{time} / {ref}</small></div><b className={amount.startsWith("+") ? "positive" : ""}>{amount}</b><Status value={status} /></article>)}</div>
+        {!transactions.length ? <div className="console-list-empty"><Wallet /><strong>暂无资金流水</strong><span>充值、购买和跑算结算完成后会显示在这里。</span></div> : null}
       </section>
+      <RechargeDialog open={rechargeOpen} onOpenChange={setRechargeOpen} onNotice={onNotice} onCompleted={onRefresh} />
     </>
   );
 }
@@ -268,10 +304,20 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
     ...fallbackOverview,
     ...overview.data,
     metrics: fallbackOverview.metrics.map((metric, index) => ({ ...metric, ...overview.data.metrics?.[index] })),
-    earnings: overview.data.earnings?.length ? overview.data.earnings : fallbackOverview.earnings,
-    devices: overview.data.devices?.length ? overview.data.devices : fallbackOverview.devices,
-    activity: overview.data.activity?.length ? overview.data.activity : fallbackOverview.activity,
-  } : fallbackOverview;
+    earnings: overview.data.earnings?.length ? overview.data.earnings : [0, 0],
+    devices: overview.data.devices ?? [],
+    orders: overview.data.orders ?? [],
+    transactions: overview.data.transactions ?? [],
+    activity: overview.data.activity ?? [],
+  } : {
+    ...fallbackOverview,
+    metrics: fallbackOverview.metrics.map((metric) => ({ ...metric, value: "—", change: "" })),
+    earnings: [0, 0],
+    devices: [],
+    orders: [],
+    transactions: [],
+    activity: [],
+  };
   const settingSection = isAdmin && pathname.startsWith("/console/settings/") ? pathname.split("/").pop() : null;
   const userDetailId = isAdmin && pathname.startsWith("/console/users/") ? decodeURIComponent(pathname.slice("/console/users/".length)) : "";
   const [title, description] = userDetailId ? ["用户详情", "核对用户的商城订单、持有产品、资金流水与认证状态"] : pageMeta[pathname] ?? (settingSection ? [settingMeta[settingSection]?.title, settingMeta[settingSection]?.description] : ["控制台", ""]);
@@ -303,10 +349,10 @@ export function DashboardPage({ pathname, user, onNavigate, onLogout, onNotice, 
 
         <div className="console-content">
           {pathname === "/console" ? <Overview data={data} onNavigate={onNavigate} /> : null}
-          {pathname === "/console/devices" ? <ListPage kind="devices" data={data} onNavigate={onNavigate} /> : null}
-          {pathname === "/console/orders" ? <ListPage kind="orders" data={data} onNavigate={onNavigate} /> : null}
-          {pathname === "/console/earnings" ? <FinancePage kind="earnings" /> : null}
-          {pathname === "/console/transactions" ? <FinancePage kind="transactions" /> : null}
+          {pathname === "/console/devices" ? <ListPage kind="devices" data={data} onNavigate={onNavigate} onNotice={onNotice} onRefresh={() => overview.refetch()} /> : null}
+          {pathname === "/console/orders" ? <ListPage kind="orders" data={data} onNavigate={onNavigate} onNotice={onNotice} onRefresh={() => overview.refetch()} /> : null}
+          {pathname === "/console/earnings" ? <FinancePage kind="earnings" data={data} onNotice={onNotice} onRefresh={() => overview.refetch()} /> : null}
+          {pathname === "/console/transactions" ? <FinancePage kind="transactions" data={data} onNotice={onNotice} onRefresh={() => overview.refetch()} /> : null}
           {pathname === "/console/account" ? <AccountSettingsPage user={user} onUserUpdated={onUserUpdated} onNotice={onNotice} /> : null}
           {pathname === "/console/users" && isAdmin ? <UserManagementPage currentUser={user} onNotice={onNotice} onNavigate={onNavigate} /> : null}
           {userDetailId ? <UserDetailPage userId={userDetailId} currentUser={user} onNavigate={onNavigate} onNotice={onNotice} /> : null}

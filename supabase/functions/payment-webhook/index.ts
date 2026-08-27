@@ -31,10 +31,13 @@ Deno.serve(async (request: Request) => {
     if (!merchantKey || !receivedSign || !safeEqual(receivedSign, expectedSign)) return plain(401, "fail");
     if (!["TRADE_SUCCESS", "TRADE_FINISHED"].includes(String(payload.trade_status ?? ""))) return plain(200, "success");
     const paymentNo = String(payload.out_trade_no ?? "");
-    const { data: payment } = await admin.from("store_payments").select("payment_no, amount, status").eq("payment_no", paymentNo).eq("channel_id", channelId).maybeSingle();
+    const { data: storePayment } = await admin.from("store_payments").select("payment_no, amount, status").eq("payment_no", paymentNo).eq("channel_id", channelId).maybeSingle();
+    const { data: walletPayment } = storePayment ? { data: null } : await admin.from("wallet_payments").select("payment_no, amount, status").eq("payment_no", paymentNo).eq("channel_id", channelId).maybeSingle();
+    const payment = storePayment ?? walletPayment;
     if (!payment || Math.abs(Number(payment.amount) - Number(payload.money)) > 0.001) return plain(400, "fail");
     if (payment.status === "paid") return plain(200, "success");
-    const { error } = await admin.rpc("complete_store_payment", { p_payment_no: paymentNo, p_provider_trade_no: String(payload.trade_no ?? ""), p_callback_payload: payload });
+    const rpcName = storePayment ? "complete_store_payment" : "complete_wallet_recharge";
+    const { error } = await admin.rpc(rpcName, { p_payment_no: paymentNo, p_provider_trade_no: String(payload.trade_no ?? ""), p_callback_payload: payload });
     if (error) return plain(500, "fail");
     return plain(200, "success");
   } catch {

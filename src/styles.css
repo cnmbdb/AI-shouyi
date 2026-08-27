@@ -1804,6 +1804,28 @@ p, h1, h2, h3 { margin-top: 0; }
 .admin-finance-actions { display: flex; align-items: center; gap: 6px; }
 .admin-row-actions { justify-content: flex-end; }
 .admin-user-device-card { margin-top: 14px; }
+.admin-renewal-summary { display: grid; gap: 4px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--muted); }
+.admin-renewal-summary strong { font-size: 14px; }
+.admin-renewal-summary span { color: var(--muted-foreground); font-size: 12px; }
+.list-toolbar-actions, .finance-heading-actions, .console-row-actions { display: flex; align-items: center; gap: 8px; }
+.console-row-actions svg, .list-toolbar-actions svg, .finance-heading-actions svg { width: 14px; height: 14px; }
+.console-muted-action { color: var(--muted-foreground); font-size: 12px; white-space: nowrap; }
+.console-list-empty { display: grid; justify-items: center; gap: 7px; padding: 38px 16px; border-top: 1px solid var(--border); text-align: center; }
+.console-list-empty > svg { width: 28px; height: 28px; color: #76b900; }
+.console-list-empty strong { font-size: 15px; }
+.console-list-empty span { color: var(--muted-foreground); font-size: 13px; }
+.wallet-recharge-dialog { max-width: 480px; }
+.wallet-recharge-presets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.wallet-recharge-field { display: grid; gap: 7px; }
+.wallet-recharge-field > span { font-size: 13px; font-weight: 600; }
+.wallet-recharge-field > small { color: var(--muted-foreground); font-size: 11px; }
+
+@media (max-width: 700px) {
+  .list-toolbar-actions { width: 100%; }
+  .list-toolbar-actions > button { flex: 1; }
+  .wallet-recharge-presets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .finance-heading-actions { align-items: stretch; flex-direction: column; }
+}
 .admin-user-finance-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .admin-user-finance-summary [data-slot="card-title"] { font-size: 20px; font-variant-numeric: tabular-nums; }
 .admin-money-positive { color: #467000; font-weight: 600; }
@@ -1826,6 +1848,14 @@ p, h1, h2, h3 { margin-top: 0; }
 .admin-record-field { min-width: 0; display: grid; gap: 6px; color: var(--foreground); font-size: 13px; font-weight: 600; }
 .admin-record-field > small { color: var(--muted-foreground); font-size: 11px; font-weight: 400; line-height: 1.4; }
 .admin-record-field [data-slot="select-trigger"] { width: 100%; }
+.admin-catalog-spec-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.admin-catalog-variant-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: color-mix(in srgb, var(--muted) 46%, transparent); }
+.admin-catalog-variant-summary div { min-width: 0; display: grid; gap: 3px; }
+.admin-catalog-variant-summary span { color: var(--muted-foreground); font-size: 11px; }
+.admin-catalog-variant-summary strong { overflow: hidden; color: var(--foreground); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.admin-source-badge { display: flex; width: fit-content; margin-top: 5px; color: #477000; border-color: rgb(118 185 0 / 32%); background: rgb(118 185 0 / 8%); }
+.console-order-product { display: grid; gap: 2px; }
+.console-order-product small { width: fit-content; color: #477000; font-size: 11px; font-weight: 600; }
 .admin-user-detail-error { max-width: 620px; }
 .account-settings-page { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 14px; align-items: start; }
 .account-card [data-slot="card-title"] { display: flex; align-items: center; gap: 8px; font-size: 15px; }
@@ -1937,7 +1967,9 @@ p, h1, h2, h3 { margin-top: 0; }
   .admin-finance-actions { width: 100%; }
   .admin-verification-toolbar button,
   .admin-finance-actions button { flex: 1; }
-  .admin-record-grid { grid-template-columns: 1fr; }
+  .admin-record-grid,
+  .admin-catalog-spec-grid { grid-template-columns: 1fr; }
+  .admin-catalog-variant-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-record-dialog { max-height: calc(100dvh - 16px); }
 }
 

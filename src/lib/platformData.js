@@ -79,32 +79,46 @@ export const getCachedBlogPosts = () => readPublicCache(blogPostsCacheKey);
 
 export async function getPlatformOverview() {
   const client = requireSupabase();
-  const [devicesResult, ordersResult, storeOrdersResult, earningsResult, transactionsResult] = await Promise.all([
-    client.from("compute_devices").select("device_code, name, compute, status, daily_yield, expires_at").order("created_at"),
+  const [devicesResult, ordersResult, storeOrdersResult, earningsResult, transactionsResult, rechargesResult] = await Promise.all([
+    client.from("compute_devices").select("*").order("created_at", { ascending: false }),
     client.from("rental_orders").select("order_no, product, period_months, amount, status, created_at").order("created_at", { ascending: false }),
-    client.from("store_orders").select("order_no, order_type, product_snapshot, period_count, period_unit, total_amount, status, created_at").order("created_at", { ascending: false }),
+    client.from("store_orders").select("id, order_no, product_id, parent_order_id, order_type, product_snapshot, quantity, period_count, period_unit, total_amount, status, service_expires_at, created_at").order("created_at", { ascending: false }),
     client.from("earnings").select("amount, earned_on, status").order("earned_on"),
     client.from("transactions").select("transaction_type, reference, amount, status, occurred_at").order("occurred_at", { ascending: false }).limit(20),
+    client.from("wallet_recharges").select("id, recharge_no, amount, fee_amount, total_amount, status, paid_at, expires_at, created_at").order("created_at", { ascending: false }).limit(20),
   ]);
 
   [devicesResult, ordersResult, earningsResult, transactionsResult].forEach(({ error }) => throwIfError(error));
   if (storeOrdersResult.error && !isMissingCommerceTable(storeOrdersResult.error)) throwIfError(storeOrdersResult.error);
+  if (rechargesResult.error && !isMissingCommerceTable(rechargesResult.error)) throwIfError(rechargesResult.error);
   const devices = devicesResult.data ?? [];
   const legacyOrders = ordersResult.data ?? [];
   const storeOrders = storeOrdersResult.error ? [] : storeOrdersResult.data ?? [];
+  const recharges = rechargesResult.error ? [] : rechargesResult.data ?? [];
   const orders = [...storeOrders.map((row) => ({
+    id: row.id,
     order_no: row.order_no,
+    product_id: row.product_id,
+    parent_order_id: row.parent_order_id,
+    order_type: row.order_type,
+    product_snapshot: row.product_snapshot,
+    quantity: row.quantity,
     product: row.product_snapshot?.name ?? "商城商品",
     period_months: row.order_type === "buyout" ? 0 : row.period_count,
     periodLabel: row.order_type === "buyout" ? "买断" : `${row.period_count} ${row.period_unit === "day" ? "天" : row.period_unit === "year" ? "年" : "个月"}`,
     amount: row.total_amount,
     status: ({ pending_payment: "待支付", paid: "已支付", processing: "处理中", completed: "已完成", expired: "已过期", cancelled: "已取消", refunded: "已退款" })[row.status] ?? row.status,
+    raw_status: row.status,
+    service_expires_at: row.service_expires_at,
     created_at: row.created_at,
   })), ...legacyOrders].toSorted((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const earnings = earningsResult.data ?? [];
   const transactions = transactionsResult.data ?? [];
   const totalAssets = orders.reduce((sum, row) => sum + Number(row.amount), 0);
   const monthEarnings = earnings.reduce((sum, row) => sum + Number(row.amount), 0);
+  const availableBalance = transactions.reduce((sum, row) => sum + Number(row.amount), 0);
+  const settledEarnings = earnings.filter((row) => ["已结算", "已入账"].includes(row.status)).reduce((sum, row) => sum + Number(row.amount), 0);
+  const pendingEarnings = earnings.filter((row) => !["已结算", "已入账"].includes(row.status)).reduce((sum, row) => sum + Number(row.amount), 0);
   const onlineRate = devices.length ? (devices.filter((row) => row.status === "运行中").length / devices.length) * 100 : 0;
 
   return {
@@ -116,19 +130,33 @@ export async function getPlatformOverview() {
     ],
     earnings: earnings.map((row) => Number(row.amount)),
     devices: devices.map((row) => ({
+      recordId: row.id,
       id: row.device_code,
       name: row.name,
       compute: row.compute,
       status: row.status,
       today: currency(row.daily_yield),
       expires: row.expires_at,
+      storeOrderId: row.store_order_id,
+      productId: row.product_id,
+      productSnapshot: row.product_snapshot,
     })),
     orders: orders.map((row) => ({
+      recordId: row.id,
       id: row.order_no,
+      productId: row.product_id,
+      parentOrderId: row.parent_order_id,
+      orderType: row.order_type,
+      productSnapshot: row.product_snapshot,
+      source: row.product_snapshot?.source ?? "payment",
+      sourceLabel: row.product_snapshot?.sourceLabel ?? (row.product_snapshot?.source === "admin" ? "管理员添加" : "用户购买"),
+      quantity: row.quantity,
       product: row.product,
       period: row.periodLabel ?? `${row.period_months} 个月`,
       amount: currency(row.amount),
       status: row.status,
+      rawStatus: row.raw_status,
+      serviceExpiresAt: row.service_expires_at,
       created: new Date(row.created_at).toLocaleString("zh-CN", { hour12: false }),
     })),
     activity: transactions.slice(0, 4).map((row) => ({
@@ -143,6 +171,16 @@ export async function getPlatformOverview() {
       amount: `${Number(row.amount) >= 0 ? "+" : "-"}${currency(Math.abs(Number(row.amount)))}`,
       status: row.status,
     })),
+    recharges: recharges.map((row) => ({
+      id: row.id,
+      rechargeNo: row.recharge_no,
+      amount: currency(row.amount),
+      fee: currency(row.fee_amount),
+      total: currency(row.total_amount),
+      status: ({ pending_payment: "待支付", paid: "已支付", expired: "已过期", cancelled: "已取消", refunded: "已退款" })[row.status] ?? row.status,
+      created: new Date(row.created_at).toLocaleString("zh-CN", { hour12: false }),
+    })),
+    finance: { availableBalance, settledEarnings, pendingEarnings, totalEarnings: monthEarnings },
   };
 }
 
@@ -437,6 +475,20 @@ export async function createStorePayment(payload) {
   const client = requireSupabase();
   const { data, error } = await client.functions.invoke("payment-order", { body: payload });
   if (error) throw new Error(error.message || "订单创建失败");
+  return data;
+}
+
+export async function createWalletRecharge(amount) {
+  const client = requireSupabase();
+  const { data, error } = await client.functions.invoke("wallet-recharge", { body: { amount } });
+  if (error) {
+    let message = data?.error || error.message || "充值单创建失败";
+    if (error.context instanceof Response) {
+      const payload = await error.context.clone().json().catch(() => null);
+      message = payload?.error || message;
+    }
+    throw new Error(message);
+  }
   return data;
 }
 
